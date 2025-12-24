@@ -13,33 +13,23 @@
 </head>
 <body>
 
-  <h1>WordBox – TEST MODES</h1>
+  <h1>WordBox</h1>
 
-  <!-- GROS BLOC TEST BIEN VISIBLE -->
-  <div style="
-    background:#222; 
-    color:#fff; 
-    padding:10px; 
-    margin:10px auto; 
-    max-width:420px; 
-    border-radius:8px;
-    text-align:center;
-  ">
-    <p style="margin:0 0 6px;">Zone des modes de fluidité :</p>
-
-    <!-- BOUTONS DE MODES -->
-    <div class="mode-switcher" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-      <button id="mode1Btn" class="mode-btn">Mode 1</button>
-      <button id="mode2Btn" class="mode-btn">Mode 2</button>
-      <button id="mode3Btn" class="mode-btn">Mode 3</button>
-    </div>
-  </div>
-
-  <!-- CONTROLES TAILLE DE GRILLE -->
+  <!-- CONTROLES PRINCIPAUX -->
   <div class="controls">
+    <!-- Choix taille de grille -->
     <div class="control-group">
       <button id="btn4x4" class="mode-btn active">4x4</button>
       <button id="btn5x5" class="mode-btn">5x5</button>
+    </div>
+
+    <!-- Choix du mode de fluidité -->
+    <div class="control-group mode-switcher">
+      <span class="mode-label">Fluidité :</span>
+      <button id="mode1Btn" class="mode-btn">Mode 1</button>
+      <button id="mode2Btn" class="mode-btn">Mode 2</button>
+      <button id="mode3Btn" class="mode-btn">Mode 3</button>
+      <button id="mode4Btn" class="mode-btn">Mode 4</button>
     </div>
   </div>
 
@@ -77,14 +67,17 @@
       <button id="newGridBtn" class="action-btn btn-new">Nouvelle</button>
     </div>
 
-  <div class="mode-switcher">
-  <button id="mode1Btn" class="mode-btn">Mode 1</button>
-  <button id="mode2Btn" class="mode-btn">Mode 2</button>
-  <button id="mode3Btn" class="mode-btn">Mode 3</button>
-  <button id="mode4Btn" class="mode-btn">Mode 4</button>
-</div>
+  </div>
 
-
+  <!-- Éléments cachés si besoin plus tard -->
+  <ul id="wordList" style="display: none;"></ul>
+  <div style="display:none">
+    <span id="gridSizeLabel"></span>
+    <span id="layoutLabel"></span>
+    <button class="layout-btn" data-layout="A"></button>
+    <button class="layout-btn" data-layout="B"></button>
+    <button class="layout-btn" data-layout="C"></button>
+  </div>
 
   <!-- SCRIPT PRINCIPAL -->
   <script src="script.js"></script>
