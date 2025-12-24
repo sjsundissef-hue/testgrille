@@ -123,6 +123,8 @@ const ctx    = canvas.getContext("2d");
 const bgCanvas = document.getElementById("bgCanvas");
 const ctxBg    = bgCanvas.getContext("2d");
 const gridScaleRange = document.getElementById("gridScaleRange");
+const gridGapRange   = document.getElementById("gridGapRange");
+
 
 
 const wordDisplay   = document.getElementById("currentWord");
@@ -647,8 +649,13 @@ function drawPath() {
   });
   ctx.stroke();
 }
-
 function drawGridLines() {
+  if (!ctxBg || !bgCanvas) return;
+
+  // On nettoie le fond mais on ne dessine plus aucune ligne
+  ctxBg.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+}
+
   if (!ctxBg || !bgCanvas) return;
   ctxBg.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
   if (gridSize !== 4) return;
@@ -1454,6 +1461,22 @@ if (gridScaleRange) {
     resizeCanvas();
   });
 }
+// === NOUVEAU : contrôle de l'écart entre les cases ===
+function applyGridGap(value) {
+  const px = value + "px";   // 10 -> "10px", 40 -> "40px"
+  document.documentElement.style.setProperty("--grid-gap", px);
+  resizeCanvas();
+}
+
+if (gridGapRange) {
+  // valeur initiale
+  applyGridGap(gridGapRange.value);
+  // mise à jour en direct
+  gridGapRange.addEventListener("input", (e) => {
+    applyGridGap(e.target.value);
+  });
+}
+
 
 window.addEventListener("load", () => {
   loadDictionary();

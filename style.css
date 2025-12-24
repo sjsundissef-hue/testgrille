@@ -10,7 +10,11 @@
 
   /* nouveau : zoom de la grille */
   --grid-scale: 1;
+
+  /* nouveau : écart entre les cases */
+  --grid-gap: 20px;
 }
+
 
 
 * { box-sizing: border-box; }
@@ -66,9 +70,11 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
   /* Force 4x4 par défaut pour éviter l'empilement vertical au chargement */
   grid-template-columns: repeat(4, 1fr); 
   grid-template-rows: repeat(4, 1fr);
-  gap: 20px; 
-  position: relative; z-index: 2; 
+  gap: var(--grid-gap); 
+  position: relative; 
+  z-index: 2; 
 }
+
 
 .cell {
   width: 120px; height: 120px; background-color: var(--case-bg); border-radius: 25px;
@@ -181,11 +187,17 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
 .btn-confirm:active { transform: translateY(2px); box-shadow: 0 2px 0 #44bd32; }
 
 /* === MOBILE OPTIMIZED (Taille parfaite) === */
-@media (max-width: 768px) {
+@media (max-width: 768px) { 
   body { padding: 5px; overflow-x: hidden; }
   .score-panel { width: 100%; height: auto; max-height: 500px; padding: 15px; margin-top: 20px; }
   .grid-wrapper { padding: 18px; border-radius: 24px; width: 85vw; display: flex; justify-content: center; }
-  .grid { gap: 32px; width: 100%; justify-content: center; }
+
+  .grid { 
+    gap: var(--grid-gap); 
+    width: 100%; 
+    justify-content: center; 
+  }
+
   .cell { width: auto; height: auto; aspect-ratio: 1/1; font-size: 2.2rem; border-radius: 16px; box-shadow: 0 6px 0 var(--case-shadow); }
   .cell.qu-mode { font-size: 1.6rem; letter-spacing: -1px; }
   .cell-input { font-size: 2rem; }
@@ -196,6 +208,7 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   .action-buttons { gap: 8px; width: 98%; }
   button { padding: 10px 15px; font-size: 0.9rem; width: 48%; margin: 0; border-radius: 20px; }
 }
+
 
 /* BOUTON MODE CHRONO */
 #chronoToggleBtn {
