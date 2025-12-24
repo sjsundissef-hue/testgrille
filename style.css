@@ -1,254 +1,143 @@
-:root {
-  --bg-color: #f4f4eb;
-  --case-bg: #ffffff;
-  --case-shadow: #c8c8be;
-  --case-selected: #d4f1f4;
-  --case-border-selected: #4a90e2;
-  --text-color: #333333;
-}
-
-* {
-  box-sizing: border-box;
-  /* Empêche le flash bleu quand on tape sur un bouton (Android) */
-  -webkit-tap-highlight-color: transparent;
-}
-
 body {
   margin: 0;
-  padding: 10px;
-  /* CES 4 LIGNES SONT CRUCIALES POUR LE MOBILE */
-  height: 100dvh; 
-  width: 100vw;
-  overflow: hidden; /* Coupe tout ce qui dépasse */
-  position: fixed;  /* Bloque l'écran */
-  
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #111;
+  color: #eee;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: var(--bg-color);
-  font-family: "Segoe UI", sans-serif;
-  
-  /* Empêche de sélectionner du texte partout sur l'écran */
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: none;
 }
 
 h1 {
-  margin: 5px 0;
-  color: #444;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  font-size: 1.4rem;
+  margin-top: 16px;
+  margin-bottom: 8px;
   text-align: center;
-  flex-shrink: 0;
 }
 
-/* --- BOUTONS HAUT (4x4 / 5x5) --- */
+/* Empêche le scroll/zoom pendant qu'on trace un mot */
+#gridWrapper, #grid, .cell {
+  touch-action: none;
+}
+
 .controls {
   display: flex;
   justify-content: center;
-  margin-bottom: 5px;
-  width: 100%;
-  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 
 .control-group {
   display: flex;
-  gap: 5px;
-  background: #e0e0e0;
-  padding: 4px;
-  border-radius: 999px;
+  gap: 8px;
 }
 
 .mode-btn {
-  padding: 8px 16px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background: #222;
+  color: #fff;
   font-size: 0.9rem;
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  color: #666;
-  font-weight: 700;
-  cursor: pointer;
 }
 
 .mode-btn.active {
-  background: #ffffff;
-  color: #4a90e2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: #4caf50;
+  border-color: #7bff9e;
 }
 
-/* --- NOUVEAU : PANNEAU DE RÉGLAGES (SLIDERS) --- */
 .settings-panel {
-  background: #ffffff;
-  padding: 10px 15px;
-  border-radius: 15px;
-  margin-bottom: 5px;
-  width: 95%;
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  flex-shrink: 0;
+  max-width: 420px;
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
 }
 
 .setting-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #555;
+  flex-direction: column;
+  margin-bottom: 8px;
 }
 
-/* Style des curseurs */
-input[type=range] {
-  width: 55%;
-  accent-color: #4a90e2; /* Couleur du curseur */
-  cursor: pointer;
-}
-
-/* --- ZONE PRINCIPALE --- */
 .main-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-evenly;
+  max-width: 420px;
   width: 100%;
-  height: 100%;
-  padding-bottom: 10px;
-  flex: 1;
+  padding: 10px 12px 24px;
+  box-sizing: border-box;
 }
 
-/* SCORE */
 .score-panel {
-  background: #ffffff;
-  padding: 5px 20px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 360px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  margin-bottom: 5px;
-  flex-shrink: 0;
+  margin-bottom: 8px;
 }
 
-.score-title { font-size: 0.85rem; font-weight: 700; color: #777; }
-.score-total { font-size: 1.4rem; font-weight: 900; color: #4a90e2; }
-
-/* MOT COURANT */
 .word-display-area {
-  height: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
+  min-height: 40px;
+  margin-bottom: 8px;
 }
-
-.current-word {
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #333;
-  min-height: 35px;
-}
-
-.feedback {
-  font-size: 0.8rem;
-  font-weight: 600;
-  height: 15px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.feedback.visible { opacity: 1; }
-.feedback.valid { color: #27ae60; }
-.feedback.invalid { color: #e74c3c; }
-
-/* --- GRILLE & CELLULES (C'est ici que la magie opère) --- */
 
 .grid-wrapper {
-  position: relative;
-  padding: 10px;
-  background: #dcdcd0;
-  border-radius: 20px;
-  
-  /* CRUCIAL POUR TON PROBLÈME : */
-  touch-action: none; /* Bloque le scroll navigateur dans la zone grise */
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  /* Dimensions par défaut (seront changées par le JS/Curseurs) */
-  width: 340px; 
-  aspect-ratio: 1/1;
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
-  transition: width 0.1s ease; /* Fluidité quand tu bouges le curseur */
+  margin: 0 auto 10px;
 }
 
 .grid {
   display: grid;
-  width: 100%;
-  height: 100%;
-  align-content: center;
-  justify-content: center;
-  /* Le gap sera géré par ton curseur JS, mais on met une base */
-  gap: 10px; 
 }
 
-.grid.grid-4x4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); }
-.grid.grid-5x5 { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); }
+.grid-4x4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-5x5 {
+  grid-template-columns: repeat(5, 1fr);
+}
 
 .cell {
-  background-color: var(--case-bg);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(1.2rem, 5vw, 2rem); /* Taille texte auto */
-  font-weight: 800;
-  color: var(--text-color);
-  box-shadow: 0 4px 0 var(--case-shadow);
-  cursor: pointer;
-  
-  /* CRUCIAL AUSSI : */
-  user-select: none; /* Impossible de surligner la lettre */
-  touch-action: none; /* Le navigateur ne touche pas à cette case */
+  background: #222;
+  border-radius: 6px;
+  border: 1px solid #444;
+  text-align: center;
+  padding: 12px 0;
+  font-size: 1.4rem;
+  user-select: none;
 }
 
 .cell.selected {
-  background-color: var(--case-selected);
-  box-shadow: 0 2px 0 #a8d8e0, inset 0 0 0 3px var(--case-border-selected);
-  transform: translateY(2px);
+  background: #4caf50;
+  border-color: #7bff9e;
 }
 
-/* --- BOUTONS BAS --- */
 .actions-bottom {
   display: flex;
-  gap: 15px;
-  margin-top: 10px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-button.action-btn {
-  border: none;
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+.action-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background: #222;
   color: #fff;
 }
 
-button.btn-new { background: #4a90e2; }
-button.btn-clear { background: #e74c3c; }
+.btn-clear {
+  background: #b71c1c;
+}
 
-button.action-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+.btn-new {
+  background: #1565c0;
+}
+
+.feedback {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.feedback.visible.valid {
+  color: #7bff9e;
+}
+
+.feedback.visible.invalid {
+  color: #ff7676;
 }

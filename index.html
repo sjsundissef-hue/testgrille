@@ -13,30 +13,37 @@
 </head>
 <body>
 
-  <h1>WordBox</h1>
+  <h1>WordBox – TEST MODES</h1>
 
-  <!-- ===========================
-       CONTROLES PRINCIPAUX
-       =========================== -->
-  <div class="controls">
-    <!-- Choix taille de grille -->
-    <div class="control-group">
-      <button id="btn4x4" class="mode-btn active">4x4</button>
-      <button id="btn5x5" class="mode-btn">5x5</button>
-    </div>
+  <!-- GROS BLOC TEST BIEN VISIBLE -->
+  <div style="
+    background:#222; 
+    color:#fff; 
+    padding:10px; 
+    margin:10px auto; 
+    max-width:420px; 
+    border-radius:8px;
+    text-align:center;
+  ">
+    <p style="margin:0 0 6px;">Zone des modes de fluidité :</p>
 
-    <!-- Choix du mode de fluidité -->
-    <div class="control-group mode-switcher">
-      <span class="mode-label">Fluidité tactile :</span>
+    <!-- BOUTONS DE MODES -->
+    <div class="mode-switcher" style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
       <button id="mode1Btn" class="mode-btn">Mode 1</button>
       <button id="mode2Btn" class="mode-btn">Mode 2</button>
       <button id="mode3Btn" class="mode-btn">Mode 3</button>
     </div>
   </div>
 
-  <!-- ===========================
-       RÉGLAGES VISUELS (SLIDERS)
-       =========================== -->
+  <!-- CONTROLES TAILLE DE GRILLE -->
+  <div class="controls">
+    <div class="control-group">
+      <button id="btn4x4" class="mode-btn active">4x4</button>
+      <button id="btn5x5" class="mode-btn">5x5</button>
+    </div>
+  </div>
+
+  <!-- SLIDERS -->
   <div class="settings-panel">
     <div class="setting-item">
       <label for="gridSizeRange">Taille Grille :</label>
@@ -48,30 +55,23 @@
     </div>
   </div>
 
-  <!-- ===========================
-       ZONE DE JEU
-       =========================== -->
+  <!-- ZONE DE JEU -->
   <div class="main-container">
 
-    <!-- SCORE -->
     <div class="score-panel">
       <span class="score-title">SCORE</span>
       <span id="scoreDisplay" class="score-total">0</span>
     </div>
 
-    <!-- MOT EN COURS + FEEDBACK -->
     <div class="word-display-area">
       <div id="currentWord" class="current-word"></div>
       <div id="feedbackMsg" class="feedback"></div>
     </div>
 
-    <!-- GRILLE DE LETTRES -->
     <div id="gridWrapper" class="grid-wrapper">
-      <div id="grid" class="grid grid-4x4">
-      </div>
+      <div id="grid" class="grid grid-4x4"></div>
     </div>
 
-    <!-- BOUTONS DU BAS -->
     <div class="actions-bottom">
       <button id="clearWordBtn" class="action-btn btn-clear">Effacer</button>
       <button id="newGridBtn" class="action-btn btn-new">Nouvelle</button>
@@ -79,7 +79,7 @@
 
   </div>
 
-  <!-- Éléments cachés (pour compatibilité avec ton ancien script si besoin) -->
+  <!-- Éléments cachés pour compat -->
   <ul id="wordList" style="display: none;"></ul>
   <div style="display:none">
     <span id="gridSizeLabel"></span>
