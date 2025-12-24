@@ -2,85 +2,167 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta 
-    name="viewport" 
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-  >
-  
-  <title>WordBox Mobile</title>
-  
+  <title>Wordbox - Stats Globales</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <h1>WordBox</h1>
+  <h1>Wordbox</h1>
 
-  <!-- CONTROLES PRINCIPAUX -->
-  <div class="controls">
-    <!-- Choix taille de grille -->
-    <div class="control-group">
-      <button id="btn4x4" class="mode-btn active">4x4</button>
-      <button id="btn5x5" class="mode-btn">5x5</button>
-    </div>
-
-    <!-- Choix du mode de fluidité -->
-    <div class="control-group mode-switcher">
-      <span class="mode-label">Fluidité :</span>
-      <button id="mode1Btn" class="mode-btn">Mode 1</button>
-      <button id="mode2Btn" class="mode-btn">Mode 2</button>
-      <button id="mode3Btn" class="mode-btn">Mode 3</button>
-      <button id="mode4Btn" class="mode-btn">Mode 4</button>
-    </div>
+  <div class="top-highlight">
+      <button id="topExpertBtn" class="big-highlight-btn">👑 MODE EXPERT 3x3 👑</button>
   </div>
 
-  <!-- SLIDERS -->
-  <div class="settings-panel">
-    <div class="setting-item">
-      <label for="gridSizeRange">Taille Grille :</label>
-      <input type="range" id="gridSizeRange" min="250" max="420" value="340">
-    </div>
-    <div class="setting-item">
-      <label for="gridGapRange">Espacement :</label>
-      <input type="range" id="gridGapRange" min="5" max="40" value="15">
-    </div>
-  </div>
+ <div class="controls">
+    <button class="mode-btn active" id="btn4x4" onclick="setMode(4)">Mode 4x4</button>
+    <button class="mode-btn" id="btn5x5" onclick="setMode(5)">Mode 5x5</button>
+    <button class="mode-btn" id="chronoToggleBtn">⏱ Mode chrono : OFF</button>
+</div>
 
-  <!-- ZONE DE JEU -->
+
   <div class="main-container">
+    <div class="game-area">
+  <div id="timerDisplay" class="timer-display">02:00</div>
+  <div id="chronoModeBadge" class="chrono-badge" style="display:none;">Partie chrono</div>
+
+  <div class="word-display-area">
+    <div class="current-word" id="currentWord"></div>
+    <div class="feedback" id="feedbackMsg"></div>
+  </div>
+
+
+      <div class="grid-wrapper">
+        <canvas id="bgCanvas"></canvas>
+        <canvas id="lineCanvas"></canvas>
+        <div class="grid" id="grid"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button id="newGridBtn">Nouvelle Grille</button>
+        <button id="replayBtn" class="secondary">Rejouer</button>
+        <button id="createGridBtn" class="secondary">Créer</button>
+        
+        <div style="display:flex; gap:10px; width:100%; justify-content:center;">
+            <button id="funBtn" class="fun" style="flex:2;">Fun 2x2</button>
+            <button id="help2x2Btn" class="help-btn" style="flex:1;">❓ Aide</button>
+        </div>
+        
+        <button id="globalStatsBtn" class="stats-btn" style="background:#34495e; box-shadow:0 5px 0 #2c3e50;">📊 Stats Globales</button>
+
+        <button id="solveBtn" class="secondary">Solutions</button>
+        
+        <button id="validateCustomBtn" class="validate">Valider</button>
+        <button id="passBtn" class="pass">Passer</button>
+      </div>
+    </div>
 
     <div class="score-panel">
-      <span class="score-title">SCORE</span>
-      <span id="scoreDisplay" class="score-total">0</span>
-    </div>
+      <div class="score-header">
+        <div class="score-title" id="listTitle">Score Actuel</div>
+        <div class="score-total" id="scoreDisplay">0</div>
+        <div class="score-comparison" id="scoreComparison"></div>
+      </div>
+      
+      <div class="filter-container">
+          <input type="text" id="filterInput" class="filter-input" placeholder="🔎 Filtrer...">
+      </div>
 
-    <div class="word-display-area">
-      <div id="currentWord" class="current-word"></div>
-      <div id="feedbackMsg" class="feedback"></div>
-    </div>
+      <ul class="word-list" id="wordList"></ul>
 
-    <div id="gridWrapper" class="grid-wrapper">
-      <div id="grid" class="grid grid-4x4"></div>
-    </div>
+      <div class="history-section">
+          <div class="history-title">Historique Session</div>
+          <ul class="history-list" id="historyList"></ul>
+      </div>
 
-    <div class="actions-bottom">
-      <button id="clearWordBtn" class="action-btn btn-clear">Effacer</button>
-      <button id="newGridBtn" class="action-btn btn-new">Nouvelle</button>
-    </div>
+           <div class="leaderboard-section">
+          <div class="leaderboard-title">🌍 Classement 3x3 (Online)</div>
+          <ul class="leaderboard-list" id="leaderboardList">
+              <li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>
+          </ul>
 
+          <div style="margin:12px 0; border-top:1px solid #eee;"></div>
+
+          <div class="leaderboard-title">🏆 Classement Global (3 modes)</div>
+          <ul class="leaderboard-list" id="globalRankingList">
+              <li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>
+          </ul>
+      </div>
+
+
+    </div>
   </div>
 
-  <!-- Éléments cachés si besoin plus tard -->
-  <ul id="wordList" style="display: none;"></ul>
-  <div style="display:none">
-    <span id="gridSizeLabel"></span>
-    <span id="layoutLabel"></span>
-    <button class="layout-btn" data-layout="A"></button>
-    <button class="layout-btn" data-layout="B"></button>
-    <button class="layout-btn" data-layout="C"></button>
+  <div id="onlineScoreModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Bravo ! 🏆</h3>
+      <p id="modalScoreMsg">Score : ...</p>
+      <p class="modal-sub">Envoyer au classement mondial ?</p>
+      <input type="text" id="onlinePseudoInput" placeholder="Ton Pseudo" maxlength="12">
+      <div class="modal-actions">
+        <button id="btnIgnoreScore" class="btn-cancel">Ignorer</button>
+        <button id="btnSendScore" class="btn-confirm">Envoyer</button>
+      </div>
+    </div>
   </div>
 
-  <!-- SCRIPT PRINCIPAL -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+          <h3>Fiche Aide 2x2</h3>
+          <button id="closeHelpBtn" class="close-btn">×</button>
+      </div>
+      <div class="help-content">
+          <p class="help-intro">Grilles possibles et mots à connaître :</p>
+          <div id="helpGridList" class="help-grid-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="statsModal" class="modal-overlay">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+          <h3>📊 Collection Globale</h3>
+          <button id="closeStatsBtn" class="close-btn">×</button>
+      </div>
+      
+      <div class="stats-summary">
+          <div class="stat-card">
+              <span class="stat-val" id="totalWordsVal">...</span>
+              <span class="stat-label">Total Trouvés</span>
+          </div>
+          <div class="stat-card">
+              <span class="stat-val" id="uniqueWordsVal">...</span>
+              <span class="stat-label">Mots Uniques</span>
+          </div>
+      </div>
+
+      <div class="stats-tabs">
+        <button id="statsTabGlobal" class="stats-tab stats-tab-active">🌍 Global</button>
+        <button id="statsTabPlayer" class="stats-tab">👤 Mes stats</button>
+      </div>
+
+      <div id="statsMyControls" class="stats-my-controls" style="display:none;">
+        <div id="statsModeFilters" class="stats-filter-group">
+          <button data-mode="all" class="mode-filter active">Tous</button>
+          <button data-mode="expert3x3" class="mode-filter">3x3</button>
+          <button data-mode="4x4" class="mode-filter">4x4</button>
+          <button data-mode="5x5" class="mode-filter">5x5</button>
+        </div>
+        <div id="statsMySummary" class="stats-my-summary"></div>
+      </div>
+
+      <div class="help-content">
+          <h4 style="margin:15px 0 10px; color:#34495e; text-transform:uppercase; font-size:0.9rem; letter-spacing:1px;">
+            Liste des mots
+          </h4>
+          <ul class="leaderboard-list" id="statsWordList">
+              <li style="text-align:center; padding:20px; color:#999;">Chargement des données...</li>
+          </ul>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
-
 </body>
 </html>
