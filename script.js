@@ -122,6 +122,8 @@ const canvas = document.getElementById("lineCanvas");
 const ctx    = canvas.getContext("2d");
 const bgCanvas = document.getElementById("bgCanvas");
 const ctxBg    = bgCanvas.getContext("2d");
+const gridScaleRange = document.getElementById("gridScaleRange");
+
 
 const wordDisplay   = document.getElementById("currentWord");
 const feedbackEl    = document.getElementById("feedbackMsg");
@@ -1435,6 +1437,21 @@ if (chronoToggleBtn) {
     isTimedModeEnabled = !isTimedModeEnabled;
     updateChronoUI();
     if (gridSize === 4 || gridSize === 5) initGame();
+  });
+}
+function applyGridScale(value) {
+  const scale = value / 100; // 80 -> 0.8, 100 -> 1, 120 -> 1.2
+  document.documentElement.style.setProperty("--grid-scale", scale);
+}
+
+if (gridScaleRange) {
+  // valeur initiale
+  applyGridScale(gridScaleRange.value);
+  // mise à jour en direct
+  gridScaleRange.addEventListener("input", (e) => {
+    applyGridScale(e.target.value);
+    // on redessine la grille / canvas pour éviter les décalages
+    resizeCanvas();
   });
 }
 

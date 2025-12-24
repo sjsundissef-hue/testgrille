@@ -7,7 +7,11 @@
   --text-color: #333333;
   --valid-color: #4cd137;
   --invalid-color: #e84118;
+
+  /* nouveau : zoom de la grille */
+  --grid-scale: 1;
 }
+
 
 * { box-sizing: border-box; }
 
@@ -40,9 +44,17 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 .game-area { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 600px; }
 
 .grid-wrapper {
-  position: relative; padding: 30px; background: #dcdcd0;
-  border-radius: 40px; box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
-  touch-action: none; width: auto;
+  position: relative;
+  padding: 30px;
+  background: #dcdcd0;
+  border-radius: 40px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  touch-action: none;
+  width: auto;
+
+  transform: scale(var(--grid-scale));
+  transform-origin: center top;
+
 }
 
 #bgCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
@@ -210,5 +222,59 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+/* === RÉGLAGE TAILLE GRILLE / LETTRES === */
+.settings-panel {
+  max-width: 600px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 10px;
+  margin-bottom: 8px;
+}
+
+.setting-item {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.setting-item label {
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+/* Slider */
+#gridScaleRange {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: #e0e0e0;
+  outline: none;
+}
+
+#gridScaleRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+
+#gridScaleRange::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
 }
 
