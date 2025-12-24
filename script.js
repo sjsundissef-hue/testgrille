@@ -651,54 +651,10 @@ function drawPath() {
 }
 function drawGridLines() {
   if (!ctxBg || !bgCanvas) return;
-
-  // On nettoie le fond mais on ne dessine plus aucune ligne
+  // On nettoie juste le fond, on ne dessine plus aucune ligne
   ctxBg.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
 }
 
-  if (!ctxBg || !bgCanvas) return;
-  ctxBg.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-  if (gridSize !== 4) return;
-
-  const wrapper = document.querySelector(".grid-wrapper");
-  const cells = gridEl.children;
-  if (!cells.length || !wrapper) return;
-
-  const wrapRect = wrapper.getBoundingClientRect();
-
-  ctxBg.beginPath();
-  ctxBg.strokeStyle = "rgba(180, 180, 180, 0.4)";
-  ctxBg.lineWidth = 4;
-
-  for (let i = 0; i < cells.length; i++) {
-    const cell = cells[i];
-    const r = parseInt(cell.dataset.r);
-    const c = parseInt(cell.dataset.c);
-    const rect = cell.getBoundingClientRect();
-    const x1 = rect.left - wrapRect.left + rect.width / 2;
-    const y1 = rect.top - wrapRect.top + rect.height / 2;
-
-    const neighbors = [
-      { dr: 0, dc: 1 }, { dr: 1, dc: 0 },
-      { dr: 1, dc: 1 }, { dr: 1, dc: -1 }
-    ];
-    neighbors.forEach((n) => {
-      const nr = r + n.dr;
-      const nc = c + n.dc;
-      if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
-        const next = cells[nr * gridSize + nc];
-        if (next) {
-          const nRect = next.getBoundingClientRect();
-          const x2 = nRect.left - wrapRect.left + nRect.width / 2;
-          const y2 = nRect.top - wrapRect.top + nRect.height / 2;
-          ctxBg.moveTo(x1, y1);
-          ctxBg.lineTo(x2, y2);
-        }
-      }
-    });
-  }
-  ctxBg.stroke();
-}
 
 function resizeCanvas() {
   const wrapper = document.querySelector(".grid-wrapper");
