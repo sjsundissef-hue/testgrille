@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta 
+    name="viewport" 
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
   
   <title>WordBox Mobile</title>
   
@@ -12,13 +15,28 @@
 
   <h1>WordBox</h1>
 
+  <!-- ===========================
+       CONTROLES PRINCIPAUX
+       =========================== -->
   <div class="controls">
+    <!-- Choix taille de grille -->
     <div class="control-group">
       <button id="btn4x4" class="mode-btn active">4x4</button>
       <button id="btn5x5" class="mode-btn">5x5</button>
     </div>
+
+    <!-- Choix du mode de fluidité -->
+    <div class="control-group mode-switcher">
+      <span class="mode-label">Fluidité tactile :</span>
+      <button id="mode1Btn" class="mode-btn">Mode 1</button>
+      <button id="mode2Btn" class="mode-btn">Mode 2</button>
+      <button id="mode3Btn" class="mode-btn">Mode 3</button>
+    </div>
   </div>
 
+  <!-- ===========================
+       RÉGLAGES VISUELS (SLIDERS)
+       =========================== -->
   <div class="settings-panel">
     <div class="setting-item">
       <label for="gridSizeRange">Taille Grille :</label>
@@ -30,23 +48,30 @@
     </div>
   </div>
 
+  <!-- ===========================
+       ZONE DE JEU
+       =========================== -->
   <div class="main-container">
 
+    <!-- SCORE -->
     <div class="score-panel">
       <span class="score-title">SCORE</span>
       <span id="scoreDisplay" class="score-total">0</span>
     </div>
 
+    <!-- MOT EN COURS + FEEDBACK -->
     <div class="word-display-area">
       <div id="currentWord" class="current-word"></div>
       <div id="feedbackMsg" class="feedback"></div>
     </div>
 
+    <!-- GRILLE DE LETTRES -->
     <div id="gridWrapper" class="grid-wrapper">
       <div id="grid" class="grid grid-4x4">
-        </div>
+      </div>
     </div>
 
+    <!-- BOUTONS DU BAS -->
     <div class="actions-bottom">
       <button id="clearWordBtn" class="action-btn btn-clear">Effacer</button>
       <button id="newGridBtn" class="action-btn btn-new">Nouvelle</button>
@@ -54,6 +79,7 @@
 
   </div>
 
+  <!-- Éléments cachés (pour compatibilité avec ton ancien script si besoin) -->
   <ul id="wordList" style="display: none;"></ul>
   <div style="display:none">
     <span id="gridSizeLabel"></span>
@@ -63,6 +89,7 @@
     <button class="layout-btn" data-layout="C"></button>
   </div>
 
+  <!-- SCRIPT PRINCIPAL -->
   <script src="script.js"></script>
 
 </body>
