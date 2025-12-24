@@ -21,13 +21,30 @@ h1 {
 
 .controls {
   display: flex;
-  justify-content: center;
+  flex-direction: column; /* pour mettre taille & modes l’un sous l’autre sur mobile */
+  gap: 6px;
+  align-items: center;
   margin-bottom: 8px;
 }
 
 .control-group {
   display: flex;
   gap: 8px;
+}
+
+/* Ligne des 4 modes */
+.mode-switcher {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Petit texte "Fluidité :" */
+.mode-label {
+  font-size: 0.85rem;
+  opacity: 0.8;
 }
 
 .mode-btn {
