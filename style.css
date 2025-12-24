@@ -9,144 +9,135 @@
 
 * {
   box-sizing: border-box;
-  /* Empêche la surbrillance bleue au clic sur mobile */
+  /* Empêche le flash bleu quand on tape sur un bouton (Android) */
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
   padding: 10px;
-  /* Utilise 100dvh pour gérer la barre d'adresse mobile correctement */
+  /* CES 4 LIGNES SONT CRUCIALES POUR LE MOBILE */
   height: 100dvh; 
   width: 100vw;
-  /* Ces 3 lignes figent l'écran complètement */
-  overflow: hidden;
-  position: fixed;
-  overscroll-behavior: none;
+  overflow: hidden; /* Coupe tout ce qui dépasse */
+  position: fixed;  /* Bloque l'écran */
   
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: var(--bg-color);
   font-family: "Segoe UI", sans-serif;
+  
+  /* Empêche de sélectionner du texte partout sur l'écran */
   user-select: none;
   -webkit-user-select: none;
-  touch-action: none; /* Désactive le zoom et le pan par défaut */
+  touch-action: none;
 }
 
 h1 {
-  margin: 5px 0 10px 0;
+  margin: 5px 0;
   color: #444;
   text-transform: uppercase;
   letter-spacing: 3px;
-  font-size: 1.4rem; /* Légèrement réduit pour gagner de la place */
+  font-size: 1.4rem;
   text-align: center;
   flex-shrink: 0;
 }
 
-/* CONTROLS */
+/* --- BOUTONS HAUT (4x4 / 5x5) --- */
 .controls {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  justify-content: center;
   margin-bottom: 5px;
   width: 100%;
-  max-width: 600px;
   flex-shrink: 0;
 }
 
 .control-group {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center; /* Centré pour mobile */
-  gap: 6px;
+  gap: 5px;
+  background: #e0e0e0;
+  padding: 4px;
+  border-radius: 999px;
 }
 
-.control-label {
+.mode-btn {
+  padding: 8px 16px;
   font-size: 0.9rem;
-  color: #555;
-  font-weight: 600;
-  display: none; /* Caché sur mobile pour gagner de la place */
-}
-
-.mode-btn,
-.layout-btn {
-  padding: 6px 12px;
-  font-size: 0.85rem;
   border-radius: 999px;
   border: none;
-  background: #e0e0e0;
-  color: #555;
-  font-weight: 600;
+  background: transparent;
+  color: #666;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.mode-btn.active,
-.layout-btn.active {
-  background: #4a90e2;
-  color: #fff;
-  box-shadow: 0 2px 0 #357abd;
+.mode-btn.active {
+  background: #ffffff;
+  color: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* INFO PANEL - Caché ou réduit sur mobile si besoin */
-.info-panel {
-  display: none; /* Souvent inutile in-game sur mobile, on cache pour l'espace */
+/* --- NOUVEAU : PANNEAU DE RÉGLAGES (SLIDERS) --- */
+.settings-panel {
+  background: #ffffff;
+  padding: 10px 15px;
+  border-radius: 15px;
+  margin-bottom: 5px;
+  width: 95%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  flex-shrink: 0;
 }
 
-/* LAYOUT GLOBAL */
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+/* Style des curseurs */
+input[type=range] {
+  width: 55%;
+  accent-color: #4a90e2; /* Couleur du curseur */
+  cursor: pointer;
+}
+
+/* --- ZONE PRINCIPALE --- */
 .main-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-evenly;
   width: 100%;
-  flex: 1; /* Prend tout l'espace restant */
-  justify-content: space-evenly; /* Répartit l'espace verticalement */
+  height: 100%;
   padding-bottom: 10px;
+  flex: 1;
 }
 
-.game-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
-}
-
-/* SCORE PANEL - Adapté pour mobile en mode "Barre supérieure" ou "Inférieure" */
+/* SCORE */
 .score-panel {
   background: #ffffff;
-  padding: 10px 20px;
-  border-radius: 15px;
-  width: 95%;
-  max-width: 400px;
+  padding: 5px 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 360px;
   display: flex;
-  flex-direction: row; /* Horizontal sur mobile */
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  margin-bottom: 5px;
   flex-shrink: 0;
 }
 
-.score-header {
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
-}
-
-.score-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #333;
-  margin-right: 10px;
-}
-
-.score-total {
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: #4a90e2;
-}
+.score-title { font-size: 0.85rem; font-weight: 700; color: #777; }
+.score-total { font-size: 1.4rem; font-weight: 900; color: #4a90e2; }
 
 /* MOT COURANT */
 .word-display-area {
@@ -159,17 +150,17 @@ h1 {
 }
 
 .current-word {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 800;
   letter-spacing: 2px;
-  min-height: 30px;
   color: #333;
+  min-height: 35px;
 }
 
 .feedback {
   font-size: 0.8rem;
   font-weight: 600;
-  height: 18px;
+  height: 15px;
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -177,88 +168,87 @@ h1 {
 .feedback.valid { color: #27ae60; }
 .feedback.invalid { color: #e74c3c; }
 
-/* GRILLE */
+/* --- GRILLE & CELLULES (C'est ici que la magie opère) --- */
+
 .grid-wrapper {
   position: relative;
-  padding: 15px;
+  padding: 10px;
   background: #dcdcd0;
-  border-radius: 25px;
-  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
-  /* CRUCIAL : empêche le navigateur de gérer le touch sur la grille */
-  touch-action: none; 
-  width: 95%;
-  max-width: 380px;
-  aspect-ratio: 1/1; /* Garde la grille carrée */
+  border-radius: 20px;
+  
+  /* CRUCIAL POUR TON PROBLÈME : */
+  touch-action: none; /* Bloque le scroll navigateur dans la zone grise */
+  
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  /* Dimensions par défaut (seront changées par le JS/Curseurs) */
+  width: 340px; 
+  aspect-ratio: 1/1;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  transition: width 0.1s ease; /* Fluidité quand tu bouges le curseur */
 }
 
 .grid {
   display: grid;
   width: 100%;
   height: 100%;
-  justify-content: center;
   align-content: center;
+  justify-content: center;
+  /* Le gap sera géré par ton curseur JS, mais on met une base */
+  gap: 10px; 
 }
 
-/* Gestion dynamique des colonnes */
-.grid.grid-4x4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; }
-.grid.grid-5x5 { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); gap: 8px; }
+.grid.grid-4x4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); }
+.grid.grid-5x5 { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); }
 
-/* CELLULES */
 .cell {
-  width: 100%;
-  height: 100%; /* Remplit la case de la grille */
   background-color: var(--case-bg);
-  border-radius: 12px; /* Un peu moins rond pour gagner de l'espace visuel */
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(1.5rem, 6vw, 2.2rem);
+  font-size: clamp(1.2rem, 5vw, 2rem); /* Taille texte auto */
   font-weight: 800;
   color: var(--text-color);
-  box-shadow: 0 4px 0 var(--case-shadow); /* Ombre réduite */
+  box-shadow: 0 4px 0 var(--case-shadow);
   cursor: pointer;
-  transition: transform 0.05s, background-color 0.1s;
-  user-select: none;
+  
+  /* CRUCIAL AUSSI : */
+  user-select: none; /* Impossible de surligner la lettre */
+  touch-action: none; /* Le navigateur ne touche pas à cette case */
 }
 
 .cell.selected {
   background-color: var(--case-selected);
-  box-shadow: 0 2px 0 #a8d8e0, inset 0 0 0 2px var(--case-border-selected);
+  box-shadow: 0 2px 0 #a8d8e0, inset 0 0 0 3px var(--case-border-selected);
   transform: translateY(2px);
 }
 
-/* LISTE DES MOTS (Cachée sur mobile ou très petite en bas) */
-.word-list {
-  display: none; /* Pour l'instant on cache la liste sur mobile pour éviter le scroll */
-}
-
-/* BOUTONS BAS */
+/* --- BOUTONS BAS --- */
 .actions-bottom {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   margin-top: 10px;
-  width: 100%;
-  justify-content: center;
   flex-shrink: 0;
 }
 
-button {
+button.action-btn {
   border: none;
   border-radius: 999px;
-  padding: 12px 24px;
+  padding: 10px 20px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  box-shadow: 0 4px 0 #285f96;
-  background: #4a90e2;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.2);
   color: #fff;
-  touch-action: manipulation;
 }
 
-button:active {
+button.btn-new { background: #4a90e2; }
+button.btn-clear { background: #e74c3c; }
+
+button.action-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #285f96;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
 }
