@@ -68,8 +68,6 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 .grid { 
   display: grid; 
   /* Force 4x4 par défaut pour éviter l'empilement vertical au chargement */
-  grid-template-columns: repeat(4, 1fr); 
-  grid-template-rows: repeat(4, 1fr);
   gap: var(--grid-gap); 
   position: relative; 
   z-index: 2; 
