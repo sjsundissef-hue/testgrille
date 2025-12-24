@@ -2,13 +2,13 @@
 // 1. VARIABLES & ÉLÉMENTS
 // ===========================
 
-let gridSize = 4;            
-let gridData = [];           
-let foundWords = new Set();  
-let selectionPath = [];      
-let isDragging = false;
+let gridSize = 4;
+let gridData = [];
+let foundWords = new Set();
+let selectionPath = [];
+let isDragging = false; // Est-ce qu'on est en train de jouer ?
 
-// Lettres (Beaucoup de voyelles pour faciliter les mots)
+// Lettres (Distribution adaptée pour faire des mots facilement)
 const LETTERS = "AAAAABCDEEEEEFGHIIIIJKLMNOOOOPQRSTUUUUUVWXYYZ";
 
 // Éléments HTML
@@ -24,35 +24,40 @@ const btn5x5 = document.getElementById("btn5x5");
 const newGridBtn = document.getElementById("newGridBtn");
 const clearWordBtn = document.getElementById("clearWordBtn");
 
-// NOUVEAU : Les curseurs de réglage
+// Curseurs de réglage
 const sizeRange = document.getElementById("gridSizeRange");
 const gapRange = document.getElementById("gridGapRange");
 
 // ===========================
-// 2. LOGIQUE DES CURSEURS (RÉGLAGE LIVE)
+// 2. RÉGLAGE LIVE (SLIDERS) - CORRIGÉ POUR MOBILE
 // ===========================
 
 function applySliderSettings() {
     if (!gridWrapper || !gridEl) return;
-    
-    // Appliquer la taille globale
+
+    // 1. GESTION DE LA TAILLE
     const sizeVal = sizeRange.value;
-    gridWrapper.style.width = sizeVal + "px";
     
-    // Appliquer l'espacement (gap)
+    // IMPORTANT : On force le wrapper à ignorer les limites CSS du mobile
+    gridWrapper.style.maxWidth = "none"; 
+    gridWrapper.style.minWidth = "auto";
+    gridWrapper.style.width = sizeVal + "px";
+
+    // 2. GESTION DE L'ESPACEMENT
     const gapVal = gapRange.value;
     gridEl.style.gap = gapVal + "px";
 }
 
-// Écouteurs pour modifier en direct
-sizeRange.addEventListener("input", applySliderSettings);
-gapRange.addEventListener("input", applySliderSettings);
+// On écoute le mouvement des curseurs
+if (sizeRange) sizeRange.addEventListener("input", applySliderSettings);
+if (gapRange) gapRange.addEventListener("input", applySliderSettings);
 
 // ===========================
 // 3. GÉNÉRATION DE LA GRILLE
 // ===========================
 
 function generateGrid() {
+    // Création des lettres aléatoires
     gridData = Array.from({ length: gridSize }, () =>
         Array.from({ length: gridSize }, () => {
             const idx = Math.floor(Math.random() * LETTERS.length);
@@ -63,8 +68,6 @@ function generateGrid() {
 
 function renderGrid() {
     gridEl.innerHTML = "";
-    
-    // Change la classe CSS pour la grille (4x4 ou 5x5)
     gridEl.className = `grid grid-${gridSize}x${gridSize}`;
 
     gridData.forEach((row, r) => {
@@ -75,7 +78,16 @@ function renderGrid() {
             cell.dataset.r = r;
             cell.dataset.c = c;
 
-            // --- INTERACTION SOURIS (PC) ---
+            // --- ÉVÉNEMENT DÉBUT DU JEU (TOUCH & SOURIS) ---
+            
+            // Pour le TACTILE (Téléphone)
+            cell.addEventListener("touchstart", (e) => {
+                // C'est ICI que ça se joue : on bloque le comportement par défaut
+                if (e.cancelable) e.preventDefault(); 
+                startDrag(cell);
+            }, { passive: false });
+
+            // Pour la SOURIS (PC)
             cell.addEventListener("mousedown", (e) => {
                 startDrag(cell);
             });
@@ -83,58 +95,52 @@ function renderGrid() {
                 if (isDragging) addToPath(r, c);
             });
 
-            // --- INTERACTION TACTILE (DÉBUT) ---
-            cell.addEventListener("touchstart", (e) => {
-                // Empêche le comportement par défaut (zoom, sélection)
-                e.preventDefault(); 
-                startDrag(cell);
-            }, { passive: false });
-
             gridEl.appendChild(cell);
         });
     });
-    
-    // Appliquer les réglages des curseurs tout de suite
+
+    // On réapplique les réglages des sliders pour être sûr
     applySliderSettings();
 }
 
 // ===========================
-// 4. MOTEUR TACTILE FLUIDE
+// 4. MOTEUR TACTILE (LA CORRECTION MAJEURE)
 // ===========================
 
-// Cette fonction suit le doigt partout sur l'écran
+// Fonction globale pour empêcher le téléphone de scroller quand on joue
 document.addEventListener("touchmove", (e) => {
+    // Si on n'est pas en train de jouer, on laisse le scroll normal
     if (!isDragging) return;
-    
-    // 1. BLOQUER LE SCROLL (Vital !)
+
+    // SINON, ON BLOQUE TOUT SCROLL
     if (e.cancelable) e.preventDefault();
-    
-    // 2. TROUVER L'ÉLÉMENT SOUS LE DOIGT
+
+    // Et on calcule sur quelle lettre est le doigt
     const touch = e.touches[0];
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
-    
-    // 3. SI C'EST UNE CASE, ON L'AJOUTE
+
+    // Si le doigt est sur une cellule, on l'ajoute
     if (target && target.classList.contains("cell")) {
         const r = parseInt(target.dataset.r);
         const c = parseInt(target.dataset.c);
         addToPath(r, c);
     }
-}, { passive: false }); // "passive: false" est OBLIGATOIRE pour preventDefault
+}, { passive: false }); // "passive: false" est OBLIGATOIRE pour que preventDefault fonctionne
 
-// Fin du geste (souris ou tactile)
-const endInteraction = () => {
+// Fin du jeu (quand on lève le doigt ou la souris)
+function endInteraction() {
     if (!isDragging) return;
     isDragging = false;
-    validateWord();
-    selectionPath = []; // Reset interne
-    updateVisuals();    // Reset visuel
-};
+    validateWord();     // On vérifie le mot
+    selectionPath = []; // On vide la mémoire
+    updateVisuals();    // On nettoie l'affichage
+}
 
-document.addEventListener("mouseup", endInteraction);
 document.addEventListener("touchend", endInteraction);
+document.addEventListener("mouseup", endInteraction);
 
 // ===========================
-// 5. LOGIQUE DE JEU (CHEMIN & VALIDATION)
+// 5. LOGIQUE DU JEU
 // ===========================
 
 function startDrag(cell) {
@@ -147,7 +153,7 @@ function startDrag(cell) {
 }
 
 function addToPath(r, c) {
-    // Vérifier si on revient en arrière (pour annuler la dernière lettre)
+    // Gestion du retour en arrière (si on recule d'une case)
     if (selectionPath.length > 1) {
         const prev = selectionPath[selectionPath.length - 2];
         if (prev.r === r && prev.c === c) {
@@ -158,11 +164,10 @@ function addToPath(r, c) {
     }
 
     const last = selectionPath[selectionPath.length - 1];
-    
-    // Vérifier si la case est voisine (diagonales comprises)
+
+    // Vérifier si la case est voisine (diagonale incluse)
     const isAdj = Math.abs(last.r - r) <= 1 && Math.abs(last.c - c) <= 1;
-    
-    // Vérifier si on est déjà passé par là
+    // Vérifier si pas déjà prise
     const isVisited = selectionPath.some(p => p.r === r && p.c === c);
 
     if (isAdj && !isVisited) {
@@ -172,13 +177,13 @@ function addToPath(r, c) {
 }
 
 function updateVisuals() {
-    // Retirer la sélection visuelle de toutes les cases
+    // 1. On nettoie tout
     const cells = Array.from(gridEl.children);
     cells.forEach(el => el.classList.remove("selected"));
 
     let word = "";
-    
-    // Ajouter la sélection aux cases du chemin actuel
+
+    // 2. On colorie le chemin
     selectionPath.forEach(pos => {
         const idx = pos.r * gridSize + pos.c;
         const cell = cells[idx];
@@ -188,14 +193,16 @@ function updateVisuals() {
         }
     });
 
-    wordDisplay.textContent = word;
+    // 3. Affiche le mot en haut
+    if(wordDisplay) wordDisplay.textContent = word;
 }
 
 function validateWord() {
     const word = wordDisplay.textContent;
-    
+
+    // Règles simples
     if (!word || word.length < 3) {
-        if(word.length > 0) showFeedback("Trop court", "invalid");
+        if (word.length > 0) showFeedback("Trop court", "invalid");
         return;
     }
 
@@ -204,21 +211,21 @@ function validateWord() {
         return;
     }
 
-    // Calcul des points (simple)
-    let pts = 1;
+    // Points
+    let pts = 1; 
     if (word.length === 4) pts = 2;
     if (word.length >= 5) pts = word.length;
 
     foundWords.add(word);
-    
-    // Mise à jour score
+
     const currentScore = parseInt(scoreDisplay.textContent) || 0;
     scoreDisplay.textContent = currentScore + pts;
-    
+
     showFeedback(`+${pts} pts`, "valid");
 }
 
 function showFeedback(text, type) {
+    if(!feedbackEl) return;
     feedbackEl.textContent = text;
     feedbackEl.className = "feedback visible " + type;
     setTimeout(() => {
@@ -227,15 +234,21 @@ function showFeedback(text, type) {
 }
 
 // ===========================
-// 6. BOUTONS & INIT
+// 6. INITIALISATION & BOUTONS
 // ===========================
 
 function setGridSize(size) {
     gridSize = size;
-    // Boutons actifs
-    if(size === 4) { btn4x4.classList.add("active"); btn5x5.classList.remove("active"); }
-    else { btn5x5.classList.add("active"); btn4x4.classList.remove("active"); }
     
+    // Visuel des boutons
+    if (size === 4) {
+        btn4x4.classList.add("active");
+        btn5x5.classList.remove("active");
+    } else {
+        btn5x5.classList.add("active");
+        btn4x4.classList.remove("active");
+    }
+
     resetGame();
 }
 
@@ -248,20 +261,21 @@ function resetGame() {
     renderGrid();
 }
 
-btn4x4.addEventListener("click", () => setGridSize(4));
-btn5x5.addEventListener("click", () => setGridSize(5));
+// Écouteurs Boutons
+if(btn4x4) btn4x4.addEventListener("click", () => setGridSize(4));
+if(btn5x5) btn5x5.addEventListener("click", () => setGridSize(5));
 
-newGridBtn.addEventListener("click", () => {
+if(newGridBtn) newGridBtn.addEventListener("click", () => {
     resetGame();
     showFeedback("Nouvelle grille", "valid");
 });
 
-clearWordBtn.addEventListener("click", () => {
+if(clearWordBtn) clearWordBtn.addEventListener("click", () => {
     selectionPath = [];
     updateVisuals();
 });
 
-// Démarrage
+// Lancement au démarrage
 window.addEventListener("load", () => {
     setGridSize(4);
 });
