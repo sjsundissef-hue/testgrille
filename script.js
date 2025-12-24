@@ -1,14 +1,15 @@
 // ===========================
-// Config de base
+// 1. VARIABLES DE BASE
 // ===========================
 
-let gridSize = 4;              // 4 ou 5
-let currentLayout = "A";       // "A", "B", "C"
-let gridData = [];             // lettres
-let selectionPath = [];        // [{r,c}, ...]
+let gridSize = 4;            // 4 ou 5
+let gridData = [];           // tableau de lettres
+let foundWords = new Set();  // mots déjà trouvés
+let selectionPath = [];      // [{r,c}, ...]
 let isDragging = false;
-let foundWords = new Set();
-let score = 0;
+
+// Lettres (un peu plus de voyelles pour que ce soit agréable)
+const LETTERS = "AABCDEEFGHIIJKLMNOOPQRSTUUVWXYYZ";
 
 // DOM
 const gridWrapper = document.getElementById("gridWrapper");
@@ -23,15 +24,14 @@ const layoutLabel = document.getElementById("layoutLabel");
 const btn4x4 = document.getElementById("btn4x4");
 const btn5x5 = document.getElementById("btn5x5");
 const layoutButtons = document.querySelectorAll(".layout-btn");
-
 const newGridBtn = document.getElementById("newGridBtn");
 const clearWordBtn = document.getElementById("clearWordBtn");
 
-// ===========================
-// Génération de grille simple
-// ===========================
+let currentLayout = "A";
 
-const LETTERS = "AABCDEEFGHIIJKLMNOOPQRSTUUVWXYYZ"; // un peu plus de voyelles
+// ===========================
+// 2. GÉNÉRATION DE GRILLE
+// ===========================
 
 function generateGrid() {
   gridData = Array.from({ length: gridSize }, () =>
@@ -43,10 +43,11 @@ function generateGrid() {
 }
 
 // ===========================
-// Mise à jour UI
+// 3. AFFICHAGE GRILLE
 // ===========================
 
 function renderGrid() {
+  if (!gridEl) return;
   gridEl.innerHTML = "";
 
   gridEl.classList.remove("grid-4x4", "grid-5x5");
@@ -60,62 +61,126 @@ function renderGrid() {
       cell.dataset.r = r;
       cell.dataset.c = c;
 
-      // Pointer events : gère souris + tactile
-      cell.addEventListener("pointerdown", onPointerDownCell);
-      cell.addEventListener("pointerenter", onPointerEnterCell);
+      // EXACTEMENT comme dans ton code principal :
+      cell.addEventListener("mousedown", (e) => startDrag(e, cell));
+      cell.addEventListener("mouseenter", (e) => onDragEnter(e, cell));
+
+      cell.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          startDrag(e, cell);
+        },
+        { passive: false }
+      );
 
       gridEl.appendChild(cell);
     });
   });
-
   updateWordDisplay();
 }
 
-function updateWordDisplay() {
+// ===========================
+// 4. GESTION DU DRAG (COMME 3x3)
+// ===========================
+
+function startDrag(e, cell) {
+  if (!cell) return;
+  isDragging = true;
+  selectionPath = [
+    {
+      r: parseInt(cell.dataset.r, 10),
+      c: parseInt(cell.dataset.c, 10),
+    },
+  ];
+  updateVisuals();
+}
+
+function onDragEnter(e, cell) {
+  if (!isDragging || !cell) return;
+  addToPath(
+    parseInt(cell.dataset.r, 10),
+    parseInt(cell.dataset.c, 10)
+  );
+}
+
+// Touchmove global => on cherche la case sous le doigt
+document.addEventListener(
+  "touchmove",
+  (e) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    );
+    const cell = el && el.closest(".cell");
+    if (cell) {
+      addToPath(
+        parseInt(cell.dataset.r, 10),
+        parseInt(cell.dataset.c, 10)
+      );
+    }
+  },
+  { passive: false }
+);
+
+function endDrag() {
+  if (!isDragging) return;
+  isDragging = false;
+  validateWord();
+  selectionPath = [];
+  updateVisuals();
+}
+
+// Fin du drag : souris + tactile
+document.addEventListener("mouseup", endDrag);
+document.addEventListener("touchend", endDrag);
+
+function addToPath(r, c) {
+  if (selectionPath.length > 1) {
+    const prev = selectionPath[selectionPath.length - 2];
+    if (prev.r === r && prev.c === c) {
+      // on recule d'une lettre
+      selectionPath.pop();
+      updateVisuals();
+      return;
+    }
+  }
+
+  const last = selectionPath[selectionPath.length - 1];
+  const isAdj =
+    Math.abs(last.r - r) <= 1 && Math.abs(last.c - c) <= 1;
+  const isVisited = selectionPath.some((p) => p.r === r && p.c === c);
+
+  if (isAdj && !isVisited) {
+    selectionPath.push({ r, c });
+    updateVisuals();
+  }
+}
+
+function updateVisuals() {
+  if (!gridEl) return;
+  const cells = Array.from(gridEl.children);
+  cells.forEach((el) => el.classList.remove("selected"));
+
   let word = "";
   selectionPath.forEach((pos) => {
-    word += gridData[pos.r][pos.c];
+    const idx = pos.r * gridSize + pos.c;
+    const cell = cells[idx];
+    if (cell) {
+      cell.classList.add("selected");
+      word += gridData[pos.r][pos.c];
+    }
   });
+
   if (wordDisplay) wordDisplay.textContent = word;
 }
 
-function updateScoreDisplay() {
-  if (scoreDisplay) scoreDisplay.textContent = score.toString();
-}
+// ===========================
+// 5. SCORE & MOTS
+// ===========================
 
-function showFeedback(msg, type) {
-  if (!feedbackEl) return;
-  feedbackEl.textContent = msg;
-  feedbackEl.className = "feedback visible " + (type || "");
-  setTimeout(() => {
-    if (feedbackEl.textContent === msg) {
-      feedbackEl.className = "feedback";
-    }
-  }, 800);
-}
-
-function updateWordList() {
-  wordListEl.innerHTML = "";
-  const all = Array.from(foundWords).sort((a, b) =>
-    a.localeCompare(b)
-  );
-  all.forEach((w) => {
-    const li = document.createElement("li");
-    const spanWord = document.createElement("span");
-    spanWord.className = "word-text";
-    spanWord.textContent = w;
-
-    const spanScore = document.createElement("span");
-    spanScore.className = "word-score";
-    spanScore.textContent = getWordPoints(w) + " pts";
-
-    li.appendChild(spanWord);
-    li.appendChild(spanScore);
-    wordListEl.appendChild(li);
-  });
-}
-
-// Score simple : plus le mot est long, plus il vaut
 function getWordPoints(word) {
   const len = word.length;
   if (len < 3) return 0;
@@ -126,91 +191,6 @@ function getWordPoints(word) {
   return 11;
 }
 
-// ===========================
-// Gestion pointer (tactile + souris)
-// ===========================
-
-function onPointerDownCell(e) {
-  e.preventDefault();
-  const cell = e.currentTarget;
-  startDragFromCell(cell);
-  // Capturer les events jusqu'au pointerup
-  cell.setPointerCapture(e.pointerId);
-}
-
-function onPointerEnterCell(e) {
-  if (!isDragging) return;
-  const cell = e.currentTarget;
-  addCellToPath(cell);
-}
-
-function startDragFromCell(cell) {
-  isDragging = true;
-  selectionPath = [];
-  addCellToPath(cell);
-}
-
-function addCellToPath(cell) {
-  const r = parseInt(cell.dataset.r, 10);
-  const c = parseInt(cell.dataset.c, 10);
-
-  if (selectionPath.length > 0) {
-    const last = selectionPath[selectionPath.length - 1];
-
-    // Gestion du "retour en arrière" : si on revient sur l'avant-dernier, on annule la dernière lettre
-    if (selectionPath.length > 1) {
-      const prev = selectionPath[selectionPath.length - 2];
-      if (prev.r === r && prev.c === c) {
-        selectionPath.pop();
-        refreshSelectedCells();
-        return;
-      }
-    }
-
-    const isAdjacent =
-      Math.abs(last.r - r) <= 1 && Math.abs(last.c - c) <= 1;
-
-    const alreadyUsed = selectionPath.some(
-      (p) => p.r === r && p.c === c
-    );
-
-    if (!isAdjacent || alreadyUsed) {
-      return; // ignore si pas adjacent ou déjà pris
-    }
-  }
-
-  selectionPath.push({ r, c });
-  refreshSelectedCells();
-}
-
-function refreshSelectedCells() {
-  // reset visuel
-  const cells = gridEl.querySelectorAll(".cell");
-  cells.forEach((c) => c.classList.remove("selected"));
-
-  // applique .selected sur le chemin
-  selectionPath.forEach((pos) => {
-    const index = pos.r * gridSize + pos.c;
-    const cell = cells[index];
-    if (cell) cell.classList.add("selected");
-  });
-
-  updateWordDisplay();
-}
-
-// pointerup global : fin du mot
-document.addEventListener("pointerup", () => {
-  if (!isDragging) return;
-  isDragging = false;
-  validateWord();
-  selectionPath = [];
-  refreshSelectedCells();
-});
-
-// ===========================
-// Validation des mots
-// ===========================
-
 function validateWord() {
   const word = wordDisplay ? wordDisplay.textContent : "";
   if (!word || word.length < 3) {
@@ -218,7 +198,7 @@ function validateWord() {
     return;
   }
 
-  // Ici : tous les mots 3+ lettres sont acceptés
+  // Pas de dico ici : tout mot de 3+ lettres est accepté
   if (foundWords.has(word)) {
     showFeedback("Déjà trouvé", "invalid");
     return;
@@ -226,22 +206,74 @@ function validateWord() {
 
   foundWords.add(word);
   const pts = getWordPoints(word);
-  score += pts;
-  updateScoreDisplay();
+  const oldScore = parseInt(scoreDisplay.textContent || "0", 10) || 0;
+  const newScore = oldScore + pts;
+  if (scoreDisplay) scoreDisplay.textContent = newScore.toString();
+
   updateWordList();
   showFeedback(`+${pts} pts`, "valid");
 }
 
+function updateWordList() {
+  if (!wordListEl) return;
+  wordListEl.innerHTML = "";
+
+  const words = Array.from(foundWords).sort((a, b) =>
+    a.localeCompare(b)
+  );
+
+  let total = 0;
+  words.forEach((w) => {
+    const pts = getWordPoints(w);
+    total += pts;
+
+    const li = document.createElement("li");
+
+    const spanWord = document.createElement("span");
+    spanWord.className = "word-text";
+    spanWord.textContent = w;
+
+    const spanScore = document.createElement("span");
+    spanScore.className = "word-score";
+    spanScore.textContent = pts + " pts";
+
+    li.appendChild(spanWord);
+    li.appendChild(spanScore);
+    wordListEl.appendChild(li);
+  });
+
+  if (scoreDisplay) scoreDisplay.textContent = total.toString();
+}
+
+function showFeedback(text, type) {
+  if (!feedbackEl) return;
+  feedbackEl.textContent = text;
+  feedbackEl.className = "feedback visible" + (type ? " " + type : "");
+  setTimeout(() => {
+    if (feedbackEl.textContent === text) {
+      feedbackEl.className = "feedback";
+    }
+  }, 800);
+}
+
+function updateWordDisplay() {
+  let word = "";
+  selectionPath.forEach((pos) => {
+    word += gridData[pos.r][pos.c];
+  });
+  if (wordDisplay) wordDisplay.textContent = word;
+}
+
 // ===========================
-// Changement de mode / layout
+// 6. CHANGEMENT TAILLE & LAYOUT
 // ===========================
 
 function setGridSize(size) {
   gridSize = size;
   if (gridSizeLabel) gridSizeLabel.textContent = gridSize + "x" + gridSize;
 
-  btn4x4.classList.toggle("active", size === 4);
-  btn5x5.classList.toggle("active", size === 5);
+  if (btn4x4) btn4x4.classList.toggle("active", size === 4);
+  if (btn5x5) btn5x5.classList.toggle("active", size === 5);
 
   resetGame();
 }
@@ -257,55 +289,58 @@ function setLayout(layout) {
   gridWrapper.classList.remove("layout-A", "layout-B", "layout-C");
   gridWrapper.classList.add("layout-" + layout);
 
-  // On regénère la grille pour voir l'effet direct
   resetGame();
 }
 
 function resetGame() {
   foundWords.clear();
-  score = 0;
   selectionPath = [];
-  updateScoreDisplay();
-  updateWordList();
+  if (scoreDisplay) scoreDisplay.textContent = "0";
   if (wordDisplay) wordDisplay.textContent = "";
   if (feedbackEl) {
     feedbackEl.textContent = "";
     feedbackEl.className = "feedback";
   }
+  updateWordList();
   generateGrid();
   renderGrid();
 }
 
 // ===========================
-// Boutons
+// 7. BOUTONS
 // ===========================
 
-btn4x4.addEventListener("click", () => setGridSize(4));
-btn5x5.addEventListener("click", () => setGridSize(5));
+if (btn4x4) btn4x4.addEventListener("click", () => setGridSize(4));
+if (btn5x5) btn5x5.addEventListener("click", () => setGridSize(5));
 
 layoutButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
-    const layout = btn.dataset.layout;
+    const layout = btn.dataset.layout || "A";
     setLayout(layout);
   });
 });
 
-newGridBtn.addEventListener("click", () => {
-  resetGame();
-  showFeedback("Nouvelle grille", "valid");
-});
+if (newGridBtn) {
+  newGridBtn.addEventListener("click", () => {
+    resetGame();
+    showFeedback("Nouvelle grille", "valid");
+  });
+}
 
-clearWordBtn.addEventListener("click", () => {
-  selectionPath = [];
-  refreshSelectedCells();
-  showFeedback("Mot effacé", "");
-});
+if (clearWordBtn) {
+  clearWordBtn.addEventListener("click", () => {
+    selectionPath = [];
+    updateVisuals();
+    showFeedback("Mot effacé", "");
+  });
+}
 
 // ===========================
-// Init
+// 8. INIT
 // ===========================
 
 window.addEventListener("load", () => {
-  setGridSize(4);
+  // layout A par défaut (le plus proche de ton 3x3)
   setLayout("A");
+  setGridSize(4);
 });

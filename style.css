@@ -5,28 +5,25 @@
   --case-selected: #d4f1f4;
   --case-border-selected: #4a90e2;
   --text-color: #333333;
-
-  /* Layout A : assez grand, proche de ton 3x3 actuel */
-  --cell-size-A: 80px;
-  --gap-A: 12px;
-
-  /* Layout B : un peu plus espacé & plus grand pour 4x4/5x5 */
-  --cell-size-B: 90px;
-  --gap-B: 16px;
-
-  /* Layout C : très espacé, grille plus centrée/compacte */
-  --cell-size-C: 70px;
-  --gap-C: 22px;
 }
 
 * {
   box-sizing: border-box;
+  /* Empêche la surbrillance bleue au clic sur mobile */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
   padding: 10px;
-  min-height: 100vh;
+  /* Utilise 100dvh pour gérer la barre d'adresse mobile correctement */
+  height: 100dvh; 
+  width: 100vw;
+  /* Ces 3 lignes figent l'écran complètement */
+  overflow: hidden;
+  position: fixed;
+  overscroll-behavior: none;
+  
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,7 +31,7 @@ body {
   font-family: "Segoe UI", sans-serif;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: manipulation;
+  touch-action: none; /* Désactive le zoom et le pan par défaut */
 }
 
 h1 {
@@ -42,23 +39,27 @@ h1 {
   color: #444;
   text-transform: uppercase;
   letter-spacing: 3px;
-  font-size: 1.6rem;
+  font-size: 1.4rem; /* Légèrement réduit pour gagner de la place */
   text-align: center;
+  flex-shrink: 0;
 }
 
+/* CONTROLS */
 .controls {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   width: 100%;
   max-width: 600px;
+  flex-shrink: 0;
 }
 
 .control-group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center; /* Centré pour mobile */
   gap: 6px;
 }
 
@@ -66,12 +67,13 @@ h1 {
   font-size: 0.9rem;
   color: #555;
   font-weight: 600;
+  display: none; /* Caché sur mobile pour gagner de la place */
 }
 
 .mode-btn,
 .layout-btn {
-  padding: 8px 14px;
-  font-size: 0.9rem;
+  padding: 6px 12px;
+  font-size: 0.85rem;
   border-radius: 999px;
   border: none;
   background: #e0e0e0;
@@ -84,292 +86,179 @@ h1 {
 .layout-btn.active {
   background: #4a90e2;
   color: #fff;
-  box-shadow: 0 3px 0 #357abd;
+  box-shadow: 0 2px 0 #357abd;
 }
 
+/* INFO PANEL - Caché ou réduit sur mobile si besoin */
 .info-panel {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 10px;
-  padding: 8px 12px;
-  background: #ffffff;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  color: #555;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  display: none; /* Souvent inutile in-game sur mobile, on cache pour l'espace */
 }
 
+/* LAYOUT GLOBAL */
 .main-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  padding-bottom: 30px;
+  flex: 1; /* Prend tout l'espace restant */
+  justify-content: space-evenly; /* Répartit l'espace verticalement */
+  padding-bottom: 10px;
 }
 
 .game-area {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
+  width: 100%;
 }
 
+/* SCORE PANEL - Adapté pour mobile en mode "Barre supérieure" ou "Inférieure" */
 .score-panel {
   background: #ffffff;
-  padding: 18px;
-  border-radius: 20px;
-  width: 280px;
-  max-height: 460px;
+  padding: 10px 20px;
+  border-radius: 15px;
+  width: 95%;
+  max-width: 400px;
   display: flex;
-  flex-direction: column;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+  flex-direction: row; /* Horizontal sur mobile */
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .score-header {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 .score-title {
   font-size: 1rem;
   font-weight: 700;
   color: #333;
+  margin-right: 10px;
 }
 
 .score-total {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: #4a90e2;
-  text-align: right;
 }
 
-/* -------- Indicateur mode -------- */
-
-.current-layout-indicator {
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 4px;
-}
-
-/* -------- Affichage mot -------- */
-
+/* MOT COURANT */
 .word-display-area {
-  height: 60px;
+  height: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .current-word {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: 2px;
-  min-height: 32px;
+  min-height: 30px;
   color: #333;
 }
 
 .feedback {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  height: 20px;
+  height: 18px;
   opacity: 0;
   transition: opacity 0.2s;
 }
+.feedback.visible { opacity: 1; }
+.feedback.valid { color: #27ae60; }
+.feedback.invalid { color: #e74c3c; }
 
-.feedback.visible {
-  opacity: 1;
-}
-
-.feedback.valid {
-  color: #27ae60;
-}
-
-.feedback.invalid {
-  color: #e74c3c;
-}
-
-/* -------- Grille (wrapper commun) -------- */
-
+/* GRILLE */
 .grid-wrapper {
   position: relative;
+  padding: 15px;
   background: #dcdcd0;
-  border-radius: 32px;
-  padding: 14px;
-  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15);
-  touch-action: none;
+  border-radius: 25px;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.1);
+  /* CRUCIAL : empêche le navigateur de gérer le touch sur la grille */
+  touch-action: none; 
+  width: 95%;
+  max-width: 380px;
+  aspect-ratio: 1/1; /* Garde la grille carrée */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* Version A : proche de ton ressenti actuel */
-.grid-wrapper.layout-A {
-  width: min(92vw, 380px);
-}
-
-/* Version B : un peu plus large, moins de padding */
-.grid-wrapper.layout-B {
-  width: min(98vw, 420px);
-  padding: 10px;
-}
-
-/* Version C : grille compacte mais très espacée */
-.grid-wrapper.layout-C {
-  width: min(86vw, 340px);
-  padding: 12px;
-}
-
-/* -------- Grille générale -------- */
 
 .grid {
   display: grid;
-  touch-action: none;
-}
-
-/* Layout A : taille / gap modérés */
-.layout-A .grid.grid-4x4,
-.layout-A .grid.grid-5x5 {
-  gap: var(--gap-A);
-}
-
-.layout-A .grid.grid-4x4 {
-  grid-template-columns: repeat(4, var(--cell-size-A));
-}
-
-.layout-A .grid.grid-5x5 {
-  grid-template-columns: repeat(5, var(--cell-size-A));
-}
-
-/* Layout B : cellules plus grandes, plus espacées */
-.layout-B .grid.grid-4x4,
-.layout-B .grid.grid-5x5 {
-  gap: var(--gap-B);
-}
-
-.layout-B .grid.grid-4x4 {
-  grid-template-columns: repeat(4, var(--cell-size-B));
-}
-
-.layout-B .grid.grid-5x5 {
-  grid-template-columns: repeat(5, var(--cell-size-B));
-}
-
-/* Layout C : cellules plus petites mais beaucoup de gap */
-.layout-C .grid.grid-4x4,
-.layout-C .grid.grid-5x5 {
-  gap: var(--gap-C);
-}
-
-.layout-C .grid.grid-4x4 {
-  grid-template-columns: repeat(4, var(--cell-size-C));
-}
-
-.layout-C .grid.grid-5x5 {
-  grid-template-columns: repeat(5, var(--cell-size-C));
-}
-
-/* -------- Cellules -------- */
-
-.cell {
-  background: var(--case-bg);
-  border-radius: 18px;
-  box-shadow: 0 6px 0 var(--case-shadow);
-  display: flex;
+  width: 100%;
+  height: 100%;
   justify-content: center;
+  align-content: center;
+}
+
+/* Gestion dynamique des colonnes */
+.grid.grid-4x4 { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; }
+.grid.grid-5x5 { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr); gap: 8px; }
+
+/* CELLULES */
+.cell {
+  width: 100%;
+  height: 100%; /* Remplit la case de la grille */
+  background-color: var(--case-bg);
+  border-radius: 12px; /* Un peu moins rond pour gagner de l'espace visuel */
+  display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
   font-weight: 800;
-  font-size: 1.8rem;
   color: var(--text-color);
+  box-shadow: 0 4px 0 var(--case-shadow); /* Ombre réduite */
   cursor: pointer;
-  transition: transform 0.05s, box-shadow 0.05s, background-color 0.1s;
-  touch-action: none;
+  transition: transform 0.05s, background-color 0.1s;
+  user-select: none;
 }
 
 .cell.selected {
-  background: var(--case-selected);
-  box-shadow: 0 3px 0 #a8d8e0, inset 0 0 0 3px var(--case-border-selected);
-  transform: translateY(3px);
+  background-color: var(--case-selected);
+  box-shadow: 0 2px 0 #a8d8e0, inset 0 0 0 2px var(--case-border-selected);
+  transform: translateY(2px);
 }
 
-/* -------- Liste mots -------- */
-
+/* LISTE DES MOTS (Cachée sur mobile ou très petite en bas) */
 .word-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  flex: 1;
-  overflow-y: auto;
-  font-size: 0.95rem;
+  display: none; /* Pour l'instant on cache la liste sur mobile pour éviter le scroll */
 }
 
-.word-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid #f3f3f3;
-}
-
-.word-text {
-  font-weight: 600;
-}
-
-.word-score {
-  font-size: 0.8rem;
-  background: #f0f0f0;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-weight: 700;
-}
-
-/* -------- Boutons bas -------- */
-
+/* BOUTONS BAS */
 .actions-bottom {
   display: flex;
   gap: 10px;
   margin-top: 10px;
   width: 100%;
-  max-width: 380px;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 button {
   border: none;
   border-radius: 999px;
-  padding: 10px 16px;
+  padding: 12px 24px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
-  box-shadow: 0 4px 0 #357abd;
+  box-shadow: 0 4px 0 #285f96;
   background: #4a90e2;
   color: #fff;
-}
-
-button.secondary {
-  background: #95a5a6;
-  box-shadow: 0 4px 0 #7f8c8d;
+  touch-action: manipulation;
 }
 
 button:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #357abd;
-}
-
-/* -------- Mobile full-screen tuning -------- */
-
-@media (max-width: 600px) {
-  body {
-    padding: 6px;
-  }
-
-  .score-panel {
-    width: 100%;
-    max-width: 360px;
-    order: 2;
-  }
-
-  .main-container {
-    flex-direction: column;
-    align-items: center;
-  }
+  box-shadow: 0 1px 0 #285f96;
 }
