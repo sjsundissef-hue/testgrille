@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Grilles Mobile Wordbox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Test grilles 4x4 / 5x5</h1>
+
+  <div class="controls">
+    <div class="control-group">
+      <span class="control-label">Taille de grille :</span>
+      <button class="mode-btn active" id="btn4x4">4 x 4</button>
+      <button class="mode-btn" id="btn5x5">5 x 5</button>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Version mobile :</span>
+      <button class="layout-btn active" data-layout="A">Version A</button>
+      <button class="layout-btn" data-layout="B">Version B</button>
+      <button class="layout-btn" data-layout="C">Version C</button>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <p>
+      🔹 Fais glisser ton doigt sur les cases pour former un mot.<br />
+      🔹 Ici, <strong>tous les mots de 3 lettres ou + sont acceptés</strong> (pas de dictionnaire).<br />
+      🔹 Le but est juste de tester : <strong>taille, espacement, fluidité du toucher</strong>.
+    </p>
+  </div>
+
+  <div class="main-container">
+    <div class="game-area">
+      <div class="current-layout-indicator">
+        Grille <span id="gridSizeLabel">4x4</span> – Version <span id="layoutLabel">A</span>
+      </div>
+
+      <div class="word-display-area">
+        <div class="current-word" id="currentWord"></div>
+        <div class="feedback" id="feedbackMsg"></div>
+      </div>
+
+      <div class="grid-wrapper layout-A" id="gridWrapper">
+        <div class="grid" id="grid"></div>
+      </div>
+
+      <div class="actions-bottom">
+        <button id="newGridBtn">Nouvelle grille aléatoire</button>
+        <button id="clearWordBtn" class="secondary">Effacer mot</button>
+      </div>
+    </div>
+
+    <div class="score-panel">
+      <div class="score-header">
+        <div class="score-title">Score</div>
+        <div class="score-total" id="scoreDisplay">0</div>
+      </div>
+
+      <ul class="word-list" id="wordList"></ul>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
