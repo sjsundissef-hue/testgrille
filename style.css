@@ -1,30 +1,60 @@
+/* ===========================
+   PALETTE "WORDBOX" D'ORIGINE
+   =========================== */
+:root {
+  --bg-color: #f4f4eb;              /* fond global */
+  --case-bg: #ffffff;               /* case normale */
+  --case-shadow: #c8c8be;           /* ombre de la case */
+  --case-selected: #d4f1f4;         /* case sélectionnée (bleu clair) */
+  --case-border-selected: #4a90e2;  /* bordure bleue */
+  --text-color: #333333;            /* texte principal */
+  --valid-color: #4cd137;           /* texte "valide" */
+  --invalid-color: #e84118;         /* texte "invalide" */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* ===========================
+   GLOBAL
+   =========================== */
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #111;
-  color: #eee;
+  padding: 10px;
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 100vh;
+  user-select: none;
 }
 
 h1 {
-  margin-top: 16px;
-  margin-bottom: 8px;
+  margin-top: 8px;
+  margin-bottom: 10px;
   text-align: center;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 3px;
 }
 
-/* Empêche le scroll/zoom pendant qu'on trace un mot */
+/* Empêche le scroll/zoom pendant qu'on trace un mot sur la grille */
 #gridWrapper, #grid, .cell {
   touch-action: none;
 }
 
+/* ===========================
+   CONTROLES HAUT (4x4 / 5x5 + modes)
+   =========================== */
 .controls {
   display: flex;
-  flex-direction: column;   /* pour mobile = propre */
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .control-group {
@@ -32,7 +62,6 @@ h1 {
   gap: 8px;
 }
 
-/* === AJOUT POUR MODES === */
 .mode-switcher {
   display: flex;
   gap: 8px;
@@ -43,61 +72,123 @@ h1 {
 
 .mode-label {
   font-size: 0.85rem;
-  opacity: 0.8;
+  opacity: 0.75;
 }
-/* ========================= */
 
 .mode-btn {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background: #222;
-  color: #fff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: none;
+  background-color: #e0e0e0;
+  color: #555;
   font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.12);
 }
 
 .mode-btn.active {
-  background: #4caf50;
-  border-color: #7bff9e;
+  background-color: var(--case-border-selected);
+  color: #fff;
+  box-shadow: 0 3px 0 #357abd;
 }
 
+/* ===========================
+   SLIDERS
+   =========================== */
 .settings-panel {
   max-width: 420px;
   width: 100%;
   padding: 0 12px;
   box-sizing: border-box;
+  margin-bottom: 8px;
 }
 
 .setting-item {
   display: flex;
   flex-direction: column;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
 }
 
+/* ===========================
+   ZONE DE JEU
+   =========================== */
 .main-container {
   max-width: 420px;
   width: 100%;
   padding: 10px 12px 24px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .score-panel {
   display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
+  font-weight: 600;
 }
 
+.score-title {
+  font-size: 0.9rem;
+}
+
+.score-total {
+  font-size: 1rem;
+  color: var(--case-border-selected);
+  font-weight: 800;
+}
+
+/* Mot en cours + feedback */
 .word-display-area {
   min-height: 40px;
   margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+.current-word {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.feedback {
+  font-size: 0.9rem;
+  height: 22px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.feedback.visible {
+  opacity: 1;
+}
+
+.feedback.visible.valid {
+  color: var(--valid-color);
+}
+
+.feedback.visible.invalid {
+  color: var(--invalid-color);
+}
+
+/* ===========================
+   GRILLE
+   =========================== */
 .grid-wrapper {
   margin: 0 auto 10px;
+  padding: 18px;
+  background: #dcdcd0;
+  border-radius: 24px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.08);
 }
 
 .grid {
   display: grid;
+  gap: 14px;
 }
 
 .grid-4x4 {
@@ -109,20 +200,30 @@ h1 {
 }
 
 .cell {
-  background: #222;
-  border-radius: 6px;
-  border: 1px solid #444;
+  background-color: var(--case-bg);
+  border-radius: 18px;
+  border: 2px solid var(--case-shadow);
   text-align: center;
-  padding: 12px 0;
-  font-size: 1.4rem;
+  padding: 14px 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-color);
+  box-shadow: 0 7px 0 var(--case-shadow);
   user-select: none;
+  cursor: pointer;
+  transition: transform 0.08s, background-color 0.08s, box-shadow 0.08s;
 }
 
 .cell.selected {
-  background: #4caf50;
-  border-color: #7bff9e;
+  background-color: var(--case-selected);
+  box-shadow: 0 7px 0 #a8d8e0;
+  border-color: var(--case-border-selected);
+  transform: translateY(3px);
 }
 
+/* ===========================
+   BOUTONS BAS
+   =========================== */
 .actions-bottom {
   display: flex;
   justify-content: space-between;
@@ -131,30 +232,43 @@ h1 {
 
 .action-btn {
   flex: 1;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background: #222;
+  padding: 10px 12px;
+  border-radius: 20px;
+  border: none;
+  font-weight: 600;
   color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.15);
 }
 
 .btn-clear {
-  background: #b71c1c;
+  background: #e84118; /* rouge WordBox */
 }
 
 .btn-new {
-  background: #1565c0;
+  background: #4a90e2; /* bleu WordBox */
 }
 
-.feedback {
-  font-size: 0.9rem;
-  opacity: 0.7;
-}
+/* ===========================
+   RESPONSIVE MOBILE
+   =========================== */
+@media (max-width: 768px) {
+  body {
+    padding: 6px;
+  }
 
-.feedback.visible.valid {
-  color: #7bff9e;
-}
+  .grid-wrapper {
+    width: 90vw;
+    max-width: 420px;
+    padding: 14px;
+  }
 
-.feedback.visible.invalid {
-  color: #ff7676;
+  .grid {
+    gap: 10px;
+  }
+
+  .cell {
+    padding: 12px 0;
+    font-size: 1.4rem;
+  }
 }
