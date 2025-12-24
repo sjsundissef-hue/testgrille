@@ -21,7 +21,7 @@ h1 {
 
 .controls {
   display: flex;
-  flex-direction: column; /* pour mettre taille & modes l’un sous l’autre sur mobile */
+  flex-direction: column;   /* pour mobile = propre */
   gap: 6px;
   align-items: center;
   margin-bottom: 8px;
@@ -32,20 +32,20 @@ h1 {
   gap: 8px;
 }
 
-/* Ligne des 4 modes */
+/* === AJOUT POUR MODES === */
 .mode-switcher {
   display: flex;
   gap: 8px;
-  align-items: center;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
 }
 
-/* Petit texte "Fluidité :" */
 .mode-label {
   font-size: 0.85rem;
   opacity: 0.8;
 }
+/* ========================= */
 
 .mode-btn {
   padding: 6px 10px;
