@@ -2,8 +2,8 @@
 // 1. VARIABLES & ÉLÉMENTS
 // ===========================
 
-// Mode d'interaction actuel (1, 2 ou 3)
-let INTERACTION_MODE = 3; // par défaut : le plus fluide
+// Mode d'interaction actuel (1, 2, 3 ou 4)
+let INTERACTION_MODE = 3; // par défaut : le plus fluide (ton ancien mode 3)
 
 let gridSize = 4;
 let gridData = [];
@@ -12,7 +12,7 @@ let selectionPath = [];
 let isDragging = false;
 let isTouchActive = false;
 
-// Pour le mode 3 (Pointer Events + "aimant")
+// Pour les modes 3 & 4 (Pointer Events + "aimant")
 let activePointerId = null;
 let gridRect = null;
 let cellWidth = 0;
@@ -36,6 +36,8 @@ const btn5x5 = document.getElementById("btn5x5");
 const mode1Btn = document.getElementById("mode1Btn");
 const mode2Btn = document.getElementById("mode2Btn");
 const mode3Btn = document.getElementById("mode3Btn");
+// 🔹 Nouveau bouton optionnel pour le mode 4
+const mode4Btn = document.getElementById("mode4Btn");
 
 // Boutons divers
 const newGridBtn = document.getElementById("newGridBtn");
@@ -98,14 +100,14 @@ function renderGrid() {
 
             // Tactile classique (Modes 1 & 2)
             cell.addEventListener("touchstart", (e) => {
-                if (INTERACTION_MODE === 3) return; // en mode 3, on passe par pointer events
+                if (INTERACTION_MODE === 3 || INTERACTION_MODE === 4) return; // en modes 3 & 4, on passe par pointer events
                 if (e.cancelable) e.preventDefault();
                 startDragFromCell(cell, "touch");
             }, { passive: false });
 
             // Souris classique (Modes 1 & 2)
             cell.addEventListener("mousedown", (e) => {
-                if (INTERACTION_MODE === 3) return;
+                if (INTERACTION_MODE === 3 || INTERACTION_MODE === 4) return;
                 e.preventDefault();
                 startDragFromCell(cell, "mouse");
             });
@@ -125,7 +127,7 @@ function renderGrid() {
         });
     });
 
-    // Pointer Events (Mode 3)
+    // Pointer Events (Modes 3 & 4)
     setupPointerEventsMode3();
 
     applySliderSettings();
@@ -236,7 +238,7 @@ document.addEventListener("mouseup", endInteraction);
 
 
 // ===========================
-// 6. MODE 3 : POINTER EVENTS + "AIMANT"
+// 6. MODES 3 & 4 : POINTER EVENTS + "AIMANT"
 // ===========================
 
 function updateGridGeometry() {
@@ -259,7 +261,8 @@ function setupPointerEventsMode3() {
     updateGridGeometry();
 
     gridEl.onpointerdown = (e) => {
-        if (INTERACTION_MODE !== 3) return;
+        // 🔹 Pointer events utilisés pour les modes 3 & 4
+        if (INTERACTION_MODE !== 3 && INTERACTION_MODE !== 4) return;
 
         if (e.pointerType !== "touch" && e.pointerType !== "mouse") return;
         if (e.cancelable) e.preventDefault();
@@ -270,7 +273,13 @@ function setupPointerEventsMode3() {
 
         gridEl.setPointerCapture(activePointerId);
 
-        const { r, c } = getCellFromPointer(e.clientX, e.clientY);
+        // Mode 3 : aimant "classique" (floor)
+        // Mode 4 : on prend la cellule dont le centre est le plus proche du doigt
+        const rc = (INTERACTION_MODE === 4)
+            ? getCellFromPointerNearest(e.clientX, e.clientY)
+            : getCellFromPointer(e.clientX, e.clientY);
+
+        const { r, c } = rc;
         if (r !== null && c !== null) {
             selectionPath = [{ r, c }];
             updateVisuals();
@@ -278,19 +287,23 @@ function setupPointerEventsMode3() {
     };
 
     gridEl.onpointermove = (e) => {
-        if (INTERACTION_MODE !== 3) return;
+        if (INTERACTION_MODE !== 3 && INTERACTION_MODE !== 4) return;
         if (!isDragging || e.pointerId !== activePointerId) return;
 
         if (e.cancelable) e.preventDefault();
 
-        const { r, c } = getCellFromPointer(e.clientX, e.clientY);
+        const rc = (INTERACTION_MODE === 4)
+            ? getCellFromPointerNearest(e.clientX, e.clientY)
+            : getCellFromPointer(e.clientX, e.clientY);
+
+        const { r, c } = rc;
         if (r !== null && c !== null) {
             addToPath(r, c);
         }
     };
 
     const stop = (e) => {
-        if (INTERACTION_MODE !== 3) return;
+        if (INTERACTION_MODE !== 3 && INTERACTION_MODE !== 4) return;
         if (e.pointerId !== activePointerId) return;
         endInteraction();
         try {
@@ -303,6 +316,7 @@ function setupPointerEventsMode3() {
     gridEl.onpointerleave = stop;
 }
 
+// Mode 3 : version "classique" (ta version actuelle)
 function getCellFromPointer(clientX, clientY) {
     if (!gridRect || cellWidth === 0 || cellHeight === 0) {
         updateGridGeometry();
@@ -324,6 +338,45 @@ function getCellFromPointer(clientX, clientY) {
     }
 
     return { r, c };
+}
+
+// 🔹 Mode 4 : on choisit la cellule dont le CENTRE est le plus proche du doigt
+// → beaucoup plus propre pour les diagonales
+function getCellFromPointerNearest(clientX, clientY) {
+    if (!gridRect || cellWidth === 0 || cellHeight === 0) {
+        updateGridGeometry();
+        if (!gridRect) return { r: null, c: null };
+    }
+
+    const x = clientX - gridRect.left;
+    const y = clientY - gridRect.top;
+
+    // Si le doigt est hors de la zone de grille → ne rien ajouter
+    if (x < 0 || y < 0 || x > gridRect.width || y > gridRect.height) {
+        return { r: null, c: null };
+    }
+
+    let bestR = null;
+    let bestC = null;
+    let bestDist2 = Infinity;
+
+    for (let r = 0; r < gridSize; r++) {
+        for (let c = 0; c < gridSize; c++) {
+            const centerX = (c + 0.5) * cellWidth;
+            const centerY = (r + 0.5) * cellHeight;
+            const dx = x - centerX;
+            const dy = y - centerY;
+            const dist2 = dx * dx + dy * dy;
+
+            if (dist2 < bestDist2) {
+                bestDist2 = dist2;
+                bestR = r;
+                bestC = c;
+            }
+        }
+    }
+
+    return { r: bestR, c: bestC };
 }
 
 
@@ -376,21 +429,26 @@ function updateModeButtons() {
     mode1Btn.classList.toggle("active", INTERACTION_MODE === 1);
     mode2Btn.classList.toggle("active", INTERACTION_MODE === 2);
     mode3Btn.classList.toggle("active", INTERACTION_MODE === 3);
+
+    if (mode4Btn) {
+        mode4Btn.classList.toggle("active", INTERACTION_MODE === 4);
+    }
 }
 
 function setInteractionMode(mode) {
-    if (![1, 2, 3].includes(mode)) return;
+    if (![1, 2, 3, 4].includes(mode)) return;
     INTERACTION_MODE = mode;
     endInteraction();       // on coupe tout drag en cours
     selectionPath = [];
     updateVisuals();
     updateModeButtons();
-    setupPointerEventsMode3(); // réinitialise le mode 3 si besoin
+    setupPointerEventsMode3(); // réinitialise les pointer events si besoin
 }
 
 if (mode1Btn) mode1Btn.addEventListener("click", () => setInteractionMode(1));
 if (mode2Btn) mode2Btn.addEventListener("click", () => setInteractionMode(2));
 if (mode3Btn) mode3Btn.addEventListener("click", () => setInteractionMode(3));
+if (mode4Btn) mode4Btn.addEventListener("click", () => setInteractionMode(4)); // 🔹 nouveau
 
 
 // ===========================
@@ -442,5 +500,5 @@ document.addEventListener("touchend", endInteraction);
 // Lancement au chargement
 window.addEventListener("load", () => {
     setGridSize(4);
-    setInteractionMode(3); // on démarre en mode le plus fluide
+    setInteractionMode(3); // on démarre en mode 3 (comme avant)
 });
