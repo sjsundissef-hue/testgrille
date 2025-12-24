@@ -1,0 +1,255 @@
+:root {
+  --bg-color: #f4f4eb;
+  --case-bg: #ffffff;
+  --case-shadow: #c8c8be;
+  --text-color: #333333;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg-color);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+
+h1 {
+  margin: 10px 0;
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.intro {
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 12px;
+  color: #555;
+}
+
+/* Panneau config */
+
+.config-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  width: 100%;
+  max-width: 430px;
+  margin-bottom: 10px;
+}
+
+.config-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.config-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+  margin-right: 4px;
+}
+
+.config-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: #ecf0f1;
+  color: #555;
+  font-weight: 600;
+  box-shadow: 0 2px 0 #d0d7de;
+}
+
+.config-btn.active {
+  background: #4a90e2;
+  color: white;
+  box-shadow: 0 2px 0 #357abd;
+}
+
+/* Barre info */
+
+.info-bar {
+  margin: 6px 0 10px;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.phone-frame {
+  width: 100%;
+  max-width: 430px;
+  padding: 10px;
+  border-radius: 30px;
+  background: #dcdcd0;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+}
+
+.grid-wrapper {
+  background: #dcdcd0;
+  border-radius: 26px;
+  padding: 16px;
+  width: 100%;
+  max-width: 390px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Base grid */
+
+.grid {
+  display: grid;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Base cell */
+
+.cell {
+  background: var(--case-bg);
+  box-shadow: 0 8px 0 var(--case-shadow);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: var(--text-color);
+  user-select: none;
+}
+
+/* --- Desktop / grands écrans (juste pour voir) --- */
+@media (min-width: 769px) {
+  .grid.grid-4x4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    max-width: 360px;
+  }
+  .grid.grid-5x5 {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    max-width: 360px;
+  }
+  .cell {
+    aspect-ratio: 1 / 1;
+    font-size: 2.2rem;
+  }
+}
+
+/* --- MOBILE : là où on teste vraiment --- */
+@media (max-width: 768px) {
+
+  .phone-frame {
+    padding: 8px;
+  }
+
+  .grid-wrapper {
+    padding: 12px;
+    max-width: 380px;
+  }
+
+  .grid {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .cell {
+    aspect-ratio: 1 / 1;
+  }
+
+  /* 4x4 – Version A : très proche du 3x3 expert (cases grandes, gap moyen) */
+  .grid.grid-4x4.layout-a {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    max-width: 360px;
+  }
+  .grid.grid-4x4.layout-a .cell {
+    font-size: 2.3rem;
+    border-radius: 20px;
+  }
+
+  /* 4x4 – Version B : un peu moins de gap, un peu plus compact */
+  .grid.grid-4x4.layout-b {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    max-width: 350px;
+  }
+  .grid.grid-4x4.layout-b .cell {
+    font-size: 2.1rem;
+    border-radius: 18px;
+  }
+
+  /* 4x4 – Version C : très compact (si tu trouves que A/B sont trop grands) */
+  .grid.grid-4x4.layout-c {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 340px;
+  }
+  .grid.grid-4x4.layout-c .cell {
+    font-size: 1.9rem;
+    border-radius: 16px;
+  }
+
+  /* 5x5 – Version A : cases assez grandes, grille limite de l'écran */
+  .grid.grid-5x5.layout-a {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    max-width: 360px;
+  }
+  .grid.grid-5x5.layout-a .cell {
+    font-size: 1.9rem;
+    border-radius: 18px;
+  }
+
+  /* 5x5 – Version B : compromis (cases un peu plus petites, plus d’air) */
+  .grid.grid-5x5.layout-b {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    max-width: 350px;
+  }
+  .grid.grid-5x5.layout-b .cell {
+    font-size: 1.7rem;
+    border-radius: 16px;
+  }
+
+  /* 5x5 – Version C : très compact (pour doigts très rapides) */
+  .grid.grid-5x5.layout-c {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    max-width: 340px;
+  }
+  .grid.grid-5x5.layout-c .cell {
+    font-size: 1.5rem;
+    border-radius: 14px;
+  }
+}
+
+.legend {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: #555;
+  max-width: 430px;
+}
+
+.legend ul {
+  margin-top: 4px;
+  padding-left: 16px;
+}
+.legend li {
+  margin-bottom: 2px;
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Grilles Wordbox (4x4 / 5x5)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Test grilles 4x4 / 5x5</h1>
+
+  <p class="intro">
+    But : trouver la taille la plus agréable sur téléphone.<br>
+    Choisis un mode et une version, puis teste la grille sur ton tel.
+  </p>
+
+  <div class="config-panel">
+    <div class="config-group">
+      <span class="config-label">Taille :</span>
+      <button class="config-btn size-btn active" data-size="4">4x4</button>
+      <button class="config-btn size-btn" data-size="5">5x5</button>
+    </div>
+
+    <div class="config-group">
+      <span class="config-label">Version :</span>
+      <button class="config-btn layout-btn active" data-layout="a">A</button>
+      <button class="config-btn layout-btn" data-layout="b">B</button>
+      <button class="config-btn layout-btn" data-layout="c">C</button>
+    </div>
+  </div>
+
+  <div class="info-bar">
+    <span id="infoText">Mode : 4x4 – Version A</span>
+  </div>
+
+  <div class="phone-frame">
+    <div class="grid-wrapper">
+      <div id="grid" class="grid grid-4x4 layout-a"></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <p>Ce que tu dois tester :</p>
+    <ul>
+      <li>Est-ce que les cases sont assez grandes pour taper vite ?</li>
+      <li>Est-ce qu’il y a assez d’espace entre les cases (ni trop collées, ni trop loin) ?</li>
+      <li>Est-ce que tes doigts ne tapent pas toujours deux cases en même temps ?</li>
+    </ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
