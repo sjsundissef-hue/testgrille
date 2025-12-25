@@ -621,32 +621,6 @@ function drawPath() {
   // On ne dessine plus la ligne blanche qui suit les cases
 }
 
-
-  ctx.beginPath();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.lineWidth = 15;
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
-
-  const wrapper = document.querySelector(".grid-wrapper");
-  const cells = gridEl.children;
-
-  selectionPath.forEach((pos, i) => {
-    const idx = pos.r * gridSize + pos.c;
-    const cell = cells[idx];
-    if (!cell) return;
-
-    const rect = cell.getBoundingClientRect();
-    const wrapperRect = wrapper.getBoundingClientRect();
-
-    const cx = rect.left - wrapperRect.left + rect.width / 2;
-    const cy = rect.top - wrapperRect.top + rect.height / 2;
-
-    if (i === 0) ctx.moveTo(cx, cy);
-    else ctx.lineTo(cx, cy);
-  });
-  ctx.stroke();
-}
 function drawGridLines() {
   if (!ctxBg || !bgCanvas) return;
   // On nettoie juste le fond, on ne dessine plus aucune ligne
