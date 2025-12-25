@@ -192,6 +192,14 @@ function setHomeMode() {
   if (backToHomeBtn) {
     backToHomeBtn.style.display = "none";
   }
+  
+  // Remettre le score-panel à sa place normale si nécessaire
+  const mainContainer = document.querySelector(".main-container");
+  const scorePanel = document.querySelector(".score-panel");
+  const rankedStack = document.querySelector(".ranked-stack");
+  if (mainContainer && scorePanel && rankedStack && rankedStack.contains(scorePanel)) {
+    mainContainer.appendChild(scorePanel);
+  }
 }
 
 function setRankedModeUI(active) {
@@ -222,6 +230,23 @@ function setRankedResultsMode() {
   // Afficher le bouton retour dans ranked-actions
   if (backToHomeBtn) {
     backToHomeBtn.style.display = "inline-block";
+  }
+  
+  // Déplacer la grille et le score-panel dans ranked-stack
+  const rankedStack = document.querySelector(".ranked-stack");
+  const gridWrapper = document.querySelector(".grid-wrapper");
+  const scorePanel = document.querySelector(".main-container > .score-panel");
+  
+  if (rankedStack) {
+    // Déplacer la grille au début de ranked-stack si elle n'y est pas déjà
+    if (gridWrapper && !rankedStack.contains(gridWrapper)) {
+      rankedStack.insertBefore(gridWrapper, rankedStack.firstChild);
+    }
+    
+    // Déplacer le score-panel à la fin de ranked-stack si nécessaire
+    if (scorePanel && !rankedStack.contains(scorePanel)) {
+      rankedStack.appendChild(scorePanel);
+    }
   }
 }
 
