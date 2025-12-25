@@ -305,7 +305,7 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
 }
 
 
-  @media (max-width: 768px) { 
+ @media (max-width: 768px) { 
   body { 
     padding: 5px; 
     overflow-x: hidden; 
@@ -430,18 +430,18 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   body.solutions-open #funBtn,
   body.solutions-open #help2x2Btn,
   body.solutions-open #globalStatsBtn,
-  body.solutions-open #solveBtn,
   body.solutions-open #validateCustomBtn,
   body.solutions-open #passBtn {
     display: none;
   }
 
+  /* ⚠️ On NE cache PAS le bouton Solutions ici */
   body.solutions-open #replayBtn {
     display: inline-block;  /* seul bouton visible sous la grille */
   }
 
   body.solutions-open .grid-wrapper {
-    transform: scale(0.75) !important;   /* encore un peu plus petit */
+    transform: scale(0.75) !important;   /* un peu plus petit */
     transform-origin: top center;
     margin-top: 2px;
     margin-bottom: 2px;
@@ -470,6 +470,7 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
 
 } /* FIN DU MEDIA */
+
 
 
 
