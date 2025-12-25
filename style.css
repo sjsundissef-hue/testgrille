@@ -35,7 +35,16 @@ body.ranked-active #solveBtn {
   margin: 0 auto;
 }
 
-body.ranked-active .controls,
+/* En mode ranked-active, on cache seulement les boutons 4x4 et 5x5, mais on garde le bouton ranked visible */
+body.ranked-active .controls #btn4x4,
+body.ranked-active .controls #btn5x5 {
+  display: none;
+}
+
+body.ranked-active .controls #rankedToggleBtn {
+  display: inline-block !important;
+}
+
 body.ranked-active .settings-panel,
 body.ranked-active .top-highlight {
   display: none;
@@ -45,7 +54,16 @@ body.ranked-active .top-highlight {
    MODE RÉSULTATS RANKED (ranked-results)
    ========================================== */
 
-body.ranked-results .controls,
+/* En mode ranked-results, on cache seulement les boutons 4x4 et 5x5, mais on garde le bouton ranked visible */
+body.ranked-results .controls #btn4x4,
+body.ranked-results .controls #btn5x5 {
+  display: none;
+}
+
+body.ranked-results .controls #rankedToggleBtn {
+  display: inline-block !important;
+}
+
 body.ranked-results .settings-panel,
 body.ranked-results .top-highlight {
   display: none;
