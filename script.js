@@ -411,24 +411,39 @@ function initGame() {
 function replayGrid() {
   if (isEditing) return;
 
-  // On quitte le mode "solutions affichées"
+  // 1) On quitte le mode "solutions affichées"
   document.body.classList.remove("solutions-open");
   solutionMode = false;
   gameSolved = false;
 
+  // 2) On remet les boutons dans l'état normal (comme dans initGame)
+  if (newGridBtn)        newGridBtn.style.display = "block";
+  if (replayBtn)         replayBtn.style.display = "block";
+  if (createGridBtn)     createGridBtn.style.display = "block";
+  if (funBtn)            funBtn.style.display = "block";
+  if (help2x2Btn)        help2x2Btn.style.display = "block";
+  if (globalStatsBtn)    globalStatsBtn.style.display = "block";
+  if (validateCustomBtn) validateCustomBtn.style.display = "none";
+  if (passBtn)           passBtn.style.display = isFunMode ? "block" : "none";
+
+  if (solveBtn) {
+    solveBtn.style.display = "block";
+    solveBtn.textContent = "Voir solutions";
+    solveBtn.disabled = false;
+  }
+
+  // 3) Timer / état chrono
   if (isChallengeActive) {
     stopTimer();
     if (feedbackEl) feedbackEl.textContent = "Mode Libre";
   }
 
-
+  // 4) Reset de la grille mais on garde les mêmes lettres
   foundWords.clear();
   cachedSolutions = null;
-  solutionMode = false;
   currentScore = 0;
   selectionPath = [];
   if (wordDisplay) wordDisplay.textContent = "";
-  gameSolved = false;
   if (filterInput) filterInput.value = "";
   if (listTitleEl) listTitleEl.textContent = "Score Actuel";
   if (scoreCompEl) scoreCompEl.textContent = "";
@@ -438,6 +453,7 @@ function replayGrid() {
   setTimeout(resizeCanvas, 50);
   showFeedback("Grille réinitialisée", "valid");
 
+  // 5) Si on est en mode chrono 4x4 / 5x5, on relance
   if (!isFunMode && !isExpertMode && !isCustomGame) {
     const modeName = getCurrentMode();
     if (isTimedModeEnabled && (gridSize === 4 || gridSize === 5)) {
@@ -454,8 +470,12 @@ function replayGrid() {
       currentChronoMode = null;
     }
   }
+
   updateChronoUI();
 }
+
+
+
 
 window.setMode = function (size) {
   gridSize = size;
@@ -1284,9 +1304,8 @@ if (solveBtn) {
     // Cas normal (4x4, 5x5, expert3x3…)
     finishAndShowSolutions();
   });
-}
-
-function finishAndShowSolutions() {
+}function finishAndShowSolutions() {
+  // Si on était en chrono, on stoppe
   if (isChallengeActive) {
     stopTimer();
     if (feedbackEl) {
@@ -1295,7 +1314,7 @@ function finishAndShowSolutions() {
     }
   }
 
-  // si on n'a pas encore calculé les solutions, on le fait
+  // Calcul des solutions si ce n'est pas déjà fait
   if (!cachedSolutions || !cachedSolutions.size) {
     cachedSolutions = findAllWords();
   }
@@ -1303,33 +1322,30 @@ function finishAndShowSolutions() {
   solutionMode = true;
   gameSolved = true;
 
-  // Active le mode "solutions ouvertes" (CSS spécial mobile)
+  // Active le mode spécial "solutions" pour le CSS mobile
   document.body.classList.add("solutions-open");
 
-  // 👉 ICI : on montre seulement "Rejouer" sous la grille
-  if (newGridBtn)       newGridBtn.style.display = "none";
-  if (createGridBtn)    createGridBtn.style.display = "none";
-  if (funBtn)           funBtn.style.display = "none";
-  if (help2x2Btn)       help2x2Btn.style.display = "none";
-  if (globalStatsBtn)   globalStatsBtn.style.display = "none";
-  if (validateCustomBtn) validateCustomBtn.style.display = "none";
-  if (passBtn)          passBtn.style.display = "none";
-  if (solveBtn)         solveBtn.style.display = "none";
-  if (newGridBtn)       newGridBtn.style.display = "none";
+  // En JS : on cache juste le bouton "Voir solutions"
+  if (solveBtn) {
+    solveBtn.style.display = "none";
+  }
+
+  // On s'assure que "Rejouer" est bien visible
   if (replayBtn) {
     replayBtn.style.display = "inline-block";
   }
 
   updateWordList();
 
-  // on remonte la liste en haut pour bien voir les premiers mots
+  // on remonte la liste en haut
   if (listEl) listEl.scrollTop = 0;
 
-  // on force le titre pour que tu voies clairement que tu es en mode résultat
+  // titre = Résultats
   if (listTitleEl) listTitleEl.textContent = "Résultats";
 
   maybeOfferExpertScore();
 }
+
 
 
 
