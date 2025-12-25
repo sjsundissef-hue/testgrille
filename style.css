@@ -321,21 +321,15 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
 
   button.stats-btn {
-    width: 100%;     /* le bouton stats reste sur une ligne entière */
+    width: 100%;
   }
-    /* Quand les solutions sont affichées sur téléphone :
-     on enlève les gros boutons pour remonter le bloc "Résultats" */
+
+  /* Quand les solutions sont affichées : on enlève les gros boutons */
   body.solutions-open .action-buttons {
     display: none;
   }
 
-  /* Le panneau résultats peut prendre plus de place */
-   body.solutions-open .score-panel {
-    max-height: none;
-    height: auto;
-    margin-top: 6px;
-  }
-
+  /* On rapetisse la grille et on la rapproche de Résultats */
   body.solutions-open .grid-wrapper {
     transform: scale(0.80) !important;
     transform-origin: top center;
@@ -347,7 +341,36 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     margin-bottom: 4px;
   }
 
-}  /* <= ÇA c’est la fin du media */
+  /* Sur mobile, on empile proprement */
+  .main-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  body.solutions-open .main-container {
+    gap: 4px;
+  }
+
+  /* Le panneau Résultats peut prendre + de place */
+  body.solutions-open .score-panel {
+    max-height: none;
+    height: auto;
+    margin-top: 6px;
+  }
+
+  /* Liste des mots = scroll interne */
+  .word-list {
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+
+  body.solutions-open .word-list {
+    max-height: 60vh;
+  }
+
+} /* <= FIN DU MEDIA */
+
 
 
 
