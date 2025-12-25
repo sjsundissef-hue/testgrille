@@ -616,13 +616,11 @@ function renderGrid() {
 }
 
 function drawPath() {
+  // On nettoie juste le canvas
   clearCanvas();
-  if (!canvas || !ctx) return;
-  if (selectionPath.length < 2) return;
-  if (canvas.width !== gridEl.offsetWidth) {
-    canvas.width = gridEl.offsetWidth;
-    canvas.height = gridEl.offsetHeight;
-  }
+  // On ne dessine plus la ligne blanche qui suit les cases
+}
+
 
   ctx.beginPath();
   ctx.lineCap = "round";
@@ -1272,7 +1270,16 @@ if (passBtn) {
 
 if (solveBtn) {
   solveBtn.addEventListener("click", () => {
+    // si les solutions sont déjà affichées, on ne refait rien
     if (solutionMode) return;
+
+    // sécurité : si le dico n'est pas chargé, on prévient
+    if (!dictionaryLoaded) {
+      showFeedback("Dico pas encore chargé", "invalid");
+      return;
+    }
+
+    // Cas spécial : grille personnalisée avec attente 10s
     if (isCustomGame && !gameSolved) {
       if (solveBtn.disabled) return;
       let countdown = 10;
@@ -1290,6 +1297,8 @@ if (solveBtn) {
       }, 1000);
       return;
     }
+
+    // Cas normal (4x4, 5x5, expert3x3…)
     finishAndShowSolutions();
   });
 }
@@ -1297,14 +1306,34 @@ if (solveBtn) {
 function finishAndShowSolutions() {
   if (isChallengeActive) {
     stopTimer();
-    if (feedbackEl) feedbackEl.textContent = "Partie terminée";
+    if (feedbackEl) {
+      feedbackEl.textContent = "Partie terminée";
+      feedbackEl.className = "feedback visible";
+    }
   }
-  cachedSolutions = findAllWords();
+
+  // si on n'a pas encore calculé les solutions, on le fait
+  if (!cachedSolutions || !cachedSolutions.size) {
+    cachedSolutions = findAllWords();
+  }
+
   solutionMode = true;
   gameSolved = true;
+
   updateWordList();
+
+  // on remonte la liste en haut pour bien voir les premiers mots
+  if (listEl) listEl.scrollTop = 0;
+
+  // on force le titre pour que tu voies clairement que tu es en mode résultat
+  if (listTitleEl) listTitleEl.textContent = "Résultats";
+
+  // feedback visuel sur le bouton
+  if (solveBtn) solveBtn.textContent = "Solutions affichées";
+
   maybeOfferExpertScore();
 }
+
 
 function startManualCreation() {
   resetGameState();
