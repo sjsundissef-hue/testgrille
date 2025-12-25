@@ -13,16 +13,17 @@
   --grid-gap: 20px;
 }
 
-/* CLASSEMENT : caché par défaut dans le panneau latéral */
-.leaderboard-section {
-  display: none;
-}
-
 /* ==========================================
-   MODE CHRONO : Interface sérieuse
+   ÉTAT ACCUEIL (HOME) - Par défaut
    ========================================== */
 
-/* En mode chrono, on cache TOUS les boutons sauf "Voir Résultats" */
+/* Par défaut, on est en mode accueil - tous les boutons sont visibles normalement */
+
+/* ==========================================
+   MODE CHRONO ACTIF (chrono-active)
+   ========================================== */
+
+/* En mode chrono actif, on cache TOUS les boutons sauf "Voir Résultats" */
 body.chrono-active .action-buttons button:not(#solveBtn) {
   display: none !important;
 }
@@ -41,34 +42,35 @@ body.chrono-active .top-highlight {
 }
 
 /* ==========================================
-   MODE SOLUTIONS : Vue compacte et propre
+   MODE RÉSULTATS CHRONO (chrono-results)
    ========================================== */
 
-body.solutions-open .action-buttons button:not(#replayBtn) {
+/* En mode résultats chrono, on cache TOUS les boutons sauf Rejouer + Retour à l'accueil */
+body.chrono-results .action-buttons button:not(#replayBtn):not(#backToHomeBtn) {
   display: none !important;
 }
 
-body.solutions-open #replayBtn {
+body.chrono-results #replayBtn,
+body.chrono-results #backToHomeBtn {
   display: inline-block !important;
-  width: 100%;
-  max-width: 300px;
-  margin: 20px auto 0;
+  width: 48%;
+  max-width: 200px;
 }
 
-body.solutions-open .controls,
-body.solutions-open .settings-panel,
-body.solutions-open .top-highlight {
+body.chrono-results .controls,
+body.chrono-results .settings-panel,
+body.chrono-results .top-highlight {
   display: none;
 }
 
-/* Grille compacte, juste au-dessus du bouton Rejouer */
-body.solutions-open .main-container {
+/* Grille COLLÉE aux boutons (très peu d'espace) */
+body.chrono-results .main-container {
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 8px; /* Espace minimal */
 }
 
-body.solutions-open .game-area {
+body.chrono-results .game-area {
   width: 100%;
   max-width: 400px;
   display: flex;
@@ -76,29 +78,45 @@ body.solutions-open .game-area {
   align-items: center;
 }
 
-body.solutions-open .grid-wrapper {
+body.chrono-results .grid-wrapper {
   transform: scale(0.7);
   transform-origin: top center;
-  margin-bottom: 10px;
+  margin-bottom: 4px; /* Très petit espace sous la grille */
 }
 
-body.solutions-open .word-display-area {
-  margin-bottom: 5px;
+body.chrono-results .word-display-area {
+  margin-bottom: 2px;
+}
+
+body.chrono-results .action-buttons {
+  margin-top: 4px; /* Très petit espace au-dessus des boutons */
+  gap: 8px;
+  width: 100%;
+  max-width: 400px;
+  justify-content: center;
 }
 
 /* Score panel compact avec scroll interne */
-body.solutions-open .score-panel {
+body.chrono-results .score-panel {
   width: 100%;
   max-width: 400px;
   max-height: 50vh;
   height: auto;
-  margin-top: 0;
+  margin-top: 10px;
 }
 
-body.solutions-open .word-list {
+body.chrono-results .word-list {
   max-height: 40vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* ==========================================
+   CLASSEMENT : Toujours caché dans le panneau latéral
+   ========================================== */
+
+.leaderboard-section {
+  display: none !important; /* Jamais affiché en bas de page */
 }
 
 /* ==========================================
@@ -635,16 +653,31 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     gap: 12px;
   }
 
-  /* Mode Solutions optimisé mobile */
-  body.solutions-open .grid-wrapper {
+  /* Mode Chrono Results optimisé mobile */
+  body.chrono-results .grid-wrapper {
     transform: scale(0.65) !important;
+    margin-bottom: 2px !important;
   }
   
-  body.solutions-open .score-panel {
+  body.chrono-results .action-buttons {
+    margin-top: 2px !important;
+    gap: 6px;
+  }
+  
+  body.chrono-results #replayBtn,
+  body.chrono-results #backToHomeBtn {
+    width: 48%;
+    max-width: 180px;
+    font-size: 0.9rem;
+    padding: 10px 12px;
+  }
+  
+  body.chrono-results .score-panel {
     max-height: 45vh;
+    margin-top: 8px;
   }
   
-  body.solutions-open .word-list {
+  body.chrono-results .word-list {
     max-height: 35vh;
   }
 }
