@@ -8,11 +8,39 @@
   --valid-color: #4cd137;
   --invalid-color: #e84118;
 
-  /* nouveau : zoom de la grille */
+  /* Grille */
   --grid-scale: 1;
-
-  /* nouveau : écart entre les cases */
   --grid-gap: 20px;
+}
+
+/* CLASSEMENT : caché par défaut, affiche uniquement si body.leaderboard-open présent */
+.leaderboard-section {
+  display: none;
+}
+
+/* Affiche le classement quand la classe est présente */
+body.leaderboard-open .leaderboard-section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Panneau classement adapté mobile, scroll interne + coins arrondis */
+@media (max-width: 768px) {
+  .leaderboard-section {
+    max-height: 50vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 15px;
+    margin-top: 10px;
+    padding: 12px;
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+  }
+  
+  body.leaderboard-open .leaderboard-section {
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 
@@ -163,7 +191,14 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
 .history-section { height: 100px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 10px; margin-bottom: 10px; }
 .history-title { font-size: 0.9rem; font-weight: bold; color: #888; margin-bottom: 5px; text-transform: uppercase; }
 .history-list { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; }
-.leaderboard-section { flex: 1; min-height: 150px; overflow-y: auto; border-top: 2px solid #eee; padding-top: 10px; }
+.leaderboard-section { 
+  flex: 1; 
+  min-height: 150px; 
+  overflow-y: auto; 
+  border-top: 2px solid #eee; 
+  padding-top: 10px; 
+  -webkit-overflow-scrolling: touch;
+}
 .leaderboard-title { font-size: 0.95rem; font-weight: 800; color: #4a90e2; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 .leaderboard-list { list-style: none; padding: 0; margin: 0; }
 .leaderboard-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9rem; }
