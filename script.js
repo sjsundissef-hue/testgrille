@@ -1573,11 +1573,31 @@ if (solveBtn) {
   if (isChronoGame) {
     setRankedResultsMode();
   } else {
-    // Mode solutions classique (non chrono)
-    document.body.classList.add(BODY_RANKED_RESULTS_CLASS);
+    // Mode solutions classique (non chrono) - on ne met PAS BODY_RANKED_RESULTS_CLASS
+    // car cela cache le score-panel normal. On garde juste le mode home.
     document.body.classList.remove(BODY_RANKED_CLASS);
+    document.body.classList.remove(BODY_RANKED_RESULTS_CLASS); // S'assurer qu'on n'est pas en mode ranked-results
+    // Ne pas ajouter BODY_RANKED_RESULTS_CLASS pour les solutions non-ranked
+    // Le score-panel normal reste visible
     if (backToHomeBtn) {
-      backToHomeBtn.style.display = "inline-block";
+      backToHomeBtn.style.display = "none"; // Pas besoin du bouton retour en mode solutions normal
+    }
+    
+    // S'assurer que le score-panel est visible et à sa place normale
+    const mainContainer = document.querySelector(".main-container");
+    const scorePanel = document.querySelector(".score-panel");
+    const rankedStack = document.querySelector(".ranked-stack");
+    if (mainContainer && scorePanel && rankedStack && rankedStack.contains(scorePanel)) {
+      // Remettre le score-panel à sa place normale si il était dans ranked-stack
+      mainContainer.appendChild(scorePanel);
+    }
+    
+    // S'assurer que la grille est à sa place normale
+    const gridWrapper = document.querySelector(".grid-wrapper");
+    const gameArea = document.querySelector(".game-area");
+    if (gameArea && gridWrapper && rankedStack && rankedStack.contains(gridWrapper)) {
+      // Remettre la grille à sa place normale si elle était dans ranked-stack
+      gameArea.insertBefore(gridWrapper, gameArea.querySelector(".action-buttons"));
     }
   }
 
