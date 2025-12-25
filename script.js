@@ -256,6 +256,8 @@ function updateChronoUI() {
 }
 
 function resetGameState() {
+ // On enlève le mode "solutions ouvertes" au début d'une nouvelle partie
+  document.body.classList.remove("solutions-open");
   isEditing = false;
   isCustomGame = false;
   isFunMode = false;
@@ -1299,14 +1301,20 @@ function finishAndShowSolutions() {
   // on remonte la liste en haut pour bien voir les premiers mots
   if (listEl) listEl.scrollTop = 0;
 
-  // on force le titre pour que tu voies clairement que tu es en mode résultat
+    // on force le titre pour que tu voies clairement que tu es en mode résultat
   if (listTitleEl) listTitleEl.textContent = "Résultats";
 
   // feedback visuel sur le bouton
   if (solveBtn) solveBtn.textContent = "Solutions affichées";
 
   maybeOfferExpertScore();
+
+  // Sur mobile : on enlève les boutons pour remonter "Résultats"
+  if (window.innerWidth <= 768) {
+    document.body.classList.add("solutions-open");
+  }
 }
+
 
 
 function startManualCreation() {
@@ -1408,6 +1416,16 @@ if (chronoToggleBtn) {
 function applyGridScale(value) {
   const scale = value / 100; // 80 -> 0.8, 100 -> 1, 120 -> 1.2
   document.documentElement.style.setProperty("--grid-scale", scale);
+
+  // On augmente l'espace au-dessus de la grille quand on zoome
+  const wordArea = document.querySelector(".word-display-area");
+  if (wordArea) {
+    const extra = Math.max(0, (scale - 1) * 60);  // 0 à l’échelle 100, + espace si > 100
+    wordArea.style.marginBottom = 12 + extra + "px";
+  }
+
+  // on recalcule le canvas pour suivre la nouvelle taille visuelle
+  resizeCanvas();
 }
 
 if (gridScaleRange) {
@@ -1416,10 +1434,9 @@ if (gridScaleRange) {
   // mise à jour en direct
   gridScaleRange.addEventListener("input", (e) => {
     applyGridScale(e.target.value);
-    // on redessine la grille / canvas pour éviter les décalages
-    resizeCanvas();
   });
 }
+
 // === NOUVEAU : contrôle de l'écart entre les cases ===
 function applyGridGap(value) {
   const px = value + "px";   // 10 -> "10px", 40 -> "40px"
