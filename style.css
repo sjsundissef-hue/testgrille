@@ -13,33 +13,297 @@
   --grid-gap: 20px;
 }
 
-/* CLASSEMENT : caché par défaut, affiche uniquement si body.leaderboard-open présent */
+/* CLASSEMENT : caché par défaut dans le panneau latéral */
 .leaderboard-section {
   display: none;
 }
 
-/* Affiche le classement quand la classe est présente */
-body.leaderboard-open .leaderboard-section {
+/* ==========================================
+   MODE CHRONO : Interface sérieuse
+   ========================================== */
+
+/* En mode chrono, on cache TOUS les boutons sauf "Voir Résultats" */
+body.chrono-active .action-buttons button:not(#solveBtn) {
+  display: none !important;
+}
+
+body.chrono-active #solveBtn {
+  display: inline-block !important;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+body.chrono-active .controls,
+body.chrono-active .settings-panel,
+body.chrono-active .top-highlight {
+  display: none;
+}
+
+/* ==========================================
+   MODE SOLUTIONS : Vue compacte et propre
+   ========================================== */
+
+body.solutions-open .action-buttons button:not(#replayBtn) {
+  display: none !important;
+}
+
+body.solutions-open #replayBtn {
+  display: inline-block !important;
+  width: 100%;
+  max-width: 300px;
+  margin: 20px auto 0;
+}
+
+body.solutions-open .controls,
+body.solutions-open .settings-panel,
+body.solutions-open .top-highlight {
+  display: none;
+}
+
+/* Grille compacte, juste au-dessus du bouton Rejouer */
+body.solutions-open .main-container {
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+body.solutions-open .game-area {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+body.solutions-open .grid-wrapper {
+  transform: scale(0.7);
+  transform-origin: top center;
+  margin-bottom: 10px;
+}
+
+body.solutions-open .word-display-area {
+  margin-bottom: 5px;
+}
+
+/* Score panel compact avec scroll interne */
+body.solutions-open .score-panel {
+  width: 100%;
+  max-width: 400px;
+  max-height: 50vh;
+  height: auto;
+  margin-top: 0;
+}
+
+body.solutions-open .word-list {
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==========================================
+   MODAL CLASSEMENT PLEIN ÉCRAN
+   ========================================== */
+
+.leaderboard-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: 10000;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.leaderboard-modal-overlay.active {
   display: flex;
   flex-direction: column;
 }
 
-/* Panneau classement adapté mobile, scroll interne + coins arrondis */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.leaderboard-modal-content {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 50px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.leaderboard-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.leaderboard-modal-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.leaderboard-close-btn {
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.3);
+  color: white;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  font-size: 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: none;
+  padding: 0;
+}
+
+.leaderboard-close-btn:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.1);
+}
+
+.leaderboard-close-btn:active {
+  transform: scale(0.95);
+}
+
+.leaderboard-modal-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.leaderboard-tab-section {
+  margin-bottom: 30px;
+}
+
+.leaderboard-tab-header {
+  margin-bottom: 15px;
+}
+
+.leaderboard-tab-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.leaderboard-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
+  margin: 30px 0;
+}
+
+.leaderboard-modal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background: #f9f9f9;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.leaderboard-modal-list li {
+  padding: 15px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.2s;
+}
+
+.leaderboard-modal-list li:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-modal-list li:hover {
+  background: #f0f0f0;
+}
+
+.leaderboard-modal-list .lb-rank {
+  font-weight: 900;
+  color: #667eea;
+  width: 40px;
+  font-size: 1.1rem;
+}
+
+.leaderboard-modal-list .lb-name {
+  flex: 1;
+  font-weight: 700;
+  color: #333;
+  font-size: 1rem;
+  margin-left: 10px;
+}
+
+.leaderboard-modal-list .lb-score {
+  font-weight: 900;
+  color: #764ba2;
+  font-size: 1.1rem;
+}
+
+/* Mobile optimisations pour la modal */
 @media (max-width: 768px) {
-  .leaderboard-section {
-    max-height: 50vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 15px;
-    margin-top: 10px;
-    padding: 12px;
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
+  .leaderboard-modal-content {
+    border-radius: 0;
   }
   
-  body.leaderboard-open .leaderboard-section {
-    display: flex;
-    flex-direction: column;
+  .leaderboard-modal-header {
+    padding: 15px;
+  }
+  
+  .leaderboard-modal-header h2 {
+    font-size: 1.4rem;
+  }
+  
+  .leaderboard-close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.6rem;
+  }
+  
+  .leaderboard-modal-body {
+    padding: 15px;
+  }
+  
+  .leaderboard-tab-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .leaderboard-modal-list li {
+    padding: 12px 15px;
+    font-size: 0.9rem;
   }
 }
 
@@ -371,54 +635,16 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     gap: 12px;
   }
 
-  body.solutions-open .main-container {
-    gap: 4px;
-  }
-
-  /* Quand les solutions sont affichées : on garde seulement Rejouer */
-  body.solutions-open #newGridBtn,
-  body.solutions-open #createGridBtn,
-  body.solutions-open #funBtn,
-  body.solutions-open #help2x2Btn,
-  body.solutions-open #globalStatsBtn,
-  body.solutions-open #validateCustomBtn,
-  body.solutions-open #passBtn {
-    display: none;
-  }
-
-  body.solutions-open #replayBtn {
-    display: inline-block;
-  }
-
+  /* Mode Solutions optimisé mobile */
   body.solutions-open .grid-wrapper {
-    transform: scale(0.75) !important;
-    transform-origin: top center;
-    margin-top: 2px;
-    margin-bottom: 2px;
-    padding: 8px;
+    transform: scale(0.65) !important;
   }
-
-  body.solutions-open .word-display-area {
-    margin-bottom: 4px;
-  }
-
+  
   body.solutions-open .score-panel {
-    max-height: none;
-    height: auto;
-    margin-top: 4px;
-  }
-
-  .word-list {
     max-height: 45vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
-
-  body.solutions-open .action-buttons {
-    margin-top: 4px;
-  }
-
+  
   body.solutions-open .word-list {
-    max-height: 60vh;
+    max-height: 35vh;
   }
 }
