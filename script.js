@@ -1,6 +1,151 @@
 // ==========================================
-// ============= 1. CONFIGURATION ===========
+// === 1. CONFIGURATION PRINCIPALE DU JEU ===
 // ==========================================
+
+// Définition des constantes essentielles & initialisation globale
+const GRID_SIZES     = [4, 5];         // Tailles valides de grilles (4x4, 5x5)
+const DEFAULT_GRID   = 4;              // Taille de grille par défaut
+const CHRONO_DURATIONS = {
+    "4x4": 120,
+    "5x5": 180,
+    "expert3x3": 120,
+    "fun2x2": 180
+};
+
+// Initialisation de l'état du jeu (sera modifié dynamiquement)
+let gridSize         = DEFAULT_GRID;
+let isChronoGame     = false;
+let isRankedEligible = false;
+let isExpertMode     = false;
+let isCustomGame     = false;
+let isFunMode        = false;
+let currentGameId    = null;
+let challengeModeName = "";
+let currentChronoMode = null;
+let currentFunIndex  = 0;
+let shuffledFunCombos = [];
+let gridData         = [];
+let cachedSolutions  = null;
+let foundWords       = new Set();
+let gameSolved       = false;
+let solutionMode     = false;
+let isChallengeActive = false;
+
+// (Les DOMContentLoaded ou initialisations dom viendront après)
+
+// Classes pour contrôle d'affichage des boutons & zones en mode chrono/solutions/leaderboard
+const BODY_CHRONO_CLASS = "chrono-active";
+const BODY_SOLUTIONS_CLASS = "solutions-open";
+const BODY_LEADERBOARD_CLASS = "leaderboard-open";
+
+// Helpers pour afficher/cacher le classement (leaderboard) selon l'état et le device
+
+function setLeaderboardUI(open) {
+  // Contrôle l'ouverture/fermeture du panneau classement
+  // open = true => ouvert, false => fermé
+  const body = document.body;
+  if (open) {
+    body.classList.add(BODY_LEADERBOARD_CLASS);
+  } else {
+    body.classList.remove(BODY_LEADERBOARD_CLASS);
+  }
+}
+
+// État courant
+let isLeaderboardOpen = false;
+
+// Detecte si l'utilisateur est sur mobile (basé sur largeur fenêtre, améliorable selon besoins)
+function isMobileDevice() {
+  return window.matchMedia("(max-width: 700px)").matches;
+}
+
+// Fonction pour mettre à jour le texte du bouton
+function updateLeaderboardButtonText() {
+  const leaderboardBtn = document.getElementById("leaderboardToggleBtn");
+  if (leaderboardBtn) {
+    leaderboardBtn.textContent = isLeaderboardOpen ? "❌ Fermer le classement" : "📊 Voir le classement";
+  }
+}
+
+// Attache l'écouteur sur le bouton toggle leaderboard dès que le DOM est prêt
+document.addEventListener("DOMContentLoaded", function() {
+  const leaderboardBtn = document.getElementById("leaderboardToggleBtn");
+  if (leaderboardBtn) {
+    leaderboardBtn.addEventListener("click", function() {
+      isLeaderboardOpen = !isLeaderboardOpen;
+      setLeaderboardUI(isLeaderboardOpen);
+      updateLeaderboardButtonText();
+    });
+  }
+
+  // Sur mobile: panneau fermé par défaut au départ. 
+  // Sur PC: fermé par défaut aussi (cohérent)
+  if (isMobileDevice()) {
+    isLeaderboardOpen = false;
+    setLeaderboardUI(false);
+  } else {
+    isLeaderboardOpen = false;
+    setLeaderboardUI(false);
+  }
+  updateLeaderboardButtonText();
+});
+
+// Si l'utilisateur redimensionne la page, on ajuste la visibilité si besoin
+window.addEventListener("resize", function() {
+  // S'assurer que sur mobile il reste fermé par défaut (pas ouvert par resize)
+  if (isMobileDevice() && isLeaderboardOpen) {
+    isLeaderboardOpen = false;
+    setLeaderboardUI(false);
+    updateLeaderboardButtonText();
+  }
+});
+
+// Helpers pour afficher les bons boutons/panels selon l'état du mode chrono/solutions.
+// On ajoute ou retire des classes sur <body> pour piloter le CSS.
+
+function setChronoModeUI(active) {
+  // active = true au démarrage du chrono, false sinon
+  const body = document.body;
+  if (active) {
+    body.classList.add(BODY_CHRONO_CLASS);
+    body.classList.remove(BODY_SOLUTIONS_CLASS);
+  } else {
+    body.classList.remove(BODY_CHRONO_CLASS);
+  }
+}
+
+function openSolutionsUI() {
+  // Affiche uniquement le bouton "replay" et la grille compacte, grâce à la classe solutions-open.
+  // Le panneau score et la word-list restent visibles.
+  // La CSS doit gérer le layout via .solutions-open.
+  const body = document.body;
+  body.classList.add(BODY_SOLUTIONS_CLASS);
+  // Laisse BODY_CHRONO_CLASS si besoin pour l'effet compact, le CSS choisira la combinaison.
+}
+
+// Exemple d'intégration avec le reste du JS :
+// Quand le chrono est lancé :
+/*
+setChronoModeUI(true);
+// (Le bouton Voir solutions 'solveBtn' doit rester affiché via le CSS associé à .chrono-active)
+*/
+
+// Quand le chrono est arrêté ou quitte le mode chrono :
+/*
+setChronoModeUI(false);
+*/
+
+// Quand l'utilisateur clique sur "Voir solutions" (solveBtn) :
+/*
+openSolutionsUI();
+*/
+
+// Quand il clique sur "Rejouer" (replayBtn) ou quitte le panneau solutions :
+/*
+setChronoModeUI(false);
+document.body.classList.remove(BODY_SOLUTIONS_CLASS);
+*/
+
 
 const SUPABASE_URL = "https://dtaufxcpiapzdpiqthmu.supabase.co";
 const SUPABASE_KEY = "sb_publishable_GblvazVWGG23qdrX4GEtvw_Ypn01EFa";
@@ -29,7 +174,7 @@ const FREQUENCIES = [
   { l:"N", w:7.0 },{ l:"R", w:6.6 },{ l:"T", w:7.2 },{ l:"O", w:5.7 },
   { l:"L", w:5.4 },{ l:"U", w:6.3 },{ l:"D", w:3.6 },{ l:"C", w:3.2 },
   { l:"M", w:2.9 },{ l:"P", w:2.5 },{ l:"G", w:1.0 },{ l:"B", w:0.9 },
-  { l:"V", w:1.8 },{ l:"H", w:0.7 },{ l:"F", w:1.0 },{ l:"Q", w:1.3 },
+  { l:"V", w:1.8 },{ l:"H", w:0.7 },{ l:"F", w:1.0 },{ l:"Q", w:1.3 },  
   { l:"Y", w:0.3 },{ l:"X", w:0.3 },{ l:"J", w:0.6 },{ l:"K", w:0.07 },
   { l:"W", w:0.06 },{ l:"Z", w:0.05 }
 ];
@@ -50,13 +195,6 @@ const LEADERBOARD_TABLE = "leaderboard_3x3";
 // NOUVEAU : table générique pour tous les scores chrono (3x3, 4x4, 5x5)
 const SCORES_CHRONO_TABLE = "scores_chrono";
 
-// Durées pour les modes chrono (en secondes)
-const CHRONO_DURATIONS = {
-  expert3x3: 120,
-  "4x4": 90,
-  "5x5": 90
-};
-
 // ==========================================
 // ============= PLAYER & GAME IDs =========
 // ==========================================
@@ -72,44 +210,23 @@ if (!PLAYER_ID) {
   localStorage.setItem("wb_player_id", PLAYER_ID);
 }
 
-// ID unique pour chaque partie / grille
-let currentGameId = null;
-
 // ==========================================
 // ============= 2. VARIABLES & DOM =========
 // ==========================================
 
-let gridSize = 4;
-let gridData = [];
-let foundWords = new Set();
-let cachedSolutions = null;
-let solutionMode = false;
 let currentScore = 0;
 let selectionPath = [];
 let isDragging = false;
-let gameSolved = false;
 let isEditing = false;
-let isCustomGame = false;
 
 let challengeInterval = null;
 let challengeTimeLeft = 0;
-let isChallengeActive = false;
-let challengeModeName = "";
-
-// Modes
-let isFunMode = false;
-let isExpertMode = false;
-let currentFunIndex = 0;
-let shuffledFunCombos = [];
 
 // pour ne pas spammer la popup de score
 let hasOfferedScore = false;
 
 // NOUVEAU : gestion des parties chrono / classement
 let isTimedModeEnabled = false;   // toggle global pour 4x4 / 5x5
-let isChronoGame = false;         // cette partie précise est-elle chronométrée ?
-let isRankedEligible = false;     // cette partie peut-elle être envoyée au classement ?
-let currentChronoMode = null;     // "expert3x3", "4x4", "5x5" ou null
 
 // Dictionnaire
 const DICTIONARY = new Set();
