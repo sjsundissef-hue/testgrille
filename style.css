@@ -60,6 +60,15 @@ body.ranked-results .top-highlight {
   display: none;
 }
 
+/* En mode ranked-results : réorganiser la structure */
+body.ranked-results .action-buttons {
+  display: none !important;
+}
+
+body.ranked-results .main-container > .score-panel {
+  display: none !important;
+}
+
 /* Conteneur ranked-stack : gère TOUT l'espacement avec flex gap */
 body.ranked-results .ranked-stack {
   display: flex;
@@ -72,8 +81,8 @@ body.ranked-results .ranked-stack {
   margin-top: 0;
 }
 
-/* Annuler toutes les marges parasites sur la grille */
-body.ranked-results .ranked-stack .grid-wrapper {
+/* En mode ranked-results, la grille normale est repositionnée */
+body.ranked-results .grid-wrapper {
   transform: scale(0.7);
   transform-origin: top center;
   margin-bottom: 0 !important;
@@ -81,8 +90,14 @@ body.ranked-results .ranked-stack .grid-wrapper {
   padding-bottom: 0;
 }
 
-body.ranked-results .ranked-stack .word-display-area {
-  margin-bottom: 0;
+/* Le score-panel est inclus dans ranked-stack via JavaScript */
+body.ranked-results .ranked-stack .score-panel {
+  width: 100%;
+  max-width: 400px;
+  max-height: 50vh;
+  height: auto;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 }
 
 /* Conteneur pour les deux boutons côte à côte */
@@ -146,6 +161,10 @@ body.ranked-results .game-area {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 0;
+}
+
+body.ranked-results .word-display-area {
   margin-bottom: 0;
 }
 
