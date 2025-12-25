@@ -45,23 +45,99 @@ body.ranked-active .top-highlight {
    MODE RÉSULTATS RANKED (ranked-results)
    ========================================== */
 
-/* En mode résultats ranked, on cache TOUS les boutons sauf Rejouer + Retour à l'accueil */
-body.ranked-results .action-buttons button:not(#replayBtn):not(#backToHomeBtn) {
-  display: none !important;
-}
-
-
 body.ranked-results .controls,
 body.ranked-results .settings-panel,
 body.ranked-results .top-highlight {
   display: none;
 }
 
-/* Grille COLLÉE aux boutons (gap 8px max) */
+/* ==========================================
+   CONTENEUR RANKED-STACK : Gère TOUT l'espacement
+   ========================================== */
+
+/* Cacher ranked-stack en mode normal */
+.ranked-stack {
+  display: none;
+}
+
+/* Conteneur ranked-stack : gère TOUT l'espacement avec flex gap */
+body.ranked-results .ranked-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px; /* SEUL espace entre grille / boutons / résultats */
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  margin-top: 0;
+}
+
+/* Annuler toutes les marges parasites sur la grille */
+body.ranked-results .ranked-stack .grid-wrapper {
+  transform: scale(0.7);
+  transform-origin: top center;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  padding-bottom: 0;
+}
+
+body.ranked-results .ranked-stack .word-display-area {
+  margin-bottom: 0;
+}
+
+/* Conteneur pour les deux boutons côte à côte */
+body.ranked-results .ranked-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+body.ranked-results .ranked-actions #replayBtn,
+body.ranked-results .ranked-actions #backToHomeBtn {
+  display: inline-block !important;
+  flex: 1;
+  max-width: 200px;
+  width: auto;
+  margin: 0;
+}
+
+/* Score panel inclus dans le stack */
+body.ranked-results .ranked-stack .score-panel {
+  width: 100%;
+  max-width: 400px;
+  max-height: 50vh;
+  height: auto;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+body.ranked-results .ranked-stack .word-list {
+  max-height: 40vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Cacher les éléments normaux en mode ranked-results */
+body.ranked-results .action-buttons {
+  display: none !important;
+}
+
+/* Cacher le score-panel normal, utiliser celui dans ranked-stack */
+body.ranked-results .main-container > .score-panel {
+  display: none !important;
+}
+
 body.ranked-results .main-container {
   flex-direction: column;
   align-items: center;
-  gap: 8px; /* Petit espace entre grille et boutons */
+  gap: 0;
 }
 
 body.ranked-results .game-area {
@@ -71,54 +147,6 @@ body.ranked-results .game-area {
   flex-direction: column;
   align-items: center;
   margin-bottom: 0;
-}
-
-body.ranked-results .grid-wrapper {
-  transform: scale(0.7);
-  transform-origin: top center;
-  margin-bottom: 4px; /* Très petit espace sous la grille */
-  padding-bottom: 0;
-}
-
-body.ranked-results .word-display-area {
-  margin-bottom: 0;
-}
-
-/* Les deux boutons côte à côte dans un conteneur flex */
-body.ranked-results .action-buttons {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 8px;
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  margin-top: 0; /* Pas d'espace au-dessus, le gap du main-container gère */
-}
-
-body.ranked-results #replayBtn,
-body.ranked-results #backToHomeBtn {
-  display: inline-block !important;
-  flex: 1;
-  max-width: 200px;
-  width: auto;
-  margin: 0;
-}
-
-/* Score panel compact avec scroll interne */
-body.ranked-results .score-panel {
-  width: 100%;
-  max-width: 400px;
-  max-height: 50vh;
-  height: auto;
-  margin-top: 8px; /* Petit espace après les boutons */
-}
-
-body.ranked-results .word-list {
-  max-height: 40vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* ==========================================
@@ -459,6 +487,15 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
   max-width: 750px; 
 }
 
+/* Conteneur pour Créer ma grille et Sprint 2x2 côte à côte */
+.special-modes-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  max-width: 750px;
+}
+
 button { 
   padding: 14px 28px; 
   font-size: 1.1rem; 
@@ -730,29 +767,26 @@ body.fun-mode-active #help2x2Btn {
   }
 
   /* Mode Ranked Results optimisé mobile */
-  body.ranked-results .main-container {
-    gap: 8px !important; /* Même gap sur mobile */
+  body.ranked-results .ranked-stack {
+    gap: 6px !important; /* Même gap sur mobile */
+    max-width: 100%;
   }
   
-  body.ranked-results .grid-wrapper {
+  body.ranked-results .ranked-stack .grid-wrapper {
     transform: scale(0.65) !important;
-    margin-bottom: 4px !important; /* Petit espace sous la grille */
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
     padding-bottom: 0 !important;
   }
   
-  body.ranked-results .game-area {
-    margin-bottom: 0 !important;
-  }
-  
-  body.ranked-results .action-buttons {
-    margin-top: 0 !important; /* Pas d'espace au-dessus, gap gère */
-    gap: 8px;
+  body.ranked-results .ranked-actions {
+    gap: 10px;
     flex-direction: row !important;
     max-width: 100%;
   }
   
-  body.ranked-results #replayBtn,
-  body.ranked-results #backToHomeBtn {
+  body.ranked-results .ranked-actions #replayBtn,
+  body.ranked-results .ranked-actions #backToHomeBtn {
     flex: 1;
     max-width: 48%;
     font-size: 0.85rem;
@@ -760,12 +794,24 @@ body.fun-mode-active #help2x2Btn {
     margin: 0;
   }
   
-  body.ranked-results .score-panel {
+  body.ranked-results .ranked-stack .score-panel {
     max-height: 45vh;
-    margin-top: 8px;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
   }
   
-  body.ranked-results .word-list {
+  body.ranked-results .ranked-stack .word-list {
     max-height: 35vh;
+  }
+  
+  /* Conteneur spécial modes sur mobile */
+  .special-modes-row {
+    width: 100%;
+    max-width: 430px;
+  }
+  
+  .special-modes-row button {
+    flex: 1;
+    min-width: 0;
   }
 }
