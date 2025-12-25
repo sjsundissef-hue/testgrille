@@ -6,8 +6,8 @@
 const GRID_SIZES     = [4, 5];         // Tailles valides de grilles (4x4, 5x5)
 const DEFAULT_GRID   = 4;              // Taille de grille par défaut
 const CHRONO_DURATIONS = {
-    "4x4": 120,
-    "5x5": 180,
+    "4x4": 90,
+    "5x5": 90,
     "expert3x3": 120,
     "fun2x2": 180
 };
@@ -479,6 +479,7 @@ function resetGameState() {
  // On enlève les modes ranked au début d'une nouvelle partie
   document.body.classList.remove(BODY_RANKED_RESULTS_CLASS);
   document.body.classList.remove(BODY_RANKED_CLASS);
+  document.body.classList.remove("fun-mode-active"); // Retirer le mode Fun
   isEditing = false;
   isCustomGame = false;
   isFunMode = false;
@@ -782,12 +783,15 @@ function startFunMode() {
   gridSize = 2;
   shuffledFunCombos = [...FUN_COMBOS].sort(() => 0.5 - Math.random());
   currentFunIndex = 0;
+  
+  // Activer la classe pour montrer le bouton Aide
+  document.body.classList.add("fun-mode-active");
 
   if (newGridBtn) newGridBtn.style.display = "none";
   if (replayBtn)  replayBtn.style.display = "none";
   if (createGridBtn) createGridBtn.style.display = "none";
   if (funBtn) funBtn.style.display = "none";
-  if (help2x2Btn) help2x2Btn.style.display = "none";
+  if (help2x2Btn) help2x2Btn.style.display = "block"; // Montrer l'aide en mode Fun
   if (globalStatsBtn) globalStatsBtn.style.display = "none";
   if (solveBtn) solveBtn.style.display = "none";
   if (passBtn) {
