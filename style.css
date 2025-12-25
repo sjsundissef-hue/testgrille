@@ -97,7 +97,19 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 
 .cell-input { width: 100%; height: 100%; background: transparent; border: none; text-align: center; font-size: 3.5rem; font-weight: 800; color: #4a90e2; outline: none; text-transform: uppercase; font-family: inherit; padding: 0; margin: 0; }
 
-.word-display-area { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 5px; }
+.word-display-area {
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 15px;
+
+  position: relative;
+  z-index: 20;
+}
+
 .current-word { font-size: 2.4rem; font-weight: 800; color: #333; min-height: 50px; letter-spacing: 2px; }
 .feedback { font-size: 1.2rem; font-weight: bold; height: 25px; opacity: 0; transition: opacity 0.3s; }
 .feedback.visible { opacity: 1; }
@@ -185,140 +197,153 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
 .btn-cancel { background-color: #95a5a6; color: white; border: none; border-radius: 20px; padding: 12px 20px; font-weight: bold; cursor: pointer; }
 .btn-confirm { background-color: #4cd137; color: white; border: none; border-radius: 20px; padding: 12px 25px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #44bd32; }
 .btn-confirm:active { transform: translateY(2px); box-shadow: 0 2px 0 #44bd32; }
-
-/* === MOBILE OPTIMIZED (Taille parfaite) === */
+/* === MOBILE OPTIMISÉ (grille + résultats visibles) === */
 @media (max-width: 768px) { 
-  body { padding: 5px; overflow-x: hidden; }
-  .score-panel { width: 100%; height: auto; max-height: 500px; padding: 15px; margin-top: 20px; }
-  .grid-wrapper { padding: 18px; border-radius: 24px; width: fit-content;
- display: flex; justify-content: center; }
-
-  .grid { 
-    gap: var(--grid-gap); 
-    width: 100%; 
-    justify-content: center; 
+  body {
+    padding: 5px;
+    overflow-x: hidden;
+    /* on laisse le scroll vertical si besoin */
   }
 
-  .cell { width: auto; height: auto; aspect-ratio: 1/1; font-size: 2.2rem; border-radius: 16px; box-shadow: 0 6px 0 var(--case-shadow); }
-  .cell.qu-mode { font-size: 1.6rem; letter-spacing: -1px; }
-  .cell-input { font-size: 2rem; }
-  .grid.fun-grid { width: min(82vw, 350px); gap: 30px; }
-  .grid.fun-grid .cell { font-size: 3.6rem; }
-  .grid.expert-grid { width: 345px !important; max-width: 345px !important; gap: 34px !important; margin: 0 auto; }
-  .grid.expert-grid .cell { width: 97px !important; height: 97px !important; font-size: 3.2rem; border-radius: 18px; }
-  .action-buttons { gap: 8px; width: 98%; }
-  button { padding: 10px 15px; font-size: 0.9rem; width: 48%; margin: 0; border-radius: 20px; }
+  /* On force une mise en page colonne et on partage l'écran */
+  .main-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    height: calc(100vh - 140px); /* espace pour le titre + boutons du haut */
+  }
+
+  .game-area {
+    width: 100%;
+    max-width: 600px;
+    flex: 0 0 55%;       /* ~ moitié haute de l'écran */
+    max-height: 55%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .score-panel {
+    width: 100%;
+    max-width: 600px;
+    flex: 0 0 45%;       /* ~ moitié basse de l'écran */
+    max-height: 45%;
+    padding: 15px;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;    /* on scroll SEULEMENT à l’intérieur */
+  }
+
+  /* Zone mots : prend tout l’espace disponible du panneau */
+  .word-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* On compresse un peu le header pour gagner de la place */
+  .score-header {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+  }
+  .score-title {
+    font-size: 1rem;
+  }
+  .score-total {
+    font-size: 1.5rem;
+  }
+  .score-comparison {
+    font-size: 0.8rem;
+  }
+
+  .filter-container {
+    margin-bottom: 6px;
+  }
+  .filter-input {
+    padding: 8px 10px;
+    font-size: 0.95rem;
+  }
+
+  .word-list li {
+    padding: 6px 4px;
+  }
+
+  /* Sections historiques / classements scrollables mais plus compactes */
+  .history-section,
+  .leaderboard-section {
+    max-height: 35%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Grille : on garde ton comportement actuel mais en utilisant les variables */
+  .grid-wrapper {
+    padding: 18px;
+    border-radius: 24px;
+    width: 85vw;
+    display: flex;
+    justify-content: center;
+  }
+
+  .grid { 
+    gap: var(--grid-gap);
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cell {
+    width: auto;
+    height: auto;
+    aspect-ratio: 1/1;
+    font-size: 2.2rem;
+    border-radius: 16px;
+    box-shadow: 0 6px 0 var(--case-shadow);
+  }
+  .cell.qu-mode {
+    font-size: 1.6rem;
+    letter-spacing: -1px;
+  }
+  .cell-input {
+    font-size: 2rem;
+  }
+
+  .grid.fun-grid {
+    width: min(82vw, 350px);
+    gap: 30px;
+  }
+  .grid.fun-grid .cell {
+    font-size: 3.6rem;
+  }
+  .grid.expert-grid {
+    width: 345px !important;
+    max-width: 345px !important;
+    gap: 34px !important;
+    margin: 0 auto;
+  }
+  .grid.expert-grid .cell {
+    width: 97px !important;
+    height: 97px !important;
+    font-size: 3.2rem;
+    border-radius: 18px;
+  }
+
+  .action-buttons {
+    gap: 8px;
+    width: 98%;
+  }
+  button {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+    width: 48%;
+    margin: 0;
+    border-radius: 20px;
+  }
 }
 
-
-/* BOUTON MODE CHRONO */
-#chronoToggleBtn {
-  font-size: 0.95rem;
-  background-color: #ffeaa7;
-  color: #333;
-  box-shadow: 0 3px 0 #e1b12c;
-}
-
-#chronoToggleBtn.chrono-active {
-  background-color: #00b894;
-  box-shadow: 0 3px 0 #019874;
-  color: #fff;
-}
-
-/* BADGE PARTIE CHRONO */
-.chrono-badge {
-  margin-bottom: 8px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #00b894;
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-/* === RÉGLAGE TAILLE GRILLE / LETTRES === */
-.settings-panel {
-  max-width: 600px;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 0 10px;
-  margin-bottom: 8px;
-}
-
-.setting-item {
-  width: 100%;
-  max-width: 320px;
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.setting-item label {
-  margin-bottom: 4px;
-  opacity: 0.8;
-}
-
-/* Slider */
-#gridScaleRange {
-  width: 100%;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  border-radius: 999px;
-  background: #e0e0e0;
-  outline: none;
-}
-
-#gridScaleRange::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #4a90e2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-  cursor: pointer;
-}
-
-#gridScaleRange::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #4a90e2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-  cursor: pointer;
-}
-#gridGapRange {
-  width: 100%;
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  border-radius: 999px;
-  background: #e0e0e0;
-  outline: none;
-}
-
-#gridGapRange::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #4a90e2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-  cursor: pointer;
-}
-
-#gridGapRange::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #4a90e2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-  cursor: pointer;
-}
 
 
