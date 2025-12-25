@@ -50,27 +50,6 @@ body.ranked-results .action-buttons button:not(#replayBtn):not(#backToHomeBtn) {
   display: none !important;
 }
 
-/* Les deux boutons côte à côte (même ligne) */
-body.ranked-results .action-buttons {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 10px;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  margin-top: 2px; /* Espace minimal au-dessus des boutons */
-}
-
-body.ranked-results #replayBtn,
-body.ranked-results #backToHomeBtn {
-  display: inline-block !important;
-  flex: 1;
-  max-width: 195px;
-  width: auto;
-  margin: 0;
-}
 
 body.ranked-results .controls,
 body.ranked-results .settings-panel,
@@ -78,11 +57,11 @@ body.ranked-results .top-highlight {
   display: none;
 }
 
-/* Grille COLLÉE aux boutons (quelques millimètres max) */
+/* Grille COLLÉE aux boutons (gap 8px max) */
 body.ranked-results .main-container {
   flex-direction: column;
   align-items: center;
-  gap: 2px; /* Espace minimal entre grille et boutons */
+  gap: 8px; /* Petit espace entre grille et boutons */
 }
 
 body.ranked-results .game-area {
@@ -97,12 +76,34 @@ body.ranked-results .game-area {
 body.ranked-results .grid-wrapper {
   transform: scale(0.7);
   transform-origin: top center;
-  margin-bottom: 0; /* Pas d'espace sous la grille */
+  margin-bottom: 4px; /* Très petit espace sous la grille */
   padding-bottom: 0;
 }
 
 body.ranked-results .word-display-area {
   margin-bottom: 0;
+}
+
+/* Les deux boutons côte à côte dans un conteneur flex */
+body.ranked-results .action-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  margin-top: 0; /* Pas d'espace au-dessus, le gap du main-container gère */
+}
+
+body.ranked-results #replayBtn,
+body.ranked-results #backToHomeBtn {
+  display: inline-block !important;
+  flex: 1;
+  max-width: 200px;
+  width: auto;
+  margin: 0;
 }
 
 /* Score panel compact avec scroll interne */
@@ -379,6 +380,11 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 
   transform: scale(var(--grid-scale));
   transform-origin: center;
+  
+  /* Limiter la taille max pour ne pas écraser les boutons */
+  max-width: 100%;
+  max-height: 60vh; /* Maximum 60% de la hauteur de l'écran */
+  overflow: hidden;
 }
 
 
@@ -443,8 +449,28 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 .timer-display.low-time { color: #e84118; animation: pulse 1s infinite; }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-.action-buttons { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 750px; }
-button { padding: 14px 28px; font-size: 1.1rem; font-weight: bold; color: white; background-color: #4a90e2; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 0 #357abd; transition: transform 0.1s; }
+.action-buttons { 
+  display: flex; 
+  gap: 10px; 
+  margin-top: 20px; 
+  flex-wrap: wrap; 
+  justify-content: center; 
+  width: 100%; 
+  max-width: 750px; 
+}
+
+button { 
+  padding: 14px 28px; 
+  font-size: 1.1rem; 
+  font-weight: bold; 
+  color: white; 
+  background-color: #4a90e2; 
+  border: none; 
+  border-radius: 30px; 
+  cursor: pointer; 
+  box-shadow: 0 5px 0 #357abd; 
+  transition: transform 0.1s; 
+}
 button:active { transform: translateY(3px); box-shadow: 0 2px 0 #357abd; }
 
 button.secondary { background-color: #95a5a6; box-shadow: 0 5px 0 #7f8c8d; }
@@ -453,6 +479,16 @@ button.fun { background: linear-gradient(45deg, #e1b12c, #f1c40f); box-shadow: 0
 button.validate { background-color: #4cd137; box-shadow: 0 5px 0 #44bd32; display: none; }
 button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: none; }
 .help-btn { background-color: #f1c40f; color: #333; box-shadow: 0 5px 0 #d4ac0d; }
+
+/* Cacher le bouton Aide sur l'accueil par défaut */
+#help2x2Btn {
+  display: none !important;
+}
+
+/* Montrer le bouton Aide uniquement en mode Fun */
+body.fun-mode-active #help2x2Btn {
+  display: inline-block !important;
+}
 
 .score-panel { background: white; padding: 25px; border-radius: 25px; width: 340px; height: 750px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
 .score-header { margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
@@ -581,9 +617,18 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     border-radius: 24px; 
     width: 90vw; 
     max-width: 430px;
+    max-height: 55vh; /* Limite sur mobile pour garder les boutons visibles */
     display: flex; 
     justify-content: center; 
-    margin: 0 auto; 
+    align-items: center;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  
+  /* S'assurer que la grille s'adapte dans la zone limitée */
+  .grid-wrapper .grid {
+    max-width: 100%;
+    max-height: 100%;
   }
 
   .grid { 
@@ -634,25 +679,47 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     margin-bottom: 18px;
   }
 
-  /* Bloc boutons sur mobile */
+  /* Bloc boutons sur mobile - Layout compact */
   .action-buttons { 
-    gap: 6px; 
+    gap: 8px; 
     width: 100%; 
     max-width: 430px;
     margin-top: 10px;
     justify-content: center;
+    row-gap: 8px;
   }
 
   button { 
-    padding: 9px 12px; 
+    padding: 10px 14px; 
     font-size: 0.9rem; 
-    width: 48%; 
     margin: 0; 
     border-radius: 18px; 
+    flex: 1 1 calc(50% - 4px); /* 2 boutons par ligne avec gap */
+    min-width: calc(50% - 4px);
+    max-width: calc(50% - 4px);
   }
 
-  button.stats-btn {
+  /* Boutons pleine largeur sur mobile */
+  button.stats-btn,
+  #solveBtn {
+    flex: 1 1 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Fun 2x2 et Aide côte à côte uniquement en mode Fun */
+  body.fun-mode-active .action-buttons > div {
+    display: flex;
+    gap: 8px;
     width: 100%;
+  }
+  
+  body.fun-mode-active #funBtn {
+    flex: 2;
+  }
+  
+  body.fun-mode-active #help2x2Btn {
+    flex: 1;
   }
 
   /* Sur mobile, on empile grille + résultats */
@@ -663,9 +730,13 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
 
   /* Mode Ranked Results optimisé mobile */
+  body.ranked-results .main-container {
+    gap: 8px !important; /* Même gap sur mobile */
+  }
+  
   body.ranked-results .grid-wrapper {
     transform: scale(0.65) !important;
-    margin-bottom: 0 !important;
+    margin-bottom: 4px !important; /* Petit espace sous la grille */
     padding-bottom: 0 !important;
   }
   
@@ -674,9 +745,10 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
   
   body.ranked-results .action-buttons {
-    margin-top: 1px !important;
+    margin-top: 0 !important; /* Pas d'espace au-dessus, gap gère */
     gap: 8px;
     flex-direction: row !important;
+    max-width: 100%;
   }
   
   body.ranked-results #replayBtn,
@@ -690,14 +762,10 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   
   body.ranked-results .score-panel {
     max-height: 45vh;
-    margin-top: 6px;
+    margin-top: 8px;
   }
   
   body.ranked-results .word-list {
     max-height: 35vh;
-  }
-  
-  body.ranked-results .main-container {
-    gap: 1px !important;
   }
 }
