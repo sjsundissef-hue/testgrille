@@ -1293,10 +1293,13 @@ function finishAndShowSolutions() {
     cachedSolutions = findAllWords();
   }
 
-  solutionMode = true;
+   solutionMode = true;
   gameSolved = true;
 
+  document.body.classList.add("solutions-open");
+
   updateWordList();
+
 
   // on remonte la liste en haut pour bien voir les premiers mots
   if (listEl) listEl.scrollTop = 0;
