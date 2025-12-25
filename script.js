@@ -235,7 +235,10 @@ function setRankedResultsMode() {
   // Déplacer la grille et le score-panel dans ranked-stack
   const rankedStack = document.querySelector(".ranked-stack");
   const gridWrapper = document.querySelector(".grid-wrapper");
-  const scorePanel = document.querySelector(".main-container > .score-panel");
+  // Chercher le score-panel dans main-container ou dans ranked-stack
+  const scorePanel = document.querySelector(".main-container > .score-panel") || 
+                     document.querySelector(".ranked-stack .score-panel") ||
+                     document.querySelector(".score-panel");
   
   if (rankedStack) {
     // Déplacer la grille au début de ranked-stack si elle n'y est pas déjà
@@ -664,38 +667,43 @@ function replayGrid() {
   solutionMode = false;
   gameSolved = false;
 
-  // 2) Si on était en mode ranked, on relance une nouvelle partie ranked
-  if (isChronoGame) {
-    // On relance le ranked avec la même configuration
-    const modeName = getCurrentMode();
-    if (isTimedModeEnabled && (gridSize === 4 || gridSize === 5)) {
-      const duration = CHRONO_DURATIONS[modeName] || CHRONO_DURATIONS["4x4"];
-      startTimer(duration);
-      isChallengeActive = true;
-      isChronoGame = true;
-      isRankedEligible = true;
-      currentChronoMode = modeName;
-      challengeModeName = "ranked-" + modeName;
-      setRankedModeUI(true);
-    } else if (isExpertMode) {
-      const duration = CHRONO_DURATIONS["expert3x3"] || 120;
-      startTimer(duration);
-      isChallengeActive = true;
-      isChronoGame = true;
-      isRankedEligible = true;
-      currentChronoMode = "expert3x3";
-      setRankedModeUI(true);
-    } else {
-      setHomeMode();
-    }
-  } else {
-    setHomeMode();
+  // 2) "Rejouer" après une ranked doit toujours lancer une partie normale (non-ranked)
+  // On désactive complètement le mode ranked pour cette nouvelle partie
+  isChronoGame = false;
+  isRankedEligible = false;
+  currentChronoMode = null;
+  isChallengeActive = false;
+  // On ne change PAS isTimedModeEnabled ici - l'utilisateur peut le réactiver manuellement s'il veut
+  
+  // Remettre la grille et le score-panel à leur place normale si nécessaire
+  const mainContainer = document.querySelector(".main-container");
+  const gameArea = document.querySelector(".game-area");
+  const scorePanel = document.querySelector(".score-panel");
+  const gridWrapper = document.querySelector(".grid-wrapper");
+  const rankedStack = document.querySelector(".ranked-stack");
+  
+  // Remettre le score-panel à sa place normale
+  if (mainContainer && scorePanel && rankedStack && rankedStack.contains(scorePanel)) {
+    mainContainer.appendChild(scorePanel);
   }
+  
+  // Remettre la grille à sa place normale
+  if (gameArea && gridWrapper && rankedStack && rankedStack.contains(gridWrapper)) {
+    gameArea.insertBefore(gridWrapper, gameArea.querySelector(".action-buttons"));
+  }
+  
+  // S'assurer que la grille est à taille normale
+  if (gridWrapper) {
+    gridWrapper.style.transform = "";
+    gridWrapper.style.marginBottom = "";
+    gridWrapper.style.marginTop = "";
+  }
+  
+  // Retour au mode accueil
+  setHomeMode();
+  updateRankedUI();
 
-  // 4) Reset de la grille mais on garde les mêmes lettres
-  // (Les boutons sont gérés par les classes CSS maintenant)
-
-  // 4) Reset de la grille mais on garde les mêmes lettres
+  // 3) Reset de la grille mais on garde les mêmes lettres
   foundWords.clear();
   cachedSolutions = null;
   currentScore = 0;
@@ -709,9 +717,6 @@ function replayGrid() {
   renderGrid();
   setTimeout(resizeCanvas, 50);
   showFeedback("Grille réinitialisée", "valid");
-  
-  // Le mode chrono est déjà géré plus haut dans la fonction
-  updateRankedUI();
 }
 
 
@@ -1571,37 +1576,13 @@ if (solveBtn) {
   solutionMode = true;
   gameSolved = true;
 
-  // Si on était en mode chrono, on passe en mode résultats chrono
-  // Sinon, on utilise le mode solutions classique (pour les parties non chrono)
-  if (isChronoGame) {
-    setRankedResultsMode();
-  } else {
-    // Mode solutions classique (non chrono) - on ne met PAS BODY_RANKED_RESULTS_CLASS
-    // car cela cache le score-panel normal. On garde juste le mode home.
-    document.body.classList.remove(BODY_RANKED_CLASS);
-    document.body.classList.remove(BODY_RANKED_RESULTS_CLASS); // S'assurer qu'on n'est pas en mode ranked-results
-    // Ne pas ajouter BODY_RANKED_RESULTS_CLASS pour les solutions non-ranked
-    // Le score-panel normal reste visible
-    if (backToHomeBtn) {
-      backToHomeBtn.style.display = "none"; // Pas besoin du bouton retour en mode solutions normal
-    }
-    
-    // S'assurer que le score-panel est visible et à sa place normale
-    const mainContainer = document.querySelector(".main-container");
-    const scorePanel = document.querySelector(".score-panel");
-    const rankedStack = document.querySelector(".ranked-stack");
-    if (mainContainer && scorePanel && rankedStack && rankedStack.contains(scorePanel)) {
-      // Remettre le score-panel à sa place normale si il était dans ranked-stack
-      mainContainer.appendChild(scorePanel);
-    }
-    
-    // S'assurer que la grille est à sa place normale
-    const gridWrapper = document.querySelector(".grid-wrapper");
-    const gameArea = document.querySelector(".game-area");
-    if (gameArea && gridWrapper && rankedStack && rankedStack.contains(gridWrapper)) {
-      // Remettre la grille à sa place normale si elle était dans ranked-stack
-      gameArea.insertBefore(gridWrapper, gameArea.querySelector(".action-buttons"));
-    }
+  // Utiliser la même présentation pour ranked et non-ranked
+  // On utilise toujours setRankedResultsMode() pour avoir la même expérience visuelle
+  setRankedResultsMode();
+  
+  // Afficher le bouton retour pour les deux cas (ranked et non-ranked)
+  if (backToHomeBtn) {
+    backToHomeBtn.style.display = "inline-block";
   }
 
   // S'assurer que le score-panel est visible avant d'afficher les mots
@@ -1773,12 +1754,37 @@ if (backToHomeBtn) {
     if (isChallengeActive) {
       stopTimer();
     }
-    // Quitter complètement le mode chrono
+    
+    // Quitter complètement le mode ranked
     isChronoGame = false;
     isRankedEligible = false;
     currentChronoMode = null;
     isChallengeActive = false;
-    isTimedModeEnabled = false;
+    isTimedModeEnabled = false; // Désactiver le mode ranked
+    
+    // Remettre la grille et le score-panel à leur place normale
+    const mainContainer = document.querySelector(".main-container");
+    const gameArea = document.querySelector(".game-area");
+    const scorePanel = document.querySelector(".score-panel");
+    const gridWrapper = document.querySelector(".grid-wrapper");
+    const rankedStack = document.querySelector(".ranked-stack");
+    
+    // Remettre le score-panel à sa place normale
+    if (mainContainer && scorePanel && rankedStack && rankedStack.contains(scorePanel)) {
+      mainContainer.appendChild(scorePanel);
+    }
+    
+    // Remettre la grille à sa place normale
+    if (gameArea && gridWrapper && rankedStack && rankedStack.contains(gridWrapper)) {
+      gameArea.insertBefore(gridWrapper, gameArea.querySelector(".action-buttons"));
+    }
+    
+    // S'assurer que la grille est visible et à taille normale
+    if (gridWrapper) {
+      gridWrapper.style.transform = "";
+      gridWrapper.style.marginBottom = "";
+      gridWrapper.style.marginTop = "";
+    }
     
     // Retour à l'accueil
     setHomeMode();
@@ -1787,7 +1793,7 @@ if (backToHomeBtn) {
     // Réinitialiser l'état du jeu
     resetGameState();
     
-    // Relancer une nouvelle grille normale
+    // Relancer une nouvelle grille normale (sans ranked)
     initGame();
   });
 }
