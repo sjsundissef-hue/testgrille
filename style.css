@@ -54,12 +54,14 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
   border-radius: 40px;
   box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
   touch-action: none;
-  width: auto;
+
+  width: fit-content;
+  height: fit-content;
 
   transform: scale(var(--grid-scale));
-  transform-origin: center top;
-
+  transform-origin: center;
 }
+
 
 #bgCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
 #lineCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
@@ -288,4 +290,34 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   box-shadow: 0 2px 4px rgba(0,0,0,0.25);
   cursor: pointer;
 }
+#gridGapRange {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: #e0e0e0;
+  outline: none;
+}
+
+#gridGapRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+
+#gridGapRange::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+
 
