@@ -410,10 +410,17 @@ function initGame() {
 
 function replayGrid() {
   if (isEditing) return;
+
+  // On quitte le mode "solutions affichées"
+  document.body.classList.remove("solutions-open");
+  solutionMode = false;
+  gameSolved = false;
+
   if (isChallengeActive) {
     stopTimer();
     if (feedbackEl) feedbackEl.textContent = "Mode Libre";
   }
+
 
   foundWords.clear();
   cachedSolutions = null;
@@ -1293,30 +1300,37 @@ function finishAndShowSolutions() {
     cachedSolutions = findAllWords();
   }
 
-   solutionMode = true;
+  solutionMode = true;
   gameSolved = true;
 
+  // Active le mode "solutions ouvertes" (CSS spécial mobile)
   document.body.classList.add("solutions-open");
 
-  updateWordList();
+  // 👉 ICI : on montre seulement "Rejouer" sous la grille
+  if (newGridBtn)       newGridBtn.style.display = "none";
+  if (createGridBtn)    createGridBtn.style.display = "none";
+  if (funBtn)           funBtn.style.display = "none";
+  if (help2x2Btn)       help2x2Btn.style.display = "none";
+  if (globalStatsBtn)   globalStatsBtn.style.display = "none";
+  if (validateCustomBtn) validateCustomBtn.style.display = "none";
+  if (passBtn)          passBtn.style.display = "none";
+  if (solveBtn)         solveBtn.style.display = "none";
+  if (newGridBtn)       newGridBtn.style.display = "none";
+  if (replayBtn) {
+    replayBtn.style.display = "inline-block";
+  }
 
+  updateWordList();
 
   // on remonte la liste en haut pour bien voir les premiers mots
   if (listEl) listEl.scrollTop = 0;
 
-    // on force le titre pour que tu voies clairement que tu es en mode résultat
+  // on force le titre pour que tu voies clairement que tu es en mode résultat
   if (listTitleEl) listTitleEl.textContent = "Résultats";
 
-  // feedback visuel sur le bouton
-  if (solveBtn) solveBtn.textContent = "Solutions affichées";
-
   maybeOfferExpertScore();
-
-  // Sur mobile : on enlève les boutons pour remonter "Résultats"
-  if (window.innerWidth <= 768) {
-    document.body.classList.add("solutions-open");
-  }
 }
+
 
 
 
