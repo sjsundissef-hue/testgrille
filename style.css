@@ -224,6 +224,17 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   z-index: 1;   /* en dessous du texte */
 }
 
+/* === MOBILE OPTIMIZED (Taille parfaite) === */
+.word-display-area {
+  position: relative;
+  z-index: 5;   /* au-dessus de la grille */
+}
+
+.grid-wrapper {
+  position: relative;
+  z-index: 1;   /* en dessous du texte */
+}
+
 @media (max-width: 768px) { 
   body { 
     padding: 5px; 
@@ -252,87 +263,6 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
 
   .grid-wrapper { 
     padding: 12px;        /* moins de blanc autour */
-    border-radius: 24px; 
-    width: 90vw; 
-    max-width: 430px;
-    display: flex; 
-    justify-content: center; 
-    margin: 0 auto; 
-  }
-
-  .grid { 
-    gap: var(--grid-gap); 
-    width: 100%; 
-    justify-content: center; 
-  }
-
-  .cell { 
-    width: auto; 
-    height: auto; 
-    aspect-ratio: 1/1; 
-    font-size: 2.1rem; 
-    border-radius: 16px; 
-    box-shadow: 0 6px 0 var(--case-shadow); 
-  }
-  .cell.qu-mode { 
-    font-size: 1.6rem; 
-    letter-spacing: -1px; 
-  }
-  .cell-input { font-size: 2rem; }
-
-  .grid.fun-grid { 
-    width: min(82vw, 350px); 
-    gap: 26px; 
-  }
-  .grid.fun-grid .cell { font-size: 3.4rem; }
-
-  .grid.expert-grid { 
-    width: 320px !important; 
-    max-width: 320px !important; 
-    gap: 26px !important; 
-    margin: 0 auto; 
-  }
-  .grid.expert-grid .cell { 
-    width: 90px !important; 
-    height: 90px !important; 
-    font-size: 3rem; 
-    border-radius: 18px; 
-  }
-
-.word-display-area {
-  margin-top: 4px;
-  margin-bottom: 18px;   /* encore un peu plus de place sur téléphone */
-}
-
-
- @media (max-width: 768px) { 
-  body { 
-    padding: 5px; 
-    overflow-x: hidden; 
-  }
-
-  .game-area {
-    gap: 8px;
-    margin-top: 0;
-  }
-
-  .settings-panel {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-    margin-bottom: 4px;
-  }
-
-  .score-panel { 
-    width: 100%; 
-    height: auto; 
-    max-height: 460px;
-    padding: 12px; 
-    margin-top: 10px; 
-  }
-
-  .grid-wrapper { 
-    padding: 12px;
     border-radius: 24px; 
     width: 90vw; 
     max-width: 430px;
@@ -386,7 +316,7 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
 
   .word-display-area {
     margin-top: 4px;
-    margin-bottom: 18px;
+    margin-bottom: 18px;   /* encore un peu plus de place sur téléphone */
   }
 
   /* Bloc boutons sur mobile */
@@ -465,11 +395,16 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     -webkit-overflow-scrolling: touch;
   }
 
+  body.solutions-open .action-buttons {
+    margin-top: 4px;   /* rapproche encore "Rejouer" de la grille */
+  }
+
   body.solutions-open .word-list {
     max-height: 60vh;
   }
 
 } /* FIN DU MEDIA */
+
 
 
 
