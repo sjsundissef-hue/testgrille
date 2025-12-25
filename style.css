@@ -425,8 +425,25 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 }
 .big-highlight-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #6c3483; }
 
-.controls { display: flex; gap: 15px; margin-bottom: 15px; }
-.mode-btn { padding: 10px 20px; font-size: 1rem; background-color: #e0e0e0; color: #555; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
+.controls { 
+  display: flex; 
+  gap: 15px; 
+  margin-bottom: 15px; 
+  flex-wrap: wrap; /* Permet le retour à la ligne sur mobile */
+  justify-content: center; /* Centre les boutons */
+}
+.mode-btn { 
+  padding: 10px 20px; 
+  font-size: 1rem; 
+  background-color: #e0e0e0; 
+  color: #555; 
+  border: none; 
+  border-radius: 25px; 
+  cursor: pointer; 
+  font-weight: bold; 
+  flex: 0 1 auto; /* Permet aux boutons de se rétrécir si nécessaire */
+  min-width: fit-content; /* Garde la taille minimale du contenu */
+}
 .mode-btn.active { background-color: #4a90e2; color: white; box-shadow: 0 3px 0 #357abd; }
 
 .main-container { display: flex; gap: 50px; align-items: flex-start; flex-wrap: wrap; justify-content: center; width: 100%; padding-bottom: 50px; }
@@ -664,6 +681,27 @@ body.fun-mode-active #help2x2Btn {
   body { 
     padding: 5px; 
     overflow-x: hidden; 
+  }
+
+  /* Ajuster les boutons de mode sur mobile pour qu'ils soient tous visibles */
+  .controls {
+    gap: 8px; /* Réduire l'espace entre les boutons */
+    justify-content: center;
+    flex-wrap: wrap; /* Permet le retour à la ligne */
+  }
+  
+  .mode-btn {
+    padding: 8px 12px; /* Réduire le padding sur mobile */
+    font-size: 0.9rem; /* Légèrement plus petit */
+    flex: 0 1 auto; /* Permet de se rétrécir */
+    min-width: 0; /* Permet de se rétrécir en dessous de la taille du contenu si nécessaire */
+  }
+  
+  /* Si le bouton ranked est seul sur une ligne, le centrer */
+  .controls #rankedToggleBtn {
+    width: 100%; /* Prend toute la largeur si seul sur une ligne */
+    max-width: 300px; /* Mais pas plus que 300px */
+    margin: 0 auto; /* Centre le bouton */
   }
 
   .game-area {
