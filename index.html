@@ -56,50 +56,18 @@
     <div class="feedback" id="feedbackMsg"></div>
   </div>
 
-      <!-- Conteneur pour mode ranked-results -->
-      <div class="ranked-stack">
-        <div class="grid-wrapper">
-          <canvas id="bgCanvas"></canvas>
-          <canvas id="lineCanvas"></canvas>
-          <div class="grid" id="grid"></div>
-        </div>
+      <!-- Grille normale (toujours visible) -->
+      <div class="grid-wrapper">
+        <canvas id="bgCanvas"></canvas>
+        <canvas id="lineCanvas"></canvas>
+        <div class="grid" id="grid"></div>
+      </div>
 
+      <!-- Conteneur pour mode ranked-results (caché par défaut) -->
+      <div class="ranked-stack">
         <div class="ranked-actions">
           <button id="replayBtn" class="secondary">Rejouer</button>
           <button id="backToHomeBtn" class="secondary" style="display:none;">🏠 Retour à l'accueil</button>
-        </div>
-
-        <div class="score-panel">
-          <div class="score-header">
-            <div class="score-title" id="listTitle">Score Actuel</div>
-            <div class="score-total" id="scoreDisplay">0</div>
-            <div class="score-comparison" id="scoreComparison"></div>
-          </div>
-          
-          <div class="filter-container">
-              <input type="text" id="filterInput" class="filter-input" placeholder="🔎 Filtrer...">
-          </div>
-
-          <ul class="word-list" id="wordList"></ul>
-
-          <div class="history-section">
-              <div class="history-title">Historique Session</div>
-              <ul class="history-list" id="historyList"></ul>
-          </div>
-
-          <div class="leaderboard-section">
-              <div class="leaderboard-title">🌍 Classement 3x3 (Online)</div>
-              <ul class="leaderboard-list" id="leaderboardList">
-                  <li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>
-              </ul>
-
-              <div style="margin:12px 0; border-top:1px solid #eee;"></div>
-
-              <div class="leaderboard-title">🏆 Classement Global (3 modes)</div>
-              <ul class="leaderboard-list" id="globalRankingList">
-                  <li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>
-              </ul>
-          </div>
         </div>
       </div>
 
