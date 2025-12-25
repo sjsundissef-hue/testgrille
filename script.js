@@ -1,1442 +1,323 @@
-// ==========================================
-// ============= 1. CONFIGURATION ===========
-// ==========================================
+:root {
+  --bg-color: #f4f4eb;
+  --case-bg: #ffffff;
+  --case-shadow: #c8c8be;
+  --case-selected: #d4f1f4;
+  --case-border-selected: #4a90e2;
+  --text-color: #333333;
+  --valid-color: #4cd137;
+  --invalid-color: #e84118;
 
-const SUPABASE_URL = "https://dtaufxcpiapzdpiqthmu.supabase.co";
-const SUPABASE_KEY = "sb_publishable_GblvazVWGG23qdrX4GEtvw_Ypn01EFa";
+  /* nouveau : zoom de la grille */
+  --grid-scale: 1;
 
-const MIN_WORD_LENGTH = 4;
-const DICT_URL = "dictionnaire.json";
-
-const FUN_COMBOS = [
-  "ERSU","ACER","AILS","AIRS","AIST","EORS","AIRV","AEIM",
-  "AELP","AEMR","AIMS","AINS","AEPR","AEPT","AERS","ARST",
-  "AERT","ABET","CERU","DERU"
-];
-
-const EXPERT_GRIDS = [
-  ["T","E","M","R","I","S","D","A","T"],
-  ["T","E","R","N","I","R","T","A","T"],
-  ["R","A","S","T","I","S","S","N","E"],
-  ["A","P","E","I","T","A","S","R","E"],
-  ["T","A","O","R","I","S","U","E","L"]
-];
-
-const FALLBACK_WORDS = ["TEST","WORD","GAME","JOUER","GAGNE"];
-
-const FREQUENCIES = [
-  { l:"E", w:14.7 },{ l:"A", w:7.6 },{ l:"I", w:7.5 },{ l:"S", w:7.9 },
-  { l:"N", w:7.0 },{ l:"R", w:6.6 },{ l:"T", w:7.2 },{ l:"O", w:5.7 },
-  { l:"L", w:5.4 },{ l:"U", w:6.3 },{ l:"D", w:3.6 },{ l:"C", w:3.2 },
-  { l:"M", w:2.9 },{ l:"P", w:2.5 },{ l:"G", w:1.0 },{ l:"B", w:0.9 },
-  { l:"V", w:1.8 },{ l:"H", w:0.7 },{ l:"F", w:1.0 },{ l:"Q", w:1.3 },
-  { l:"Y", w:0.3 },{ l:"X", w:0.3 },{ l:"J", w:0.6 },{ l:"K", w:0.07 },
-  { l:"W", w:0.06 },{ l:"Z", w:0.05 }
-];
-
-const VOWELS    = ["A","E","I","O","U","Y"];
-const CONSONANTS= ["B","C","D","F","G","H","J","K","L","M","N","P","Q","R","S","T","V","W","X","Z"];
-
-let cumulativeWeights = [];
-let totalWeight = 0;
-for (const item of FREQUENCIES) {
-  totalWeight += item.w;
-  cumulativeWeights.push({ l:item.l, max:totalWeight });
+  /* nouveau : écart entre les cases */
+  --grid-gap: 20px;
 }
 
-// Table Supabase pour le classement 3x3 (ancien système)
-const LEADERBOARD_TABLE = "leaderboard_3x3";
 
-// NOUVEAU : table générique pour tous les scores chrono (3x3, 4x4, 5x5)
-const SCORES_CHRONO_TABLE = "scores_chrono";
 
-// Durées pour les modes chrono (en secondes)
-const CHRONO_DURATIONS = {
-  expert3x3: 120,
-  "4x4": 90,
-  "5x5": 90
-};
+* { box-sizing: border-box; }
 
-// ==========================================
-// ============= PLAYER & GAME IDs =========
-// ==========================================
-
-// ID unique par joueur (conservé dans le navigateur)
-let PLAYER_ID = localStorage.getItem("wb_player_id");
-if (!PLAYER_ID) {
-  if (window.crypto && window.crypto.randomUUID) {
-    PLAYER_ID = window.crypto.randomUUID();
-  } else {
-    PLAYER_ID = "wb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
-  }
-  localStorage.setItem("wb_player_id", PLAYER_ID);
+body {
+  margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
+  min-height: 100vh; background-color: var(--bg-color);
+  font-family: 'Segoe UI', sans-serif; user-select: none;
+  touch-action: pan-y; -webkit-overflow-scrolling: touch;
 }
 
-// ID unique pour chaque partie / grille
-let currentGameId = null;
+h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacing: 4px; font-size: 2.2rem; }
 
-// ==========================================
-// ============= 2. VARIABLES & DOM =========
-// ==========================================
+/* BOUTON TOP EXPERT */
+.top-highlight { margin-bottom: 15px; width: 100%; display: flex; justify-content: center; }
+.big-highlight-btn {
+    background: linear-gradient(45deg, #8e44ad, #9b59b6);
+    color: white; border: none; border-radius: 30px;
+    padding: 15px 40px; font-size: 1.3rem; font-weight: 900;
+    box-shadow: 0 6px 0 #6c3483, 0 10px 20px rgba(142, 68, 173, 0.4);
+    cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+    transition: transform 0.1s; width: 90%; max-width: 400px;
+}
+.big-highlight-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #6c3483; }
 
-let gridSize = 4;
-let gridData = [];
-let foundWords = new Set();
-let cachedSolutions = null;
-let solutionMode = false;
-let currentScore = 0;
-let selectionPath = [];
-let isDragging = false;
-let gameSolved = false;
-let isEditing = false;
-let isCustomGame = false;
+.controls { display: flex; gap: 15px; margin-bottom: 15px; }
+.mode-btn { padding: 10px 20px; font-size: 1rem; background-color: #e0e0e0; color: #555; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; }
+.mode-btn.active { background-color: #4a90e2; color: white; box-shadow: 0 3px 0 #357abd; }
 
-let challengeInterval = null;
-let challengeTimeLeft = 0;
-let isChallengeActive = false;
-let challengeModeName = "";
+.main-container { display: flex; gap: 50px; align-items: flex-start; flex-wrap: wrap; justify-content: center; width: 100%; padding-bottom: 50px; }
+.game-area { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 600px; }
 
-// Modes
-let isFunMode = false;
-let isExpertMode = false;
-let currentFunIndex = 0;
-let shuffledFunCombos = [];
+.grid-wrapper {
+  position: relative;
+  padding: 30px;
+  background: #dcdcd0;
+  border-radius: 40px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+  touch-action: none;
 
-// pour ne pas spammer la popup de score
-let hasOfferedScore = false;
+  width: fit-content;
+  height: fit-content;
 
-// NOUVEAU : gestion des parties chrono / classement
-let isTimedModeEnabled = false;   // toggle global pour 4x4 / 5x5
-let isChronoGame = false;         // cette partie précise est-elle chronométrée ?
-let isRankedEligible = false;     // cette partie peut-elle être envoyée au classement ?
-let currentChronoMode = null;     // "expert3x3", "4x4", "5x5" ou null
-
-// Dictionnaire
-const DICTIONARY = new Set();
-const PREFIXES   = new Set();
-let dictionaryLoaded = false;
-
-// DOM Elements
-const gridEl = document.getElementById("grid");
-const canvas = document.getElementById("lineCanvas");
-const ctx    = canvas.getContext("2d");
-const bgCanvas = document.getElementById("bgCanvas");
-const ctxBg    = bgCanvas.getContext("2d");
-const gridScaleRange = document.getElementById("gridScaleRange");
-const gridGapRange   = document.getElementById("gridGapRange");
-
-
-
-const wordDisplay   = document.getElementById("currentWord");
-const feedbackEl    = document.getElementById("feedbackMsg");
-const listEl        = document.getElementById("wordList");
-const scoreDisplayEl= document.getElementById("scoreDisplay");
-const scoreCompEl   = document.getElementById("scoreComparison");
-const listTitleEl   = document.getElementById("listTitle");
-const filterInput   = document.getElementById("filterInput");
-const timerDisplay  = document.getElementById("timerDisplay");
-const historyList   = document.getElementById("historyList");
-const leaderboardList = document.getElementById("leaderboardList");
-const globalRankingList = document.getElementById("globalRankingList");
-
-
-// Boutons
-const newGridBtn      = document.getElementById("newGridBtn");
-const replayBtn       = document.getElementById("replayBtn");
-const createGridBtn   = document.getElementById("createGridBtn");
-const funBtn          = document.getElementById("funBtn");
-const topExpertBtn    = document.getElementById("topExpertBtn");
-const help2x2Btn      = document.getElementById("help2x2Btn");
-const globalStatsBtn  = document.getElementById("globalStatsBtn") || document.getElementById("statsBtn");
-const validateCustomBtn = document.getElementById("validateCustomBtn");
-const passBtn         = document.getElementById("passBtn");
-const solveBtn        = document.getElementById("solveBtn");
-const btn4x4          = document.getElementById("btn4x4");
-const btn5x5          = document.getElementById("btn5x5");
-
-// NOUVEAU : éléments potentiels pour le mode chrono (à ajouter côté HTML plus tard)
-const chronoToggleBtn = document.getElementById("chronoToggleBtn");
-const chronoModeBadge = document.getElementById("chronoModeBadge");
-
-// Modals
-const onlineScoreModal = document.getElementById("onlineScoreModal");
-const modalScoreMsg    = document.getElementById("modalScoreMsg");
-const onlinePseudoInput= document.getElementById("onlinePseudoInput");
-const btnIgnoreScore   = document.getElementById("btnIgnoreScore");
-const btnSendScore     = document.getElementById("btnSendScore");
-
-const helpModal    = document.getElementById("helpModal");
-const closeHelpBtn = document.getElementById("closeHelpBtn");
-const helpGridList = document.getElementById("helpGridList");
-
-const statsModal   = document.getElementById("statsModal");
-const closeStatsBtn= document.getElementById("closeStatsBtn");
-const totalWordsVal= document.getElementById("totalWordsVal");
-const uniqueWordsVal = document.getElementById("uniqueWordsVal");
-const statsWordList  = document.getElementById("statsWordList");
-
-// Nouveaux éléments pour les stats joueur
-const statsTabGlobal = document.getElementById("statsTabGlobal");
-const statsTabPlayer = document.getElementById("statsTabPlayer");
-const statsMyControls= document.getElementById("statsMyControls");
-const statsModeFilters = document.getElementById("statsModeFilters");
-const statsMySummary = document.getElementById("statsMySummary");
-
-// ==========================================
-// ============= 3. FONCTIONS DE BASE =======
-// ==========================================
-
-function clearCanvas() {
-  if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  transform: scale(var(--grid-scale));
+  transform-origin: center;
 }
 
-function stopTimer() {
-  if (challengeInterval) clearInterval(challengeInterval);
-  if (timerDisplay) {
-    timerDisplay.style.display = "none";
-    timerDisplay.classList.remove("low-time");
-  }
-  isChallengeActive = false;
+
+#bgCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+#lineCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+
+/* === CORRECTION GRILLE (Taille & Structure) === */
+.grid { 
+  display: grid; 
+  /* Force 4x4 par défaut pour éviter l'empilement vertical au chargement */
+  gap: var(--grid-gap); 
+  position: relative; 
+  z-index: 2; 
 }
 
-function updateTimerDisplay() {
-  let min = Math.floor(challengeTimeLeft / 60);
-  let sec = challengeTimeLeft % 60;
-  timerDisplay.textContent = (min < 10 ? "0" + min : min) + ":" + (sec < 10 ? "0" + sec : sec);
-  if (challengeTimeLeft <= 10) timerDisplay.classList.add("low-time");
-  else timerDisplay.classList.remove("low-time");
+
+.cell {
+  width: 120px; height: 120px; background-color: var(--case-bg); border-radius: 25px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 4rem; font-weight: 800; color: var(--text-color);
+  box-shadow: 0 10px 0 var(--case-shadow); cursor: pointer;
+  transition: transform 0.1s, background-color 0.1s; position: relative; z-index: 2;
 }
 
-function startTimer(seconds) {
-  challengeTimeLeft = seconds;
-  if (!timerDisplay) return;
-  timerDisplay.style.display = "block";
-  updateTimerDisplay();
-  if (challengeInterval) clearInterval(challengeInterval);
-  challengeInterval = setInterval(() => {
-    challengeTimeLeft--;
-    updateTimerDisplay();
-    if (challengeTimeLeft <= 0) endChallenge();
-  }, 1000);
+.grid.fun-grid .cell { width: 160px; height: 160px; font-size: 5rem; }
+.grid.expert-grid .cell { width: 135px; height: 135px; font-size: 4.5rem; }
+.cell.qu-mode { font-size: 2.8rem; letter-spacing: -2px; }
+
+.cell.selected { background-color: var(--case-selected); box-shadow: 0 10px 0 #a8d8e0, inset 0 0 0 5px var(--case-border-selected); transform: translateY(5px); }
+.cell.flash-success { animation: flashGreen 0.4s ease-out; }
+@keyframes flashGreen {
+  0% { background-color: #4cd137; color: white; box-shadow: 0 6px 0 #3cb02a; }
+  100% { background-color: var(--case-bg); color: var(--text-color); }
 }
 
-function endChallenge() {
-  stopTimer();
-  gameSolved = true;
-  if (solveBtn) solveBtn.disabled = false;
-  showFeedback("Temps écoulé", "invalid");
-  maybeOfferExpertScore();
-}
+.cell-input { width: 100%; height: 100%; background: transparent; border: none; text-align: center; font-size: 3.5rem; font-weight: 800; color: #4a90e2; outline: none; text-transform: uppercase; font-family: inherit; padding: 0; margin: 0; }
 
-function updateScoreDisplay() {
-  if (!scoreDisplayEl) return;
-  scoreDisplayEl.textContent = currentScore + " pts";
-}
+.word-display-area { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 5px; }
+.current-word { font-size: 2.4rem; font-weight: 800; color: #333; min-height: 50px; letter-spacing: 2px; }
+.feedback { font-size: 1.2rem; font-weight: bold; height: 25px; opacity: 0; transition: opacity 0.3s; }
+.feedback.visible { opacity: 1; }
+.feedback.valid { color: var(--valid-color); }
+.feedback.invalid { color: var(--invalid-color); }
 
-function showFeedback(text, type) {
-  if (!feedbackEl) return;
-  feedbackEl.textContent = text;
-  feedbackEl.className = "feedback visible " + type;
-  setTimeout(() => {
-    if (feedbackEl.textContent === text) feedbackEl.className = "feedback";
-  }, 1200);
-}
+.timer-display { font-size: 2rem; font-weight: 900; color: #333; margin-bottom: 10px; background: #fff; padding: 5px 20px; border-radius: 15px; box-shadow: 0 4px 0 rgba(0,0,0,0.1); display: none; }
+.timer-display.low-time { color: #e84118; animation: pulse 1s infinite; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-// NOUVEAU : maj de l’UI chrono
-function updateChronoUI() {
-  if (chronoToggleBtn) {
-    chronoToggleBtn.classList.toggle("chrono-active", isTimedModeEnabled);
-    chronoToggleBtn.textContent = isTimedModeEnabled ? "⏱ Mode chrono : ON" : "⏱ Mode chrono : OFF";
-  }
-  if (chronoModeBadge) {
-    const shouldShow = isChronoGame && (isExpertMode || (!isExpertMode && (gridSize === 4 || gridSize === 5)));
-    chronoModeBadge.style.display = shouldShow ? "inline-block" : "none";
-    if (shouldShow) chronoModeBadge.textContent = "Partie chrono";
-  }
-}
+.action-buttons { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 750px; }
+button { padding: 14px 28px; font-size: 1.1rem; font-weight: bold; color: white; background-color: #4a90e2; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 0 #357abd; transition: transform 0.1s; }
+button:active { transform: translateY(3px); box-shadow: 0 2px 0 #357abd; }
 
-function resetGameState() {
-  isEditing = false;
-  isCustomGame = false;
-  isFunMode = false;
-  isExpertMode = false;
-  foundWords.clear();
-  cachedSolutions = null;
-  solutionMode = false;
-  currentScore = 0;
-  selectionPath = [];
-  isChallengeActive = false;
-  hasOfferedScore = false;
+button.secondary { background-color: #95a5a6; box-shadow: 0 5px 0 #7f8c8d; }
+button.stats-btn { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; width: 100%; } 
+button.fun { background: linear-gradient(45deg, #e1b12c, #f1c40f); box-shadow: 0 5px 0 #b7950b; color: #333; }
+button.validate { background-color: #4cd137; box-shadow: 0 5px 0 #44bd32; display: none; }
+button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: none; }
+.help-btn { background-color: #f1c40f; color: #333; box-shadow: 0 5px 0 #d4ac0d; }
 
-  isChronoGame = false;
-  isRankedEligible = false;
-  currentChronoMode = null;
-  updateChronoUI();
+.score-panel { background: white; padding: 25px; border-radius: 25px; width: 340px; height: 750px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
+.score-header { margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
+.score-title { font-weight: bold; font-size: 1.2rem; color: #333; }
+.score-total { font-size: 1.8rem; color: #4a90e2; font-weight: 800; text-align: right; }
+.score-comparison { font-size: 0.9rem; color: #888; text-align: right; white-space: pre-wrap; line-height: 1.4; } 
+.filter-container { margin-bottom: 10px; }
+.filter-input { width: 100%; padding: 12px 15px; border: 2px solid #eee; border-radius: 20px; font-size: 1.1rem; outline: none; transition: border-color 0.2s; color: #555; background-color: #fafafa; }
+.filter-input:focus { border-color: #4a90e2; background-color: #fff; }
+.word-list { flex: 1; overflow-y: auto; list-style: none; padding: 0; margin: 0; font-size: 1.1rem; color: #555; margin-bottom: 15px; border-bottom: 2px solid #eee; -webkit-overflow-scrolling: touch; }
+.word-list li { padding: 8px 5px; border-bottom: 1px solid #f5f5f5; display: flex; justify-content: space-between; align-items: center; }
+.word-list li.missed { color: #e84118; }
+.word-points { background: #f0f0f0; color: #666; font-size: 0.8em; font-weight: bold; padding: 4px 10px; border-radius: 12px; }
 
-  if (wordDisplay) wordDisplay.textContent = "";
-  if (feedbackEl) {
-    feedbackEl.className = "feedback";
-    feedbackEl.textContent = "";
-  }
-  gameSolved = false;
-  if (filterInput) filterInput.value = "";
-  if (listTitleEl) listTitleEl.textContent = "Score Actuel";
-  if (scoreCompEl) scoreCompEl.textContent = "";
-  updateScoreDisplay();
-  updateWordList();
+.history-section { height: 100px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 10px; margin-bottom: 10px; }
+.history-title { font-size: 0.9rem; font-weight: bold; color: #888; margin-bottom: 5px; text-transform: uppercase; }
+.history-list { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; }
+.leaderboard-section { flex: 1; min-height: 150px; overflow-y: auto; border-top: 2px solid #eee; padding-top: 10px; }
+.leaderboard-title { font-size: 0.95rem; font-weight: 800; color: #4a90e2; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.leaderboard-list { list-style: none; padding: 0; margin: 0; }
+.leaderboard-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9rem; }
+.lb-rank { font-weight: bold; color: #888; width: 25px; }
+.lb-name { font-weight: bold; color: #333; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-score { font-weight: 900; color: #e67e22; margin-left: 10px; }
 
-  if (gridEl) gridEl.style.gridTemplateColumns = "repeat(" + gridSize + ", 1fr)";
+/* MODALS */
+.modal-overlay { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal-content { background-color: #fff; padding: 30px; border-radius: 25px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.4); animation: popIn 0.3s ease-out; }
+.modal-large { max-width: 500px; height: 80vh; display: flex; flex-direction: column; padding: 20px; text-align: left; }
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-content h3 { color: #4a90e2; margin-top: 0; font-size: 1.6rem; margin-bottom: 10px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+.close-btn { background: none; border: none; font-size: 2rem; color: #888; cursor: pointer; box-shadow: none; padding: 0; width: auto; }
 
-  if (solveBtn) {
-    solveBtn.textContent = "Voir solutions";
-    solveBtn.disabled = false;
-  }
-}
+/* HELP & STATS */
+.help-content { overflow-y: auto; flex: 1; }
+.help-grid-list { display: flex; flex-direction: column; gap: 20px; }
+.help-item { background: #f9f9f9; padding: 10px; border-radius: 15px; border: 1px solid #eee; }
+.help-item-header { display: flex; gap: 15px; align-items: center; margin-bottom: 5px; }
+.mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 50px; height: 50px; background: #ddd; padding: 2px; border-radius: 5px; }
+.mini-cell { background: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; border-radius: 3px; }
+.help-words { font-size: 0.9rem; color: #333; line-height: 1.4; }
+.word-tag { display: inline-block; background: #e0e0e0; padding: 2px 6px; border-radius: 4px; margin: 2px; font-weight: bold; color: #555; }
 
-// Chargement du dictionnaire
-function loadDictionary() {
-  console.log("Chargement du dictionnaire...");
-  fetch(DICT_URL)
-    .then((response) => {
-      if (!response.ok) throw new Error("Fichier introuvable");
-      return response.json();
-    })
-    .then((words) => {
-      for (const w of words) {
-        if (typeof w === "string" && w.length >= 2) {
-          const clean = w.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-          DICTIONARY.add(clean);
-          for (let i = 1; i <= clean.length; i++) {
-            PREFIXES.add(clean.substring(0, i));
-          }
-        }
-      }
-      dictionaryLoaded = true;
-      if (feedbackEl) {
-        feedbackEl.textContent = "Prêt !";
-        feedbackEl.className = "feedback visible valid";
-        setTimeout(() => (feedbackEl.className = "feedback"), 1000);
-      }
-      initGame();
-    })
-    .catch((err) => {
-      console.error("Erreur chargement dictionnaire:", err);
-      dictionaryLoaded = false;
-      if (feedbackEl) {
-        feedbackEl.textContent = "Dico indisponible (mode libre)";
-        feedbackEl.className = "feedback visible invalid";
-        setTimeout(() => (feedbackEl.className = "feedback"), 1500);
-      }
-      initGame();
-    });
-}
+/* STATS SPECIFIC */
+.stats-summary { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; }
+.stat-card { background: #f0f4f8; padding: 15px; border-radius: 20px; flex: 1; text-align: center; border: 1px solid #e1e8ed; }
+.stat-val { display: block; font-size: 2rem; font-weight: 900; color: #4a90e2; }
+.stat-label { font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; font-weight: bold; }
+.stats-tabs { display: flex; background: #f0f2f5; padding: 5px; border-radius: 14px; margin-bottom: 15px; }
+.stats-tab { flex: 1; text-align: center; padding: 10px; border-radius: 10px; font-weight: bold; color: #64748b; background: transparent; border:none; cursor: pointer; }
+.stats-tab-active { background: white; color: #4a90e2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-// ==========================================
-// ============= 4. LOGIQUE PRINCIPALE ======
-// ==========================================
+.stats-filter-group { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
+.mode-filter { background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
+.mode-filter.active { background: #4a90e2; color: white; border-color: #4a90e2; }
+.stats-my-summary { text-align: center; font-size: 0.9rem; color: #7f8c8d; margin-bottom: 15px; }
 
-function generateNewGameId() {
-  if (window.crypto && window.crypto.randomUUID) {
-    return window.crypto.randomUUID();
-  }
-  return "game_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
-}
+/* POPUP SCORE */
+.modal-sub { color: #666; margin-bottom: 25px; font-size: 1rem; }
+#modalScoreMsg { font-weight: bold; font-size: 1.1rem; color: #333; margin-bottom: 5px; }
+#onlinePseudoInput { width: 100%; padding: 14px; font-size: 1.1rem; border: 2px solid #ddd; border-radius: 15px; margin-bottom: 25px; text-align: center; outline: none; }
+#onlinePseudoInput:focus { border-color: #4a90e2; }
+.modal-actions { display: flex; gap: 15px; justify-content: center; }
+.btn-cancel { background-color: #95a5a6; color: white; border: none; border-radius: 20px; padding: 12px 20px; font-weight: bold; cursor: pointer; }
+.btn-confirm { background-color: #4cd137; color: white; border: none; border-radius: 20px; padding: 12px 25px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #44bd32; }
+.btn-confirm:active { transform: translateY(2px); box-shadow: 0 2px 0 #44bd32; }
 
-function initGame() {
-  stopTimer();
-  resetGameState();
+/* === MOBILE OPTIMIZED (Taille parfaite) === */
+@media (max-width: 768px) { 
+  body { padding: 5px; overflow-x: hidden; }
+  .score-panel { width: 100%; height: auto; max-height: 500px; padding: 15px; margin-top: 20px; }
+  .grid-wrapper { padding: 18px; border-radius: 24px; width: 85vw; display: flex; justify-content: center; }
 
-  currentGameId = generateNewGameId();
-
-  if (newGridBtn) newGridBtn.style.display = "block";
-  if (replayBtn)  replayBtn.style.display = "block";
-  if (createGridBtn) createGridBtn.style.display = "block";
-  if (funBtn) funBtn.style.display = "block";
-  if (help2x2Btn) help2x2Btn.style.display = "block";
-  if (globalStatsBtn) globalStatsBtn.style.display = "block";
-  if (solveBtn) solveBtn.style.display = "block";
-  if (validateCustomBtn) validateCustomBtn.style.display = "none";
-  if (passBtn) passBtn.style.display = "none";
-
-  if (gridEl) {
-    gridEl.classList.remove("fun-grid");
-    gridEl.classList.remove("expert-grid");
+  .grid { 
+    gap: var(--grid-gap); 
+    width: 100%; 
+    justify-content: center; 
   }
 
-  gridData = Array.from({ length: gridSize }, () => Array(gridSize).fill(""));
-
-  if (gridSize === 4) {
-    for (let r = 0; r < gridSize; r++) {
-      const patternType = Math.floor(Math.random() * 5);
-      let pattern = patternType === 0 ? ["C", "V", "C", "V"] : patternType === 1 ? ["V", "C", "V", "C"] : patternType === 2 ? ["C", "V", "C", "C"] : patternType === 3 ? ["C", "V", "C", "E"] : ["?", "?", "?", "?"];
-      for (let c = 0; c < gridSize; c++) {
-        let char = pattern[c] === "C" ? getLetterByType("C") : pattern[c] === "V" ? getLetterByType("V") : pattern[c] === "E" ? "E" : getRandomLetter();
-        if (char === "Q") char = "QU";
-        gridData[r][c] = char;
-      }
-    }
-  } else {
-    for (let r = 0; r < gridSize; r++)
-      for (let c = 0; c < gridSize; c++) {
-        let char = getRandomLetter();
-        if (char === "Q") char = "QU";
-        gridData[r][c] = char;
-      }
-  }
-
-  renderGrid();
-  setTimeout(() => { resizeCanvas(); }, 100);
-
-  isChronoGame = false;
-  isRankedEligible = false;
-  currentChronoMode = null;
-
-  if (!isFunMode && !isExpertMode && !isCustomGame) {
-    const modeName = getCurrentMode();
-    if (isTimedModeEnabled && (gridSize === 4 || gridSize === 5)) {
-      const duration = CHRONO_DURATIONS[modeName] || CHRONO_DURATIONS["4x4"];
-      startTimer(duration);
-      isChallengeActive = true;
-      isChronoGame = true;
-      isRankedEligible = true;
-      currentChronoMode = modeName;
-      challengeModeName = "chrono-" + modeName;
-    }
-  }
-  updateChronoUI();
-}
-
-function replayGrid() {
-  if (isEditing) return;
-  if (isChallengeActive) {
-    stopTimer();
-    if (feedbackEl) feedbackEl.textContent = "Mode Libre";
-  }
-
-  foundWords.clear();
-  cachedSolutions = null;
-  solutionMode = false;
-  currentScore = 0;
-  selectionPath = [];
-  if (wordDisplay) wordDisplay.textContent = "";
-  gameSolved = false;
-  if (filterInput) filterInput.value = "";
-  if (listTitleEl) listTitleEl.textContent = "Score Actuel";
-  if (scoreCompEl) scoreCompEl.textContent = "";
-  updateScoreDisplay();
-  updateWordList();
-  renderGrid();
-  setTimeout(resizeCanvas, 50);
-  showFeedback("Grille réinitialisée", "valid");
-
-  if (!isFunMode && !isExpertMode && !isCustomGame) {
-    const modeName = getCurrentMode();
-    if (isTimedModeEnabled && (gridSize === 4 || gridSize === 5)) {
-      const duration = CHRONO_DURATIONS[modeName] || CHRONO_DURATIONS["4x4"];
-      startTimer(duration);
-      isChallengeActive = true;
-      isChronoGame = true;
-      isRankedEligible = true;
-      currentChronoMode = modeName;
-      challengeModeName = "chrono-" + modeName;
-    } else {
-      isChronoGame = false;
-      isRankedEligible = false;
-      currentChronoMode = null;
-    }
-  }
-  updateChronoUI();
-}
-
-window.setMode = function (size) {
-  gridSize = size;
-  if (size === 4) {
-    if (btn4x4) btn4x4.classList.add("active");
-    if (btn5x5) btn5x5.classList.remove("active");
-  } else {
-    if (btn5x5) btn5x5.classList.add("active");
-    if (btn4x4) btn4x4.classList.remove("active");
-  }
-  initGame();
-};
-
-// ==========================================
-// ============= 5. MODES DE JEU ============
-// ==========================================
-
-function startExpertMode() {
-  stopTimer();
-  resetGameState();
-
-  currentGameId = generateNewGameId();
-
-  isExpertMode = true;
-  isFunMode = false;
-  isCustomGame = false;
-
-  challengeModeName = "Expert 3x3";
-  gridSize = 3;
-
-  if (newGridBtn) newGridBtn.style.display = "none";
-  if (replayBtn)  replayBtn.style.display = "none";
-  if (createGridBtn) createGridBtn.style.display = "none";
-  if (funBtn) funBtn.style.display = "none";
-  if (help2x2Btn) help2x2Btn.style.display = "none";
-  if (globalStatsBtn) globalStatsBtn.style.display = "none";
-  if (solveBtn) solveBtn.style.display = "block";
-  if (passBtn) passBtn.style.display = "none";
-
-  if (gridEl) {
-    gridEl.classList.add("expert-grid");
-    gridEl.classList.remove("fun-grid");
-    gridEl.style.gridTemplateColumns = "repeat(3, 1fr)";
-  }
-
-  gridData = Array.from({ length: 3 }, () => Array(3).fill(""));
-
-  const randomGrid = EXPERT_GRIDS[Math.floor(Math.random() * EXPERT_GRIDS.length)];
-  let i = 0;
-  for (let r = 0; r < 3; r++)
-    for (let c = 0; c < 3; c++) {
-      gridData[r][c] = randomGrid[i];
-      i++;
-    }
-
-  cachedSolutions = findAllWords();
-  renderGrid();
-  setTimeout(resizeCanvas, 50);
-
-  const duration = CHRONO_DURATIONS["expert3x3"] || 120;
-  startTimer(duration);
-  isChallengeActive = true;
-
-  isChronoGame = true;
-  isRankedEligible = true;
-  currentChronoMode = "expert3x3";
-
-  updateWordList();
-  if (feedbackEl) {
-    feedbackEl.textContent = "Max de mots !";
-    feedbackEl.className = "feedback visible valid";
-  }
-  updateChronoUI();
-}
-
-function startFunMode() {
-  stopTimer();
-  resetGameState();
-
-  currentGameId = generateNewGameId();
-
-  isFunMode = true;
-  isExpertMode = false;
-  isCustomGame = false;
-
-  challengeModeName = "Fun 2x2";
-  gridSize = 2;
-  shuffledFunCombos = [...FUN_COMBOS].sort(() => 0.5 - Math.random());
-  currentFunIndex = 0;
-
-  if (newGridBtn) newGridBtn.style.display = "none";
-  if (replayBtn)  replayBtn.style.display = "none";
-  if (createGridBtn) createGridBtn.style.display = "none";
-  if (funBtn) funBtn.style.display = "none";
-  if (help2x2Btn) help2x2Btn.style.display = "none";
-  if (globalStatsBtn) globalStatsBtn.style.display = "none";
-  if (solveBtn) solveBtn.style.display = "none";
-  if (passBtn) {
-    passBtn.style.display = "block";
-    passBtn.textContent = "Voir solutions & passer";
-  }
-
-  if (gridEl) {
-    gridEl.classList.add("fun-grid");
-    gridEl.classList.remove("expert-grid");
-  }
-
-  isChronoGame = false;
-  isRankedEligible = false;
-  currentChronoMode = null;
-
-  loadFunGrid();
-  const duration = 180;
-  startTimer(duration);
-  isChallengeActive = true;
-  updateChronoUI();
-}
-
-function loadFunGrid() {
-  if (currentFunIndex >= shuffledFunCombos.length) currentFunIndex = 0;
-  let letters = shuffledFunCombos[currentFunIndex].split("").sort(() => 0.5 - Math.random());
-  if (gridEl) gridEl.style.gridTemplateColumns = "repeat(2, 1fr)";
-  gridData = Array.from({ length: 2 }, () => Array(2).fill(""));
-  let i = 0;
-  for (let r = 0; r < 2; r++)
-    for (let c = 0; c < 2; c++) {
-      gridData[r][c] = letters[i];
-      i++;
-    }
-  foundWords.clear();
-  gameSolved = false;
-  solutionMode = false;
-  updateWordList();
-  cachedSolutions = findAllWords();
-  renderGrid();
-  setTimeout(resizeCanvas, 50);
-  if (feedbackEl) {
-    feedbackEl.textContent = "Trouvez tout !";
-    feedbackEl.className = "feedback visible";
-  }
-}
-
-// ==========================================
-// ============= 6. GRAPHIQUES & INPUTS =====
-// ==========================================
-
-function renderGrid() {
-  if (!gridEl) return;
-  gridEl.innerHTML = "";
-  gridData.forEach((row, r) => {
-    row.forEach((letter, c) => {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.textContent = letter;
-      if (letter === "QU") cell.classList.add("qu-mode");
-      cell.dataset.r = r;
-      cell.dataset.c = c;
-      cell.addEventListener("mousedown", (e) => startDrag(e, cell));
-      cell.addEventListener("mouseenter", (e) => onDragEnter(e, cell));
-      cell.addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          startDrag(e, cell);
-        }, { passive: false });
-      gridEl.appendChild(cell);
-    });
-  });
-}
-
-function drawPath() {
-  clearCanvas();
-  if (!canvas || !ctx) return;
-  if (selectionPath.length < 2) return;
-  if (canvas.width !== gridEl.offsetWidth) {
-    canvas.width = gridEl.offsetWidth;
-    canvas.height = gridEl.offsetHeight;
-  }
-
-  ctx.beginPath();
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.lineWidth = 15;
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
-
-  const wrapper = document.querySelector(".grid-wrapper");
-  const cells = gridEl.children;
-
-  selectionPath.forEach((pos, i) => {
-    const idx = pos.r * gridSize + pos.c;
-    const cell = cells[idx];
-    if (!cell) return;
-
-    const rect = cell.getBoundingClientRect();
-    const wrapperRect = wrapper.getBoundingClientRect();
-
-    const cx = rect.left - wrapperRect.left + rect.width / 2;
-    const cy = rect.top - wrapperRect.top + rect.height / 2;
-
-    if (i === 0) ctx.moveTo(cx, cy);
-    else ctx.lineTo(cx, cy);
-  });
-  ctx.stroke();
-}
-function drawGridLines() {
-  if (!ctxBg || !bgCanvas) return;
-  // On nettoie juste le fond, on ne dessine plus aucune ligne
-  ctxBg.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  .cell { width: auto; height: auto; aspect-ratio: 1/1; font-size: 2.2rem; border-radius: 16px; box-shadow: 0 6px 0 var(--case-shadow); }
+  .cell.qu-mode { font-size: 1.6rem; letter-spacing: -1px; }
+  .cell-input { font-size: 2rem; }
+  .grid.fun-grid { width: min(82vw, 350px); gap: 30px; }
+  .grid.fun-grid .cell { font-size: 3.6rem; }
+  .grid.expert-grid { width: 345px !important; max-width: 345px !important; gap: 34px !important; margin: 0 auto; }
+  .grid.expert-grid .cell { width: 97px !important; height: 97px !important; font-size: 3.2rem; border-radius: 18px; }
+  .action-buttons { gap: 8px; width: 98%; }
+  button { padding: 10px 15px; font-size: 0.9rem; width: 48%; margin: 0; border-radius: 20px; }
 }
 
 
-function resizeCanvas() {
-  const wrapper = document.querySelector(".grid-wrapper");
-  if (!wrapper || !canvas || !bgCanvas) return;
-
-  canvas.width = wrapper.offsetWidth;
-  canvas.height = wrapper.offsetHeight;
-  bgCanvas.width = wrapper.offsetWidth;
-  bgCanvas.height = wrapper.offsetHeight;
-
-  clearCanvas();
-  drawPath();
-  drawGridLines();
+/* BOUTON MODE CHRONO */
+#chronoToggleBtn {
+  font-size: 0.95rem;
+  background-color: #ffeaa7;
+  color: #333;
+  box-shadow: 0 3px 0 #e1b12c;
 }
 
-window.addEventListener("resize", resizeCanvas);
-
-function startDrag(e, cell) {
-  if (gameSolved || isEditing) return;
-  isDragging = true;
-  selectionPath = [{ r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) }];
-  updateVisuals();
-}
-function onDragEnter(e, cell) {
-  if (!isDragging) return;
-  addToPath(parseInt(cell.dataset.r), parseInt(cell.dataset.c));
-}
-document.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    const touch = e.touches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    const cell = el?.closest(".cell");
-    if (cell) addToPath(parseInt(cell.dataset.r), parseInt(cell.dataset.c));
-  }, { passive: false }
-);
-function endDrag() {
-  if (!isDragging) return;
-  isDragging = false;
-  validateWord();
-  selectionPath = [];
-  updateVisuals();
-  clearCanvas();
-}
-document.addEventListener("mouseup", endDrag);
-document.addEventListener("touchend", endDrag);
-
-function addToPath(r, c) {
-  if (selectionPath.length > 1) {
-    const prev = selectionPath[selectionPath.length - 2];
-    if (prev.r === r && prev.c === c) {
-      selectionPath.pop();
-      updateVisuals();
-      return;
-    }
-  }
-  const last = selectionPath[selectionPath.length - 1];
-  const isAdj = Math.abs(last.r - r) <= 1 && Math.abs(last.c - c) <= 1;
-  const isVisited = selectionPath.some((p) => p.r === r && p.c === c);
-  if (isAdj && !isVisited) {
-    selectionPath.push({ r, c });
-    updateVisuals();
-  }
+#chronoToggleBtn.chrono-active {
+  background-color: #00b894;
+  box-shadow: 0 3px 0 #019874;
+  color: #fff;
 }
 
-function updateVisuals() {
-  if (!gridEl) return;
-  Array.from(gridEl.children).forEach((el) => el.classList.remove("selected"));
-  let word = "";
-  selectionPath.forEach((pos) => {
-    const idx = pos.r * gridSize + pos.c;
-    const cell = gridEl.children[idx];
-    if (cell) {
-      cell.classList.add("selected");
-      word += gridData[pos.r][pos.c];
-    }
-  });
-  if (wordDisplay) wordDisplay.textContent = word;
-  drawPath();
+/* BADGE PARTIE CHRONO */
+.chrono-badge {
+  margin-bottom: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #00b894;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+/* === RÉGLAGE TAILLE GRILLE / LETTRES === */
+.settings-panel {
+  max-width: 600px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 10px;
+  margin-bottom: 8px;
 }
 
-// ==========================================
-// ============= 7. VALIDATION & ALGO =======
-// ==========================================
-
-function getLetterByType(type) {
-  const targetList = type === "V" ? VOWELS : CONSONANTS;
-  let subFreq = FREQUENCIES.filter((f) => targetList.includes(f.l));
-  let subTotal = subFreq.reduce((sum, item) => sum + item.w, 0);
-  const r = Math.random() * subTotal;
-  let current = 0;
-  for (const item of subFreq) {
-    current += item.w;
-    if (r <= current) return item.l;
-  }
-  return type === "V" ? "E" : "S";
+.setting-item {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-function getRandomLetter() {
-  const r = Math.random() * totalWeight;
-  for (const item of cumulativeWeights) {
-    if (r <= item.max) return item.l;
-  }
-  return "E";
+.setting-item label {
+  margin-bottom: 4px;
+  opacity: 0.8;
 }
 
-function getWordPoints(word) {
-  const len = word.length;
-  if (len < 4) return 0;
-  if (len === 4) return 6;
-  if (len === 5) return 8;
-  if (len === 6) return 10;
-  if (len === 7) return 12;
-  return 14;
+/* Slider */
+#gridScaleRange {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: #e0e0e0;
+  outline: none;
 }
 
-function validateWord() {
-  const word = wordDisplay ? wordDisplay.textContent : "";
-  if (word.length < 4) {
-    if (word.length >= 1) showFeedback("Trop court", "invalid");
-    return;
-  }
-
-  const isValid = dictionaryLoaded ? DICTIONARY.has(word) : word.length >= 4;
-
-  if (isValid) {
-    if (!foundWords.has(word)) {
-      foundWords.add(word);
-      const pts = getWordPoints(word);
-      currentScore += pts;
-      showFeedback(word + " +" + pts, "valid");
-      updateWordList();
-      updateScoreDisplay();
-      logWordFind(word);
-
-      // --- LE BLOC DE FLASH VERT A ÉTÉ SUPPRIMÉ ICI ---
-
-      if (isFunMode && cachedSolutions && foundWords.size === cachedSolutions.size) {
-        showFeedback("GRILLE TERMINÉE !", "valid");
-        setTimeout(() => {
-          currentFunIndex++;
-          if (passBtn) passBtn.textContent = "Voir solutions & passer";
-          loadFunGrid();
-        }, 800);
-      }
-    } else {
-      showFeedback("Déjà trouvé", "invalid");
-    }
-  } else {
-    showFeedback("Inconnu", "invalid");
-  }
+#gridScaleRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
 }
 
-function updateWordList() {
-  if (!listEl) return;
-  listEl.innerHTML = "";
-  let sourceWords = [];
-  let maxPossibleScore = 0;
-  const filterText = filterInput ? filterInput.value.toUpperCase() : "";
-
-  if ((solutionMode || isExpertMode) && cachedSolutions) {
-    sourceWords = Array.from(cachedSolutions);
-    if (listTitleEl) listTitleEl.textContent = solutionMode ? "Résultats" : "Objectif";
-    sourceWords.forEach((w) => (maxPossibleScore += getWordPoints(w)));
-    if (scoreCompEl) {
-      scoreCompEl.textContent = "Mots : " + foundWords.size + " / " + cachedSolutions.size + "\nPoints : " + currentScore + " / " + maxPossibleScore;
-    }
-    if (!solutionMode) sourceWords = Array.from(foundWords);
-  } else if (isFunMode && cachedSolutions) {
-    if (scoreCompEl) scoreCompEl.textContent = "Trouvés : " + foundWords.size + " / " + cachedSolutions.size;
-    sourceWords = Array.from(foundWords);
-  } else {
-    sourceWords = Array.from(foundWords);
-    if (listTitleEl) listTitleEl.textContent = "Score Actuel";
-  }
-
-  let filteredWords = sourceWords;
-  if (filterText) filteredWords = sourceWords.filter((w) => w.includes(filterText));
-  if (solutionMode) filteredWords.sort((a, b) => b.length - a.length || a.localeCompare(b));
-  else filteredWords.sort((a, b) => a.localeCompare(b));
-
-  filteredWords.forEach((w) => {
-    const pts = getWordPoints(w);
-    const li = document.createElement("li");
-    const spanWord = document.createElement("span");
-    spanWord.textContent = w;
-    const spanPts = document.createElement("span");
-    spanPts.className = "word-points";
-    spanPts.textContent = pts;
-    if (solutionMode) {
-      if (foundWords.has(w)) {
-        spanWord.style.fontWeight = "bold";
-        spanWord.style.color = "#4cd137";
-      } else {
-        li.classList.add("missed");
-      }
-    }
-    li.appendChild(spanWord);
-    li.appendChild(spanPts);
-    listEl.appendChild(li);
-  });
+#gridScaleRange::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+#gridGapRange {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: #e0e0e0;
+  outline: none;
 }
 
-if (filterInput) {
-  filterInput.addEventListener("input", () => updateWordList());
+#gridGapRange::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
 }
 
-function findAllWords() {
-  if (!dictionaryLoaded) return new Set();
-  const results = new Set();
-  const visited = Array.from({ length: gridSize }, () => Array(gridSize).fill(false));
-  const dirs = [[-1, -1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-  function dfs(r, c, currentStr) {
-    currentStr += gridData[r][c];
-    if (!PREFIXES.has(currentStr)) return;
-    if (currentStr.length >= 4 && DICTIONARY.has(currentStr)) results.add(currentStr);
-    if (currentStr.length > 10) return;
-    visited[r][c] = true;
-    for (const [dr, dc] of dirs) {
-      const nr = r + dr, nc = c + dc;
-      if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize && !visited[nr][nc]) {
-        dfs(nr, nc, currentStr);
-      }
-    }
-    visited[r][c] = false;
-  }
-  for (let r = 0; r < gridSize; r++) for (let c = 0; c < gridSize; c++) dfs(r, c, "");
-  return results;
-}
-
-// ==========================================
-// ============= 8. SUPABASE & STATS MOTS ===
-// ==========================================
-
-function getCurrentMode() {
-  if (isFunMode) return "fun2x2";
-  if (isExpertMode) return "expert3x3";
-  if (isCustomGame) return "custom";
-  if (gridSize === 4) return "4x4";
-  if (gridSize === 5) return "5x5";
-  return "unknown";
-}
-
-async function logWordFind(word) {
-  const mode = getCurrentMode();
-  try {
-    fetch(`${SUPABASE_URL}/rest/v1/word_finds`, {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        word: word, length: word.length, board_size: gridSize, mode: mode, player_id: PLAYER_ID,
-        game_id: currentGameId, is_challenge: isChallengeActive, time_left: challengeTimeLeft, score_after: currentScore
-      })
-    });
-  } catch (e) { console.error("Log error", e); }
-}
-
-// ----- Stats : helper pour onglets -----
-
-function setStatsTab(tab) {
-  if (!statsTabGlobal || !statsTabPlayer || !statsMyControls) {
-    loadGlobalStats();
-    return;
-  }
-  if (tab === "player") {
-    statsTabGlobal.classList.remove("stats-tab-active");
-    statsTabPlayer.classList.add("stats-tab-active");
-    statsMyControls.style.display = "block";
-    loadPlayerStats("all");
-  } else {
-    statsTabGlobal.classList.add("stats-tab-active");
-    statsTabPlayer.classList.remove("stats-tab-active");
-    statsMyControls.style.display = "none";
-    statsMySummary.textContent = "";
-    loadGlobalStats();
-  }
-}
-
-// ----- Stats globales -----
-
-async function loadGlobalStats() {
-  if (!totalWordsVal || !uniqueWordsVal || !statsWordList) return;
-  totalWordsVal.textContent = "...";
-  uniqueWordsVal.textContent = "...";
-  statsWordList.innerHTML = '<li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>';
-
-  try {
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/word_stats_global?select=word,total_finds&order=total_finds.desc&limit=20`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-    );
-    if (!response.ok) throw new Error("Erreur stats global");
-    const data = await response.json();
-    statsWordList.innerHTML = "";
-    if (data.length === 0) {
-      statsWordList.innerHTML = '<li style="text-align:center; padding:10px;">Aucune donnée.</li>';
-    } else {
-      data.forEach((item, index) => {
-        const li = document.createElement("li");
-        li.className = "leaderboard-item";
-        li.innerHTML = `<span class="lb-rank">#${index + 1}</span><span class="lb-name">${item.word}</span><span class="lb-score" style="color:#2c3e50;">${item.total_finds} fois</span>`;
-        statsWordList.appendChild(li);
-      });
-    }
-    const countRes = await fetch(`${SUPABASE_URL}/rest/v1/word_finds?select=id`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Range: "0-0", Prefer: "count=exact" }
-    });
-    const range = countRes.headers.get("Content-Range");
-    if (range) totalWordsVal.textContent = range.split("/")[1];
-    else totalWordsVal.textContent = "-";
-
-    const uniqueRes = await fetch(`${SUPABASE_URL}/rest/v1/word_stats_global?select=word`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Range: "0-0", Prefer: "count=exact" }
-    });
-    const rangeUnique = uniqueRes.headers.get("Content-Range");
-    if (rangeUnique) uniqueWordsVal.textContent = rangeUnique.split("/")[1];
-    else uniqueWordsVal.textContent = "-";
-  } catch (e) {
-    console.error(e);
-    statsWordList.innerHTML = '<li style="text-align:center; color:#e74c3c;">Erreur chargement stats (Vue SQL manquante ?).</li>';
-  }
-}
-
-// ----- Stats joueur -----
-
-async function loadPlayerStats(modeFilter) {
-  if (!statsModeFilters || !statsMySummary || !statsWordList) {
-    loadGlobalStats();
-    return;
-  }
-  const buttons = statsModeFilters.querySelectorAll(".mode-filter");
-  buttons.forEach((btn) => {
-    if (btn.dataset.mode === modeFilter) btn.classList.add("active");
-    else btn.classList.remove("active");
-  });
-  statsWordList.innerHTML = '<li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>';
-
-  try {
-    let url = `${SUPABASE_URL}/rest/v1/word_stats_player?select=player_id,mode,board_size,word,total_finds&player_id=eq.${PLAYER_ID}`;
-    if (modeFilter === "expert3x3") url += `&mode=eq.expert3x3`;
-    else if (modeFilter === "4x4") url += `&board_size=eq.4`;
-    else if (modeFilter === "5x5") url += `&board_size=eq.5`;
-    url += `&order=total_finds.desc&limit=50`;
-
-    const response = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } });
-    if (!response.ok) throw new Error("Erreur stats joueur");
-    const data = await response.json();
-    statsWordList.innerHTML = "";
-
-    if (!data.length) {
-      statsMySummary.textContent = "Aucune donnée pour ce mode (ou nouveau joueur).";
-      statsWordList.innerHTML = '<li style="text-align:center; padding:10px;">Joue quelques parties pour voir tes stats ici 👀</li>';
-      return;
-    }
-    const totalDistinct = data.length;
-    const totalFinds = data.reduce((sum, item) => sum + (item.total_finds || 0), 0);
-    const best = data[0];
-    let modeLabel = "tous modes";
-    if (modeFilter === "expert3x3") modeLabel = "mode Expert 3x3";
-    else if (modeFilter === "4x4") modeLabel = "mode 4x4";
-    else if (modeFilter === "5x5") modeLabel = "mode 5x5";
-
-    statsMySummary.innerHTML = `Tu as trouvé <b>${totalFinds}</b> mots (<b>${totalDistinct}</b> uniques) en ${modeLabel}.<br>Ton mot le plus spammé : <b>${best.word}</b> (${best.total_finds} fois).`;
-    data.forEach((item, index) => {
-      const li = document.createElement("li");
-      li.className = "leaderboard-item";
-      const smallTag = item.mode === "expert3x3" ? "3x3" : item.board_size ? item.board_size + "x" + item.board_size : item.mode || "";
-      li.innerHTML = `<span class="lb-rank">#${index + 1}</span><span class="lb-name">${item.word}</span><span class="lb-score">${item.total_finds} fois</span><span style="margin-left:auto; font-size:0.75rem; color:#95a5a6;">${smallTag}</span>`;
-      statsWordList.appendChild(li);
-    });
-  } catch (e) {
-    console.error(e);
-    statsWordList.innerHTML = '<li style="text-align:center; color:#e74c3c;">Erreur chargement de tes stats (vue SQL manquante ?).</li>';
-    statsMySummary.textContent = "";
-  }
-}
-
-// ==========================================
-// ============= 9. CLASSEMENT 3x3 =========
-// ==========================================
-
-// ===== CLASSEMENT EXPERT (actuel) =====
-async function loadExpertLeaderboard() {
-  if (!leaderboardList) return;
-  leaderboardList.innerHTML = '<li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>';
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?select=pseudo,score,created_at&order=score.desc&limit=30`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-    );
-    if (!res.ok) throw new Error("Erreur leaderboard");
-    const data = await res.json();
-    leaderboardList.innerHTML = "";
-    if (!data.length) {
-      leaderboardList.innerHTML =
-        '<li style="text-align:center; padding:10px; color:#aaa;">Aucun score pour l\'instant.</li>';
-      return;
-    }
-
-    data.forEach((row, index) => {
-      const li = document.createElement("li");
-      li.className = "leaderboard-item";
-      li.innerHTML = `
-        <span class="lb-rank">#${index + 1}</span>
-        <span class="lb-name">${row.pseudo || "Anonyme"}</span>
-        <span class="lb-score">${row.score} pts</span>
-      `;
-      leaderboardList.appendChild(li);
-    });
-  } catch (e) {
-    console.error(e);
-    leaderboardList.innerHTML =
-      '<li style="text-align:center; color:#e74c3c;">Erreur chargement classement 3x3.</li>';
-  }
+#gridGapRange::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #4a90e2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+  cursor: pointer;
 }
 
 
-
-// ===== NOUVEAU : CLASSEMENT GLOBAL RANKED =====
-//  -> Top score 3x3 + top score 4x4 + top score 5x5
-//  -> Somme des 3 = classement global
-async function loadGlobalRanking() {
-  if (!globalRankingList) return;
-
-  globalRankingList.innerHTML =
-    '<li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>';
-
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/global_ranking?select=pseudo,best_3x3,best_4x4,best_5x5,total_score&order=total_score.desc&limit=30`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-      }
-    );
-
-    if (!res.ok) throw new Error("Erreur classement global");
-
-    const data = await res.json();
-    globalRankingList.innerHTML = "";
-
-    if (!data.length) {
-      globalRankingList.innerHTML =
-        '<li style="text-align:center; padding:10px; color:#aaa;">Aucun joueur classé pour l\'instant.</li>';
-      return;
-    }
-
-    data.forEach((row, index) => {
-      const li = document.createElement("li");
-      li.className = "leaderboard-item";
-
-      const best3 = row.best_3x3 ?? 0;
-      const best4 = row.best_4x4 ?? 0;
-      const best5 = row.best_5x5 ?? 0;
-
-      li.innerHTML = `
-        <span class="lb-rank">#${index + 1}</span>
-        <span class="lb-name">${row.pseudo || "Anonyme"}</span>
-        <span class="lb-score" style="color:#27ae60;">${row.total_score} pts</span>
-        <span style="margin-left:auto; font-size:0.75rem; color:#95a5a6;">
-          ${best3}/${best4}/${best5}
-        </span>
-      `;
-      globalRankingList.appendChild(li);
-    });
-  } catch (err) {
-    console.error(err);
-    globalRankingList.innerHTML =
-      '<li style="text-align:center; color:#e74c3c;">Impossible de charger le classement global.</li>';
-  }
-}
-
-
-
-function maybeOfferExpertScore() {
-  if (!isRankedEligible) return;
-  if (hasOfferedScore) return;
-  if (!onlineScoreModal) return;
-  if (currentScore <= 0) return;
-
-  hasOfferedScore = true;
-  const mode = getCurrentMode();
-  let label = "";
-  if (isExpertMode) label = "Mode Expert 3x3";
-  else if (mode === "4x4") label = "Mode 4x4 (chrono)";
-  else if (mode === "5x5") label = "Mode 5x5 (chrono)";
-  else label = "Partie chrono";
-
-  modalScoreMsg.textContent = `Score : ${currentScore} pts – ${label}`;
-  onlinePseudoInput.value = "";
-  onlineScoreModal.style.display = "flex";
-}
-
-async function sendExpertScore() {
-  if (!onlineScoreModal) return;
-  const pseudo = onlinePseudoInput.value.trim() || "Anonyme";
-  const mode = getCurrentMode();
-  const boardSize = gridSize;
-  const createdAt = new Date().toISOString();
-
-  try {
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/${SCORES_CHRONO_TABLE}`, {
-        method: "POST",
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: PLAYER_ID, pseudo, mode, board_size: boardSize, score: currentScore, created_at: createdAt })
-      });
-    } catch (e) { console.error("Erreur enregistrement scores_chrono", e); }
-
-    if (isExpertMode) {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
-        method: "POST",
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: currentScore, created_at: createdAt })
-      });
-      if (!res.ok) throw new Error("Erreur envoi score leaderboard 3x3");
-    }
-    onlineScoreModal.style.display = "none";
-    showFeedback("Score envoyé au classement !", "valid");
-    if (isExpertMode) loadExpertLeaderboard();
-  } catch (e) {
-    console.error(e);
-    showFeedback("Erreur lors de l'envoi du score", "invalid");
-  }
-}
-
-// ==========================================
-// ============= 10. AIDE 2x2 ===============
-// ==========================================
-
-if (help2x2Btn) {
-  help2x2Btn.addEventListener("click", () => {
-    if (!helpModal) return;
-    helpModal.style.display = "flex";
-    generateHelpContent();
-  });
-}
-if (closeHelpBtn)
-  closeHelpBtn.addEventListener("click", () => { if (helpModal) helpModal.style.display = "none"; });
-
-function generateHelpContent() {
-  if (!dictionaryLoaded) return;
-  if (!helpGridList) return;
-  if (helpGridList.children.length > 1) return;
-  helpGridList.innerHTML = "";
-  FUN_COMBOS.forEach((combo) => {
-    const words = solveGridForDisplay(combo);
-    const div = document.createElement("div");
-    div.className = "help-item";
-    let gridHTML = '<div class="mini-grid">';
-    for (let char of combo) gridHTML += `<div class="mini-cell">${char}</div>`;
-    gridHTML += "</div>";
-    let wordsHTML = '<div class="help-words">';
-    if (words.length > 0) words.forEach((w) => (wordsHTML += `<span class="word-tag">${w}</span>`));
-    else wordsHTML += "Pas de mot trouvé.";
-    wordsHTML += "</div>";
-    div.innerHTML = `<div class="help-item-header">${gridHTML}<div style="font-weight:bold; color:#4a90e2;">${words.length} Mots</div></div>${wordsHTML}`;
-    helpGridList.appendChild(div);
-  });
-}
-
-function solveGridForDisplay(lettersStr) {
-  const letters = lettersStr.split("");
-  const grid2x2 = [[letters[0], letters[1]], [letters[2], letters[3]]];
-  const results = new Set();
-  const visited = [[false, false], [false, false]];
-  const dirs = [[-1, -1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-  function dfs(r, c, currentStr, localVisited) {
-    currentStr += grid2x2[r][c];
-    if (!PREFIXES.has(currentStr)) return;
-    if (currentStr.length >= 4 && DICTIONARY.has(currentStr)) results.add(currentStr);
-    localVisited[r][c] = true;
-    for (const [dr, dc] of dirs) {
-      const nr = r + dr, nc = c + dc;
-      if (nr >= 0 && nr < 2 && nc >= 0 && nc < 2 && !localVisited[nr][nc]) dfs(nr, nc, currentStr, localVisited);
-    }
-    localVisited[r][c] = false;
-  }
-  for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) dfs(r, c, "", visited);
-  return Array.from(results).sort((a, b) => b.length - a.length || a.localeCompare(b));
-}
-
-// ==========================================
-// ============= 11. LISTENERS ==============
-// ==========================================
-
-if (topExpertBtn) topExpertBtn.addEventListener("click", startExpertMode);
-if (newGridBtn) newGridBtn.addEventListener("click", () => { initGame(); });
-if (replayBtn)  replayBtn.addEventListener("click", replayGrid);
-if (createGridBtn) createGridBtn.addEventListener("click", startManualCreation);
-if (funBtn) funBtn.addEventListener("click", startFunMode);
-if (validateCustomBtn) validateCustomBtn.addEventListener("click", validateGrid);
-
-if (passBtn) {
-  passBtn.addEventListener("click", () => {
-    if (passBtn.textContent.includes("Voir")) {
-      if (!cachedSolutions) cachedSolutions = findAllWords();
-      solutionMode = true;
-      gameSolved = true;
-      updateWordList();
-      passBtn.textContent = "Grille suivante ⏭️";
-    } else {
-      currentFunIndex++;
-      passBtn.textContent = "Voir solutions & passer";
-      loadFunGrid();
-    }
-  });
-}
-
-if (solveBtn) {
-  solveBtn.addEventListener("click", () => {
-    if (solutionMode) return;
-    if (isCustomGame && !gameSolved) {
-      if (solveBtn.disabled) return;
-      let countdown = 10;
-      solveBtn.disabled = true;
-      solveBtn.textContent = `Attente ${countdown}s...`;
-      let interval = setInterval(() => {
-        countdown--;
-        solveBtn.textContent = `Attente ${countdown}s...`;
-        if (countdown <= 0) {
-          clearInterval(interval);
-          solveBtn.disabled = false;
-          solveBtn.textContent = "Voir solutions";
-          finishAndShowSolutions();
-        }
-      }, 1000);
-      return;
-    }
-    finishAndShowSolutions();
-  });
-}
-
-function finishAndShowSolutions() {
-  if (isChallengeActive) {
-    stopTimer();
-    if (feedbackEl) feedbackEl.textContent = "Partie terminée";
-  }
-  cachedSolutions = findAllWords();
-  solutionMode = true;
-  gameSolved = true;
-  updateWordList();
-  maybeOfferExpertScore();
-}
-
-function startManualCreation() {
-  resetGameState();
-  stopTimer();
-  if (newGridBtn) newGridBtn.style.display = "none";
-  if (replayBtn)  replayBtn.style.display = "none";
-  if (createGridBtn) createGridBtn.style.display = "none";
-  if (funBtn) funBtn.style.display = "none";
-  if (help2x2Btn) help2x2Btn.style.display = "none";
-  if (globalStatsBtn) globalStatsBtn.style.display = "none";
-  if (solveBtn) solveBtn.style.display = "none";
-  if (validateCustomBtn) validateCustomBtn.style.display = "block";
-  isEditing = true;
-  if (feedbackEl) {
-    feedbackEl.textContent = "Remplissez les cases";
-    feedbackEl.className = "feedback visible";
-  }
-  if (!gridEl) return;
-  gridEl.innerHTML = "";
-  for (let r = 0; r < gridSize; r++)
-    for (let c = 0; c < gridSize; c++) {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      const input = document.createElement("input");
-      input.className = "cell-input";
-      input.maxLength = 2;
-      input.dataset.r = r;
-      input.dataset.c = c;
-      input.dataset.index = r * gridSize + c;
-      input.addEventListener("input", (e) => { e.target.value = e.target.value.toUpperCase(); });
-      cell.appendChild(input);
-      gridEl.appendChild(cell);
-    }
-}
-
-function validateGrid() {
-  const inputs = document.querySelectorAll(".cell-input");
-  gridData = Array.from({ length: gridSize }, () => Array(gridSize).fill(""));
-  for (let i = 0; i < inputs.length; i++) {
-    let val = inputs[i].value.trim().toUpperCase();
-    if (!val) { alert("Remplissez tout !"); return; }
-    gridData[parseInt(inputs[i].dataset.r)][parseInt(inputs[i].dataset.c)] = val;
-  }
-  currentGameId = generateNewGameId();
-  isEditing = false;
-  isCustomGame = true;
-  if (newGridBtn) newGridBtn.style.display = "block";
-  if (replayBtn)  replayBtn.style.display = "block";
-  if (createGridBtn) createGridBtn.style.display = "block";
-  if (funBtn) funBtn.style.display = "block";
-  if (help2x2Btn) help2x2Btn.style.display = "block";
-  if (globalStatsBtn) globalStatsBtn.style.display = "block";
-  if (solveBtn) solveBtn.style.display = "block";
-  if (validateCustomBtn) validateCustomBtn.style.display = "none";
-  if (feedbackEl) feedbackEl.className = "feedback";
-  renderGrid();
-  setTimeout(resizeCanvas, 50);
-}
-
-if (btnIgnoreScore) {
-  btnIgnoreScore.addEventListener("click", () => { onlineScoreModal.style.display = "none"; });
-}
-if (btnSendScore) {
-  btnSendScore.addEventListener("click", () => { sendExpertScore(); });
-}
-
-if (globalStatsBtn) {
-  globalStatsBtn.addEventListener("click", () => {
-    if (statsModal) {
-      statsModal.style.display = "flex";
-      setStatsTab("global");
-    }
-  });
-}
-if (closeStatsBtn) {
-  closeStatsBtn.addEventListener("click", () => { statsModal.style.display = "none"; });
-}
-if (statsTabGlobal && statsTabPlayer) {
-  statsTabGlobal.addEventListener("click", () => setStatsTab("global"));
-  statsTabPlayer.addEventListener("click", () => setStatsTab("player"));
-}
-if (statsModeFilters) {
-  statsModeFilters.addEventListener("click", (e) => {
-    const btn = e.target.closest(".mode-filter");
-    if (!btn) return;
-    const m = btn.dataset.mode || "all";
-    loadPlayerStats(m);
-  });
-}
-
-if (chronoToggleBtn) {
-  chronoToggleBtn.addEventListener("click", () => {
-    isTimedModeEnabled = !isTimedModeEnabled;
-    updateChronoUI();
-    if (gridSize === 4 || gridSize === 5) initGame();
-  });
-}
-function applyGridScale(value) {
-  const scale = value / 100; // 80 -> 0.8, 100 -> 1, 120 -> 1.2
-  document.documentElement.style.setProperty("--grid-scale", scale);
-}
-
-if (gridScaleRange) {
-  // valeur initiale
-  applyGridScale(gridScaleRange.value);
-  // mise à jour en direct
-  gridScaleRange.addEventListener("input", (e) => {
-    applyGridScale(e.target.value);
-    // on redessine la grille / canvas pour éviter les décalages
-    resizeCanvas();
-  });
-}
-// === NOUVEAU : contrôle de l'écart entre les cases ===
-function applyGridGap(value) {
-  const px = value + "px";   // 10 -> "10px", 40 -> "40px"
-  document.documentElement.style.setProperty("--grid-gap", px);
-  resizeCanvas();
-}
-
-if (gridGapRange) {
-  // valeur initiale
-  applyGridGap(gridGapRange.value);
-  // mise à jour en direct
-  gridGapRange.addEventListener("input", (e) => {
-    applyGridGap(e.target.value);
-  });
-}
-
-
-window.addEventListener("load", () => {
-  loadDictionary();
-  loadExpertLeaderboard();
-  loadGlobalRanking();      // 👈 pour remplir direct le classement global
-  updateChronoUI();         // 👈 pour sync l'état du bouton chrono au démarrage
-});
