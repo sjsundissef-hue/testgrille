@@ -1564,6 +1564,9 @@ if (solveBtn) {
   if (!cachedSolutions || !cachedSolutions.size) {
     cachedSolutions = findAllWords();
   }
+  
+  // Debug : vérifier que les solutions sont bien calculées
+  console.log("Solutions calculées:", cachedSolutions ? cachedSolutions.size : 0, "mots");
 
   solutionMode = true;
   gameSolved = true;
@@ -1601,10 +1604,20 @@ if (solveBtn) {
     }
   }
 
+  // S'assurer que le score-panel est visible avant d'afficher les mots
+  const scorePanel = document.querySelector(".score-panel");
+  if (scorePanel) {
+    scorePanel.style.display = "flex"; // S'assurer qu'il est visible
+  }
+  
   updateWordList();
 
   // on remonte la liste en haut
-  if (listEl) listEl.scrollTop = 0;
+  if (listEl) {
+    listEl.scrollTop = 0;
+    // Debug : vérifier que la liste est bien remplie
+    console.log("Nombre d'éléments dans la liste:", listEl.children.length);
+  }
 
   // titre = Résultats
   if (listTitleEl) listTitleEl.textContent = "Résultats";
