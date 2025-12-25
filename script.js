@@ -34,8 +34,9 @@ let isChallengeActive = false;
 // (Les DOMContentLoaded ou initialisations dom viendront après)
 
 // Classes pour contrôle d'affichage des boutons & zones en mode chrono/solutions/leaderboard
+const BODY_HOME_CLASS = "home";
 const BODY_CHRONO_CLASS = "chrono-active";
-const BODY_SOLUTIONS_CLASS = "solutions-open";
+const BODY_CHRONO_RESULTS_CLASS = "chrono-results";
 const BODY_LEADERBOARD_CLASS = "leaderboard-open";
 
 // Helpers pour afficher/cacher le classement (leaderboard) selon l'état et le device
@@ -171,31 +172,57 @@ document.addEventListener("DOMContentLoaded", function() {
 // Helpers pour afficher les bons boutons/panels selon l'état du mode chrono/solutions.
 // On ajoute ou retire des classes sur <body> pour piloter le CSS.
 
+// ==========================================
+// === GESTION DES ÉTATS UX ===
+// ==========================================
+
+function setHomeMode() {
+  // Retour à l'accueil : tous les boutons visibles
+  const body = document.body;
+  body.classList.remove(BODY_CHRONO_CLASS);
+  body.classList.remove(BODY_CHRONO_RESULTS_CLASS);
+  body.classList.add(BODY_HOME_CLASS);
+  
+  // Remettre le texte normal du bouton
+  if (solveBtn) {
+    solveBtn.textContent = "Voir solutions";
+  }
+  
+  // Cacher le bouton retour
+  if (backToHomeBtn) {
+    backToHomeBtn.style.display = "none";
+  }
+}
+
 function setChronoModeUI(active) {
   // active = true au démarrage du chrono, false sinon
-  // En mode chrono, on cache TOUS les boutons sauf "Voir Résultats"
+  // En mode chrono actif, on cache TOUS les boutons sauf "Voir Résultats"
   const body = document.body;
   if (active) {
     body.classList.add(BODY_CHRONO_CLASS);
-    body.classList.remove(BODY_SOLUTIONS_CLASS);
+    body.classList.remove(BODY_CHRONO_RESULTS_CLASS);
+    body.classList.remove(BODY_HOME_CLASS);
     // Changer le texte du bouton en mode chrono
     if (solveBtn) {
       solveBtn.textContent = "Voir Résultats";
     }
   } else {
-    body.classList.remove(BODY_CHRONO_CLASS);
-    // Remettre le texte normal
-    if (solveBtn) {
-      solveBtn.textContent = "Voir solutions";
-    }
+    // Si on désactive le chrono, on retourne à l'accueil
+    setHomeMode();
   }
 }
 
-function openSolutionsUI() {
-  // Affiche la vue compacte avec grille réduite, résultats, et seulement le bouton Rejouer
+function setChronoResultsMode() {
+  // Mode résultats chrono : grille collée aux boutons Rejouer + Retour à l'accueil
   const body = document.body;
-  body.classList.add(BODY_SOLUTIONS_CLASS);
-  body.classList.remove(BODY_CHRONO_CLASS); // On quitte le mode chrono
+  body.classList.remove(BODY_CHRONO_CLASS);
+  body.classList.add(BODY_CHRONO_RESULTS_CLASS);
+  body.classList.remove(BODY_HOME_CLASS);
+  
+  // Afficher le bouton retour
+  if (backToHomeBtn) {
+    backToHomeBtn.style.display = "inline-block";
+  }
 }
 
 // Exemple d'intégration avec le reste du JS :
@@ -343,6 +370,7 @@ const globalStatsBtn  = document.getElementById("globalStatsBtn") || document.ge
 const validateCustomBtn = document.getElementById("validateCustomBtn");
 const passBtn         = document.getElementById("passBtn");
 const solveBtn        = document.getElementById("solveBtn");
+const backToHomeBtn   = document.getElementById("backToHomeBtn");
 const btn4x4          = document.getElementById("btn4x4");
 const btn5x5          = document.getElementById("btn5x5");
 
@@ -448,8 +476,8 @@ function updateChronoUI() {
 }
 
 function resetGameState() {
- // On enlève le mode "solutions ouvertes" au début d'une nouvelle partie
-  document.body.classList.remove(BODY_SOLUTIONS_CLASS);
+ // On enlève les modes chrono au début d'une nouvelle partie
+  document.body.classList.remove(BODY_CHRONO_RESULTS_CLASS);
   document.body.classList.remove(BODY_CHRONO_CLASS);
   isEditing = false;
   isCustomGame = false;
@@ -605,31 +633,40 @@ function replayGrid() {
   if (isEditing) return;
 
   // 1) On quitte le mode "solutions affichées"
-  document.body.classList.remove(BODY_SOLUTIONS_CLASS);
+  document.body.classList.remove(BODY_CHRONO_RESULTS_CLASS);
   solutionMode = false;
   gameSolved = false;
 
-  // 2) On remet les boutons dans l'état normal (comme dans initGame)
-  if (newGridBtn)        newGridBtn.style.display = "block";
-  if (replayBtn)         replayBtn.style.display = "block";
-  if (createGridBtn)     createGridBtn.style.display = "block";
-  if (funBtn)            funBtn.style.display = "block";
-  if (help2x2Btn)        help2x2Btn.style.display = "block";
-  if (globalStatsBtn)    globalStatsBtn.style.display = "block";
-  if (validateCustomBtn) validateCustomBtn.style.display = "none";
-  if (passBtn)           passBtn.style.display = isFunMode ? "block" : "none";
-
-  if (solveBtn) {
-    solveBtn.style.display = "block";
-    solveBtn.textContent = "Voir solutions";
-    solveBtn.disabled = false;
+  // 2) Si on était en mode chrono, on relance une nouvelle partie chrono
+  if (isChronoGame) {
+    // On relance le chrono avec la même configuration
+    const modeName = getCurrentMode();
+    if (isTimedModeEnabled && (gridSize === 4 || gridSize === 5)) {
+      const duration = CHRONO_DURATIONS[modeName] || CHRONO_DURATIONS["4x4"];
+      startTimer(duration);
+      isChallengeActive = true;
+      isChronoGame = true;
+      isRankedEligible = true;
+      currentChronoMode = modeName;
+      challengeModeName = "chrono-" + modeName;
+      setChronoModeUI(true);
+    } else if (isExpertMode) {
+      const duration = CHRONO_DURATIONS["expert3x3"] || 120;
+      startTimer(duration);
+      isChallengeActive = true;
+      isChronoGame = true;
+      isRankedEligible = true;
+      currentChronoMode = "expert3x3";
+      setChronoModeUI(true);
+    } else {
+      setHomeMode();
+    }
+  } else {
+    setHomeMode();
   }
 
-  // 3) Timer / état chrono
-  if (isChallengeActive) {
-    stopTimer();
-    if (feedbackEl) feedbackEl.textContent = "Mode Libre";
-  }
+  // 4) Reset de la grille mais on garde les mêmes lettres
+  // (Les boutons sont gérés par les classes CSS maintenant)
 
   // 4) Reset de la grille mais on garde les mêmes lettres
   foundWords.clear();
@@ -645,29 +682,8 @@ function replayGrid() {
   renderGrid();
   setTimeout(resizeCanvas, 50);
   showFeedback("Grille réinitialisée", "valid");
-
-  // 5) Si on est en mode chrono 4x4 / 5x5, on relance
-  if (!isFunMode && !isExpertMode && !isCustomGame) {
-    const modeName = getCurrentMode();
-    if (isTimedModeEnabled && (gridSize === 4 || gridSize === 5)) {
-      const duration = CHRONO_DURATIONS[modeName] || CHRONO_DURATIONS["4x4"];
-      startTimer(duration);
-      isChallengeActive = true;
-      isChronoGame = true;
-      isRankedEligible = true;
-      currentChronoMode = modeName;
-      challengeModeName = "chrono-" + modeName;
-      setChronoModeUI(true);
-    } else {
-      isChronoGame = false;
-      isRankedEligible = false;
-      currentChronoMode = null;
-      setChronoModeUI(false);
-    }
-  } else {
-    setChronoModeUI(false);
-  }
-
+  
+  // Le mode chrono est déjà géré plus haut dans la fonction
   updateChronoUI();
 }
 
@@ -1522,8 +1538,18 @@ if (solveBtn) {
   solutionMode = true;
   gameSolved = true;
 
-  // Active le mode "solutions" : grille compacte, seulement Rejouer visible
-  openSolutionsUI();
+  // Si on était en mode chrono, on passe en mode résultats chrono
+  // Sinon, on utilise le mode solutions classique (pour les parties non chrono)
+  if (isChronoGame) {
+    setChronoResultsMode();
+  } else {
+    // Mode solutions classique (non chrono)
+    document.body.classList.add(BODY_CHRONO_RESULTS_CLASS);
+    document.body.classList.remove(BODY_CHRONO_CLASS);
+    if (backToHomeBtn) {
+      backToHomeBtn.style.display = "inline-block";
+    }
+  }
 
   updateWordList();
 
@@ -1677,7 +1703,35 @@ if (gridGapRange) {
 }
 
 
+// Event listener pour le bouton "Retour à l'accueil"
+if (backToHomeBtn) {
+  backToHomeBtn.addEventListener("click", () => {
+    // Arrêter le chrono si actif
+    if (isChallengeActive) {
+      stopTimer();
+    }
+    // Quitter complètement le mode chrono
+    isChronoGame = false;
+    isRankedEligible = false;
+    currentChronoMode = null;
+    isChallengeActive = false;
+    isTimedModeEnabled = false;
+    
+    // Retour à l'accueil
+    setHomeMode();
+    updateChronoUI();
+    
+    // Réinitialiser l'état du jeu
+    resetGameState();
+    
+    // Relancer une nouvelle grille normale
+    initGame();
+  });
+}
+
 window.addEventListener("load", () => {
+  // Initialiser en mode accueil
+  setHomeMode();
   loadDictionary();
   loadExpertLeaderboard();
   loadGlobalRanking();      // 👈 pour remplir direct le classement global
