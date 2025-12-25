@@ -56,20 +56,61 @@
     <div class="feedback" id="feedbackMsg"></div>
   </div>
 
+      <!-- Conteneur pour mode ranked-results -->
+      <div class="ranked-stack">
+        <div class="grid-wrapper">
+          <canvas id="bgCanvas"></canvas>
+          <canvas id="lineCanvas"></canvas>
+          <div class="grid" id="grid"></div>
+        </div>
 
-      <div class="grid-wrapper">
-        <canvas id="bgCanvas"></canvas>
-        <canvas id="lineCanvas"></canvas>
-        <div class="grid" id="grid"></div>
+        <div class="ranked-actions">
+          <button id="replayBtn" class="secondary">Rejouer</button>
+          <button id="backToHomeBtn" class="secondary" style="display:none;">🏠 Retour à l'accueil</button>
+        </div>
+
+        <div class="score-panel">
+          <div class="score-header">
+            <div class="score-title" id="listTitle">Score Actuel</div>
+            <div class="score-total" id="scoreDisplay">0</div>
+            <div class="score-comparison" id="scoreComparison"></div>
+          </div>
+          
+          <div class="filter-container">
+              <input type="text" id="filterInput" class="filter-input" placeholder="🔎 Filtrer...">
+          </div>
+
+          <ul class="word-list" id="wordList"></ul>
+
+          <div class="history-section">
+              <div class="history-title">Historique Session</div>
+              <ul class="history-list" id="historyList"></ul>
+          </div>
+
+          <div class="leaderboard-section">
+              <div class="leaderboard-title">🌍 Classement 3x3 (Online)</div>
+              <ul class="leaderboard-list" id="leaderboardList">
+                  <li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>
+              </ul>
+
+              <div style="margin:12px 0; border-top:1px solid #eee;"></div>
+
+              <div class="leaderboard-title">🏆 Classement Global (3 modes)</div>
+              <ul class="leaderboard-list" id="globalRankingList">
+                  <li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>
+              </ul>
+          </div>
+        </div>
       </div>
 
       <div class="action-buttons">
         <button id="newGridBtn">Nouvelle Grille</button>
-        <button id="replayBtn" class="secondary">Rejouer</button>
-        <button id="createGridBtn" class="secondary">Créer</button>
+        <div class="special-modes-row">
+            <button id="createGridBtn" class="secondary">👉 Créer ma grille</button>
+            <button id="funBtn" class="fun">👉 Sprint 2x2</button>
+        </div>
         
         <div style="display:flex; gap:10px; width:100%; justify-content:center;">
-            <button id="funBtn" class="fun" style="flex:2;">Fun 2x2</button>
             <button id="help2x2Btn" class="help-btn" style="flex:1;">❓ Aide</button>
         </div>
         
@@ -78,8 +119,6 @@
         <button id="leaderboardToggleBtn" class="stats-btn">📊 Voir le classement</button>
 
         <button id="solveBtn" class="secondary">Solutions</button>
-        
-        <button id="backToHomeBtn" class="secondary" style="display:none;">🏠 Retour à l'accueil</button>
         
         <button id="validateCustomBtn" class="validate">Valider</button>
         <button id="passBtn" class="pass">Passer</button>
