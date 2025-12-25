@@ -224,17 +224,6 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   z-index: 1;   /* en dessous du texte */
 }
 
-/* === MOBILE OPTIMIZED (Taille parfaite) === */
-.word-display-area {
-  position: relative;
-  z-index: 5;   /* au-dessus de la grille */
-}
-
-.grid-wrapper {
-  position: relative;
-  z-index: 1;   /* en dessous du texte */
-}
-
 @media (max-width: 768px) { 
   body { 
     padding: 5px; 
@@ -242,7 +231,7 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
 
   .game-area {
-    gap: 8px;          /* moins d’espace entre les éléments du haut */
+    gap: 8px;
     margin-top: 0;
   }
 
@@ -250,19 +239,19 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     flex-direction: column;
     align-items: stretch;
     gap: 4px;
-    margin-bottom: 4px;  /* on rapproche la grille des sliders */
+    margin-bottom: 4px;
   }
 
   .score-panel { 
     width: 100%; 
     height: auto; 
-    max-height: 460px;   /* plus compact -> place pour la grille + boutons */
+    max-height: 460px;
     padding: 12px; 
     margin-top: 10px; 
   }
 
   .grid-wrapper { 
-    padding: 12px;        /* moins de blanc autour */
+    padding: 12px;
     border-radius: 24px; 
     width: 90vw; 
     max-width: 430px;
@@ -316,7 +305,7 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
 
   .word-display-area {
     margin-top: 4px;
-    margin-bottom: 18px;   /* encore un peu plus de place sur téléphone */
+    margin-bottom: 18px;
   }
 
   /* Bloc boutons sur mobile */
@@ -337,7 +326,7 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
 
   button.stats-btn {
-    width: 100%;   /* le bouton stats reste sur une ligne entière */
+    width: 100%;
   }
 
   /* Sur mobile, on empile grille + résultats */
@@ -348,13 +337,10 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
 
   body.solutions-open .main-container {
-    gap: 4px;  /* encore plus proche quand solutions ouvertes */
+    gap: 4px;
   }
 
-  /* Quand les solutions sont affichées : 
-     - on garde seulement "Rejouer"
-     - on rapetisse la grille et on la colle aux résultats
-  */
+  /* Quand les solutions sont affichées : on garde seulement Rejouer */
   body.solutions-open #newGridBtn,
   body.solutions-open #createGridBtn,
   body.solutions-open #funBtn,
@@ -365,24 +351,22 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
     display: none;
   }
 
-  /* ⚠️ On NE cache PAS le bouton Solutions ici */
   body.solutions-open #replayBtn {
-    display: inline-block;  /* seul bouton visible sous la grille */
+    display: inline-block;
   }
 
   body.solutions-open .grid-wrapper {
-    transform: scale(0.75) !important;   /* un peu plus petit */
+    transform: scale(0.75) !important;
     transform-origin: top center;
     margin-top: 2px;
     margin-bottom: 2px;
-    padding: 8px;                        /* moins de "gras" autour du carré */
+    padding: 8px;
   }
 
   body.solutions-open .word-display-area {
     margin-bottom: 4px;
   }
 
-  /* Résultats : plus de place et scroll interne pour la liste */
   body.solutions-open .score-panel {
     max-height: none;
     height: auto;
@@ -396,16 +380,10 @@ button.pass { background-color: #34495e; box-shadow: 0 5px 0 #2c3e50; display: n
   }
 
   body.solutions-open .action-buttons {
-    margin-top: 4px;   /* rapproche encore "Rejouer" de la grille */
+    margin-top: 4px;
   }
 
   body.solutions-open .word-list {
     max-height: 60vh;
   }
-
-} /* FIN DU MEDIA */
-
-
-
-
-
+}
