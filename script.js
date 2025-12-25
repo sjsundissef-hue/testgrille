@@ -59,44 +59,112 @@ function isMobileDevice() {
   return window.matchMedia("(max-width: 700px)").matches;
 }
 
-// Fonction pour mettre à jour le texte du bouton
-function updateLeaderboardButtonText() {
-  const leaderboardBtn = document.getElementById("leaderboardToggleBtn");
-  if (leaderboardBtn) {
-    leaderboardBtn.textContent = isLeaderboardOpen ? "❌ Fermer le classement" : "📊 Voir le classement";
+// ==========================================
+// === NOUVEAU SYSTÈME CLASSEMENT (MODAL) ===
+// ==========================================
+
+function openLeaderboardModal() {
+  const modal = document.getElementById("leaderboardModal");
+  if (modal) {
+    modal.classList.add("active");
+    // Recharger les classements dans la modal
+    loadLeaderboardIntoModal();
   }
 }
 
-// Attache l'écouteur sur le bouton toggle leaderboard dès que le DOM est prêt
+function closeLeaderboardModal() {
+  const modal = document.getElementById("leaderboardModal");
+  if (modal) {
+    modal.classList.remove("active");
+  }
+}
+
+function loadLeaderboardIntoModal() {
+  // Charger le classement 3x3 dans la modal
+  const modalList = document.getElementById("leaderboardModalList");
+  if (!modalList) return;
+  
+  modalList.innerHTML = '<li style="text-align:center; padding:20px; color:#aaa;">Chargement...</li>';
+  
+  fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?select=pseudo,score,created_at&order=score.desc&limit=30`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+  })
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(data => {
+      modalList.innerHTML = "";
+      if (!data.length) {
+        modalList.innerHTML = '<li style="text-align:center; padding:20px; color:#aaa;">Aucun score pour l\'instant.</li>';
+        return;
+      }
+      data.forEach((row, index) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="lb-rank">#${index + 1}</span>
+          <span class="lb-name">${row.pseudo || "Anonyme"}</span>
+          <span class="lb-score">${row.score} pts</span>
+        `;
+        modalList.appendChild(li);
+      });
+    })
+    .catch(() => {
+      modalList.innerHTML = '<li style="text-align:center; color:#e74c3c;">Erreur chargement.</li>';
+    });
+  
+  // Charger le classement global dans la modal
+  const globalModalList = document.getElementById("globalRankingModalList");
+  if (!globalModalList) return;
+  
+  globalModalList.innerHTML = '<li style="text-align:center; padding:20px; color:#aaa;">Chargement...</li>';
+  
+  fetch(`${SUPABASE_URL}/rest/v1/global_ranking?select=pseudo,best_3x3,best_4x4,best_5x5,total_score&order=total_score.desc&limit=30`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+  })
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(data => {
+      globalModalList.innerHTML = "";
+      if (!data.length) {
+        globalModalList.innerHTML = '<li style="text-align:center; padding:20px; color:#aaa;">Aucun joueur classé.</li>';
+        return;
+      }
+      data.forEach((row, index) => {
+        const li = document.createElement("li");
+        const best3 = row.best_3x3 ?? 0;
+        const best4 = row.best_4x4 ?? 0;
+        const best5 = row.best_5x5 ?? 0;
+        li.innerHTML = `
+          <span class="lb-rank">#${index + 1}</span>
+          <span class="lb-name">${row.pseudo || "Anonyme"}</span>
+          <span class="lb-score">${row.total_score} pts</span>
+          <span style="margin-left:auto; font-size:0.85rem; color:#95a5a6;">${best3}/${best4}/${best5}</span>
+        `;
+        globalModalList.appendChild(li);
+      });
+    })
+    .catch(() => {
+      globalModalList.innerHTML = '<li style="text-align:center; color:#e74c3c;">Erreur chargement.</li>';
+    });
+}
+
+// Attache l'écouteur sur le bouton leaderboard
 document.addEventListener("DOMContentLoaded", function() {
   const leaderboardBtn = document.getElementById("leaderboardToggleBtn");
   if (leaderboardBtn) {
-    leaderboardBtn.addEventListener("click", function() {
-      isLeaderboardOpen = !isLeaderboardOpen;
-      setLeaderboardUI(isLeaderboardOpen);
-      updateLeaderboardButtonText();
+    leaderboardBtn.addEventListener("click", openLeaderboardModal);
+  }
+  
+  const closeBtn = document.getElementById("closeLeaderboardModal");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", closeLeaderboardModal);
+  }
+  
+  // Fermer la modal en cliquant en dehors
+  const modal = document.getElementById("leaderboardModal");
+  if (modal) {
+    modal.addEventListener("click", function(e) {
+      if (e.target === modal) {
+        closeLeaderboardModal();
+      }
     });
-  }
-
-  // Sur mobile: panneau fermé par défaut au départ. 
-  // Sur PC: fermé par défaut aussi (cohérent)
-  if (isMobileDevice()) {
-    isLeaderboardOpen = false;
-    setLeaderboardUI(false);
-  } else {
-    isLeaderboardOpen = false;
-    setLeaderboardUI(false);
-  }
-  updateLeaderboardButtonText();
-});
-
-// Si l'utilisateur redimensionne la page, on ajuste la visibilité si besoin
-window.addEventListener("resize", function() {
-  // S'assurer que sur mobile il reste fermé par défaut (pas ouvert par resize)
-  if (isMobileDevice() && isLeaderboardOpen) {
-    isLeaderboardOpen = false;
-    setLeaderboardUI(false);
-    updateLeaderboardButtonText();
   }
 });
 
@@ -105,22 +173,29 @@ window.addEventListener("resize", function() {
 
 function setChronoModeUI(active) {
   // active = true au démarrage du chrono, false sinon
+  // En mode chrono, on cache TOUS les boutons sauf "Voir Résultats"
   const body = document.body;
   if (active) {
     body.classList.add(BODY_CHRONO_CLASS);
     body.classList.remove(BODY_SOLUTIONS_CLASS);
+    // Changer le texte du bouton en mode chrono
+    if (solveBtn) {
+      solveBtn.textContent = "Voir Résultats";
+    }
   } else {
     body.classList.remove(BODY_CHRONO_CLASS);
+    // Remettre le texte normal
+    if (solveBtn) {
+      solveBtn.textContent = "Voir solutions";
+    }
   }
 }
 
 function openSolutionsUI() {
-  // Affiche uniquement le bouton "replay" et la grille compacte, grâce à la classe solutions-open.
-  // Le panneau score et la word-list restent visibles.
-  // La CSS doit gérer le layout via .solutions-open.
+  // Affiche la vue compacte avec grille réduite, résultats, et seulement le bouton Rejouer
   const body = document.body;
   body.classList.add(BODY_SOLUTIONS_CLASS);
-  // Laisse BODY_CHRONO_CLASS si besoin pour l'effet compact, le CSS choisira la combinaison.
+  body.classList.remove(BODY_CHRONO_CLASS); // On quitte le mode chrono
 }
 
 // Exemple d'intégration avec le reste du JS :
@@ -374,7 +449,8 @@ function updateChronoUI() {
 
 function resetGameState() {
  // On enlève le mode "solutions ouvertes" au début d'une nouvelle partie
-  document.body.classList.remove("solutions-open");
+  document.body.classList.remove(BODY_SOLUTIONS_CLASS);
+  document.body.classList.remove(BODY_CHRONO_CLASS);
   isEditing = false;
   isCustomGame = false;
   isFunMode = false;
@@ -529,7 +605,7 @@ function replayGrid() {
   if (isEditing) return;
 
   // 1) On quitte le mode "solutions affichées"
-  document.body.classList.remove("solutions-open");
+  document.body.classList.remove(BODY_SOLUTIONS_CLASS);
   solutionMode = false;
   gameSolved = false;
 
@@ -581,11 +657,15 @@ function replayGrid() {
       isRankedEligible = true;
       currentChronoMode = modeName;
       challengeModeName = "chrono-" + modeName;
+      setChronoModeUI(true);
     } else {
       isChronoGame = false;
       isRankedEligible = false;
       currentChronoMode = null;
+      setChronoModeUI(false);
     }
+  } else {
+    setChronoModeUI(false);
   }
 
   updateChronoUI();
@@ -659,6 +739,9 @@ function startExpertMode() {
   isChronoGame = true;
   isRankedEligible = true;
   currentChronoMode = "expert3x3";
+  
+  // Activer le mode chrono UI
+  setChronoModeUI(true);
 
   updateWordList();
   if (feedbackEl) {
@@ -1439,18 +1522,8 @@ if (solveBtn) {
   solutionMode = true;
   gameSolved = true;
 
-  // Active le mode spécial "solutions" pour le CSS mobile
-  document.body.classList.add("solutions-open");
-
-  // En JS : on cache juste le bouton "Voir solutions"
-  if (solveBtn) {
-    solveBtn.style.display = "none";
-  }
-
-  // On s'assure que "Rejouer" est bien visible
-  if (replayBtn) {
-    replayBtn.style.display = "inline-block";
-  }
+  // Active le mode "solutions" : grille compacte, seulement Rejouer visible
+  openSolutionsUI();
 
   updateWordList();
 
