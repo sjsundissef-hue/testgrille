@@ -219,7 +219,7 @@ function setRankedResultsMode() {
   body.classList.add(BODY_RANKED_RESULTS_CLASS);
   body.classList.remove(BODY_HOME_CLASS);
   
-  // Afficher le bouton retour (sera géré par CSS flex)
+  // Afficher le bouton retour dans ranked-actions
   if (backToHomeBtn) {
     backToHomeBtn.style.display = "inline-block";
   }
@@ -466,7 +466,7 @@ function showFeedback(text, type) {
 function updateRankedUI() {
   if (rankedToggleBtn) {
     rankedToggleBtn.classList.toggle("ranked-active", isTimedModeEnabled);
-    rankedToggleBtn.textContent = isTimedModeEnabled ? "🏆 Mode ranked : ON" : "🏆 Mode ranked : OFF";
+    rankedToggleBtn.textContent = isTimedModeEnabled ? "Mode ranked : ON" : "Mode ranked : OFF";
   }
   if (rankedModeBadge) {
     const shouldShow = isChronoGame && (isExpertMode || (!isExpertMode && (gridSize === 4 || gridSize === 5)));
