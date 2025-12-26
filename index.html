@@ -10,6 +10,13 @@
 
   <h1>Wordbox</h1>
 
+  <!-- Section Profil Joueur -->
+  <div class="player-section">
+    <div id="playerStatus" class="player-status">🔴 Non connecté</div>
+    <div id="playerInfo" class="player-info"></div>
+    <div id="playerActions" class="player-actions"></div>
+  </div>
+
   <div class="top-highlight">
       <button id="topExpertBtn" class="big-highlight-btn">👑 MODE EXPERT 3x3 👑</button>
   </div>
@@ -247,6 +254,46 @@
               <li style="text-align:center; padding:20px; color:#999;">Chargement des données...</li>
           </ul>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal Création Profil -->
+  <div id="createProfileModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Créer un profil</h3>
+        <button id="closeCreateProfileModal" class="close-btn">×</button>
+      </div>
+      <form id="createProfileForm">
+        <p>Choisis un pseudo :</p>
+        <input type="text" id="createPseudoInput" placeholder="Ton pseudo" maxlength="20" required>
+        <div id="createProfileMessage" class="modal-message"></div>
+        <div class="modal-actions">
+          <button type="submit" class="btn-confirm">Créer</button>
+          <button type="button" class="btn-cancel" onclick="document.getElementById('createProfileModal').style.display='none'">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Connexion Profil -->
+  <div id="connectProfileModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Se connecter</h3>
+        <button id="closeConnectProfileModal" class="close-btn">×</button>
+      </div>
+      <form id="connectProfileForm">
+        <p>Pseudo :</p>
+        <input type="text" id="connectPseudoInput" placeholder="Ton pseudo" maxlength="20" required>
+        <p style="margin-top: 15px;">Code (4 chiffres) :</p>
+        <input type="text" id="connectCodeInput" placeholder="0000" maxlength="4" pattern="[0-9]{4}" required>
+        <div id="connectProfileMessage" class="modal-message"></div>
+        <div class="modal-actions">
+          <button type="submit" class="btn-confirm">Se connecter</button>
+          <button type="button" class="btn-cancel" onclick="document.getElementById('connectProfileModal').style.display='none'">Annuler</button>
+        </div>
+      </form>
     </div>
   </div>
 

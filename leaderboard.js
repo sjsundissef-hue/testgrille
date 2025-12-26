@@ -27,15 +27,11 @@ import {
 import { showFeedback } from './ui.js';
 // getCurrentMode sera importé depuis state.js via une fonction exportée
 
-// ID joueur (doit être initialisé)
-export let PLAYER_ID = localStorage.getItem("wb_player_id");
-if (!PLAYER_ID) {
-  if (window.crypto && window.crypto.randomUUID) {
-    PLAYER_ID = window.crypto.randomUUID();
-  } else {
-    PLAYER_ID = "wb_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
-  }
-  localStorage.setItem("wb_player_id", PLAYER_ID);
+// ID joueur - maintenant géré par player.js
+import { getPlayerId, isPlayerConnected, getCurrentPlayer } from './player.js';
+
+export function getPLAYER_ID() {
+  return getPlayerId();
 }
 
 // Pseudo sauvegardé
@@ -250,6 +246,12 @@ export async function loadGlobalRanking() {
 // Log des mots trouvés
 // IMPORTANT: Les mots 3x3 sont enregistrés UNIQUEMENT pour "Mes Stats 3x3", jamais dans la Collection Globale
 export async function logWordFind(word, mode) {
+  const playerId = getPLAYER_ID();
+  if (!playerId) {
+    // Pas de joueur connecté, ne pas enregistrer
+    return;
+  }
+  
   try {
     // Déterminer si c'est du 3x3 (expert3x3 ou mode 3x3)
     const is3x3 = mode === "expert3x3" || mode === "3x3" || (state.isExpertMode && state.gridSize === 3);
@@ -261,7 +263,7 @@ export async function logWordFind(word, mode) {
       length: word.length, 
       board_size: state.gridSize, 
       mode: mode, // Le mode est enregistré (expert3x3, 4x4, 5x5, etc.)
-      player_id: PLAYER_ID,
+      player_id: playerId,
       game_id: state.currentGameId, 
       is_challenge: state.isChallengeActive, 
       time_left: state.challengeTimeLeft, 
@@ -385,7 +387,9 @@ export async function loadPlayerStats(modeFilter) {
   statsWordList.innerHTML = '<li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>';
 
   try {
-    let url = `${SUPABASE_URL}/rest/v1/word_stats_player?select=player_id,mode,board_size,word,total_finds&player_id=eq.${PLAYER_ID}`;
+    const playerId = getPLAYER_ID();
+    if (!playerId) return;
+    let url = `${SUPABASE_URL}/rest/v1/word_stats_player?select=player_id,mode,board_size,word,total_finds&player_id=eq.${playerId}`;
     if (modeFilter === "expert3x3") url += `&mode=eq.expert3x3`;
     else if (modeFilter === "4x4") url += `&board_size=eq.4`;
     else if (modeFilter === "5x5") url += `&board_size=eq.5`;
@@ -425,8 +429,8 @@ export async function loadPlayerStats(modeFilter) {
 }
 
 // Score Expert - Enregistrement automatique amélioré
-// NOUVELLE LOGIQUE : Enregistre automatiquement dès qu'un record est battu
-// Le pseudo n'est demandé qu'une seule fois, puis tous les scores sont enregistrés automatiquement
+// NOUVELLE LOGIQUE : Vérifie la connexion joueur + enregistre seulement les records
+
 export async function maybeOfferExpertScore(getCurrentModeFn) {
   if (!state.isRankedEligible) return;
   if (state.hasOfferedScore) return;
@@ -437,67 +441,42 @@ export async function maybeOfferExpertScore(getCurrentModeFn) {
   const boardSize = state.gridSize;
   const currentScore = state.currentScore;
   
-  // Vérifier si c'est un meilleur score
-  const bestScore = getBestScore(mode, boardSize);
-  const isNewRecord = currentScore > bestScore;
-  
-  // Récupérer le pseudo sauvegardé
-  const savedPseudo = getSavedPseudo();
-  
-  // NOUVELLE STRATÉGIE AUTOMATIQUE :
-  // 1. Si on a un pseudo : enregistrer AUTOMATIQUEMENT tous les scores (record ou pas)
-  // 2. Si pas de pseudo : demander le pseudo UNE SEULE FOIS, puis enregistrer automatiquement
-  // 3. Dès qu'un record est battu, il est TOUJOURS enregistré (avec ou sans pseudo)
-  
-  if (savedPseudo) {
-    // On a déjà un pseudo : enregistrer automatiquement
-    // Pour le leaderboard 3x3, on enregistre SEULEMENT si c'est un meilleur score
-    const success = await sendExpertScoreAutomatically(getCurrentModeFn, savedPseudo);
-    if (success) {
-      // Mettre à jour le meilleur score si c'est un record
-      if (isNewRecord) {
-        saveBestScore(mode, boardSize, currentScore);
-        showFeedback(`🎉 Nouveau record ! ${currentScore} pts enregistrés automatiquement`, "valid");
-      } else {
-        // Enregistrer silencieusement même si ce n'est pas un record (dans scores_chrono)
-        saveBestScore(mode, boardSize, Math.max(bestScore, currentScore)); // Garder le meilleur
-        console.log(`Score ${currentScore} pts enregistré automatiquement (historique)`);
-      }
-    }
+  // Vérifier si un joueur est connecté
+  if (!isPlayerConnected()) {
+    showFeedback("❗ Score non enregistré : tu n'as pas de profil joueur", "invalid");
     return;
   }
   
-  // Pas de pseudo sauvegardé : demander UNE SEULE FOIS
-  // Mais on enregistre quand même si c'est un record (avec pseudo "Anonyme" temporairement)
+  // Vérifier si c'est un nouveau record
+  const bestScore = getBestScore(mode, boardSize);
+  const isNewRecord = currentScore > bestScore;
+  
+  const player = getCurrentPlayer();
+  const pseudo = player ? player.pseudo : "Anonyme";
+  
   if (isNewRecord) {
-    // Si c'est un record, on enregistre immédiatement avec "Anonyme"
-    // puis on demandera le pseudo pour les prochaines fois
-    const tempSuccess = await sendExpertScoreAutomatically(getCurrentModeFn, "Anonyme");
-    if (tempSuccess) {
+    // Nouveau record → enregistrer
+    const success = await sendExpertScoreAutomatically(getCurrentModeFn, pseudo);
+    if (success) {
       saveBestScore(mode, boardSize, currentScore);
-      showFeedback(`🎉 Nouveau record ! ${currentScore} pts enregistrés`, "valid");
+      showFeedback(`✔️ Bravo, nouveau record enregistré ! ${currentScore} pts`, "valid");
+    } else {
+      showFeedback("❌ Erreur lors de l'enregistrement du score", "invalid");
     }
+  } else {
+    // Pas de record → ne pas enregistrer
+    showFeedback(`Partie terminée – score non enregistré car inférieur à ton record (${bestScore} pts).`, "invalid");
   }
-  
-  // Afficher la modal pour demander le pseudo (une seule fois)
-  if (!onlineScoreModal) return;
-  
-  let label = "";
-  if (state.isExpertMode) label = "Mode Expert 3x3";
-  else if (mode === "4x4") label = "Mode 4x4 (chrono)";
-  else if (mode === "5x5") label = "Mode 5x5 (chrono)";
-  else label = "Partie chrono";
-
-  modalScoreMsg.textContent = `Score : ${currentScore} pts – ${label}${isNewRecord ? ' 🎉 Nouveau record !' : ''}\n\nEntrez votre pseudo (sera sauvegardé pour les prochaines fois) :`;
-  
-  // Pré-remplir avec un pseudo par défaut si disponible
-  onlinePseudoInput.value = "";
-  onlinePseudoInput.placeholder = "Votre pseudo (sera sauvegardé)";
-  onlineScoreModal.style.display = "flex";
 }
 
 // Fonction pour enregistrer automatiquement (sans modal)
 async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
+  const playerId = getPLAYER_ID();
+  if (!playerId) {
+    console.error("Aucun player_id disponible");
+    return false;
+  }
+  
   const mode = getCurrentModeFn();
   const boardSize = state.gridSize;
   const score = state.currentScore;
@@ -508,7 +487,7 @@ async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
     await fetch(`${SUPABASE_URL}/rest/v1/${SCORES_CHRONO_TABLE}`, {
       method: "POST",
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-      body: JSON.stringify({ player_id: PLAYER_ID, pseudo, mode, board_size: boardSize, score: score, created_at: createdAt })
+      body: JSON.stringify({ player_id: playerId, pseudo, mode, board_size: boardSize, score: score, created_at: createdAt })
     });
 
     // Si mode Expert, enregistrer aussi dans le leaderboard 3x3
@@ -518,7 +497,7 @@ async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
       let existingScore = 0;
       try {
         const existingRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?select=score&player_id=eq.${PLAYER_ID}&limit=1`,
+          `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?select=score&player_id=eq.${playerId}&limit=1`,
           { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
         );
         
@@ -535,7 +514,7 @@ async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
         if (existingScore > 0) {
           // Mettre à jour le score existant avec PATCH
           const updateRes = await fetch(
-            `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?player_id=eq.${PLAYER_ID}`,
+            `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?player_id=eq.${playerId}`,
             {
               method: "PATCH",
               headers: { 
@@ -557,7 +536,7 @@ async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
             const createRes = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
               method: "POST",
               headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-              body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: score, created_at: createdAt })
+              body: JSON.stringify({ player_id: playerId, pseudo, score: score, created_at: createdAt })
             });
             if (!createRes.ok) throw new Error("Erreur création score leaderboard 3x3");
           }
@@ -566,7 +545,7 @@ async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
           const createRes = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
             method: "POST",
             headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-            body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: score, created_at: createdAt })
+            body: JSON.stringify({ player_id: playerId, pseudo, score: score, created_at: createdAt })
           });
           if (!createRes.ok) throw new Error("Erreur création score leaderboard 3x3");
         }

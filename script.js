@@ -11,8 +11,13 @@ import './utils.js';
 import './grid.js';
 import './chrono.js';
 import './ui.js';
+import './player.js';
 import './leaderboard.js';
 import './game.js';
 
-// Le fichier game.js contient toute la logique d'initialisation
-// et les event listeners, donc rien d'autre n'est nécessaire ici
+// Initialiser le joueur au chargement
+import { initPlayer } from './player.js';
+
+window.addEventListener("load", async () => {
+  await initPlayer();
+});
