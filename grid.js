@@ -3,7 +3,7 @@
 // ==========================================
 
 import { gridEl, canvas, ctx, bgCanvas, ctxBg } from './dom.js';
-import { gridSize, gridData } from './state.js';
+import { state } from './state.js';
 import { getLetterByType, getRandomLetter } from './utils.js';
 import { EXPERT_GRIDS } from './config.js';
 
@@ -11,7 +11,7 @@ import { EXPERT_GRIDS } from './config.js';
 export function renderGrid() {
   if (!gridEl) return;
   gridEl.innerHTML = "";
-  gridData.forEach((row, r) => {
+  state.gridData.forEach((row, r) => {
     row.forEach((letter, c) => {
       const cell = document.createElement("div");
       cell.className = "cell";

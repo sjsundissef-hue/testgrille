@@ -3,40 +3,40 @@
 // ==========================================
 
 import { timerDisplay, solveBtn } from './dom.js';
-import { challengeInterval, challengeTimeLeft, isChallengeActive, gameSolved } from './state.js';
+import { state } from './state.js';
 import { showFeedback } from './ui.js';
 // maybeOfferExpertScore sera passé en paramètre pour éviter dépendance circulaire
 
 // Timer
 export function stopTimer() {
-  if (challengeInterval) clearInterval(challengeInterval);
+  if (state.challengeInterval) clearInterval(state.challengeInterval);
   if (timerDisplay) {
     timerDisplay.style.display = "none";
     timerDisplay.classList.remove("low-time");
   }
-  isChallengeActive = false;
+  state.isChallengeActive = false;
 }
 
 export function updateTimerDisplay() {
-  let min = Math.floor(challengeTimeLeft / 60);
-  let sec = challengeTimeLeft % 60;
+  let min = Math.floor(state.challengeTimeLeft / 60);
+  let sec = state.challengeTimeLeft % 60;
   if (timerDisplay) {
     timerDisplay.textContent = (min < 10 ? "0" + min : min) + ":" + (sec < 10 ? "0" + sec : sec);
-    if (challengeTimeLeft <= 10) timerDisplay.classList.add("low-time");
+    if (state.challengeTimeLeft <= 10) timerDisplay.classList.add("low-time");
     else timerDisplay.classList.remove("low-time");
   }
 }
 
 export function startTimer(seconds) {
-  challengeTimeLeft = seconds;
+  state.challengeTimeLeft = seconds;
   if (!timerDisplay) return;
   timerDisplay.style.display = "block";
   updateTimerDisplay();
-  if (challengeInterval) clearInterval(challengeInterval);
-  challengeInterval = setInterval(() => {
-    challengeTimeLeft--;
+  if (state.challengeInterval) clearInterval(state.challengeInterval);
+  state.challengeInterval = setInterval(() => {
+    state.challengeTimeLeft--;
     updateTimerDisplay();
-    if (challengeTimeLeft <= 0) endChallenge();
+    if (state.challengeTimeLeft <= 0) endChallenge();
   }, 1000);
 }
 
@@ -48,7 +48,7 @@ export function setEndChallengeCallback(callback) {
 
 function endChallenge() {
   stopTimer();
-  gameSolved = true;
+  state.gameSolved = true;
   if (solveBtn) solveBtn.disabled = false;
   showFeedback("Temps écoulé", "invalid");
   if (_maybeOfferExpertScore) _maybeOfferExpertScore();

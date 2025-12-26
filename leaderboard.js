@@ -8,16 +8,7 @@ import {
   LEADERBOARD_TABLE, 
   SCORES_CHRONO_TABLE 
 } from './config.js';
-import { 
-  currentGameId, 
-  currentScore, 
-  gridSize, 
-  isChallengeActive, 
-  challengeTimeLeft,
-  isRankedEligible,
-  hasOfferedScore,
-  isExpertMode
-} from './state.js';
+import { state } from './state.js';
 import { 
   leaderboardList, 
   globalRankingList, 
@@ -245,8 +236,8 @@ export async function logWordFind(word, mode) {
         Prefer: "return=minimal"
       },
       body: JSON.stringify({
-        word: word, length: word.length, board_size: gridSize, mode: mode, player_id: PLAYER_ID,
-        game_id: currentGameId, is_challenge: isChallengeActive, time_left: challengeTimeLeft, score_after: currentScore
+        word: word, length: word.length, board_size: state.gridSize, mode: mode, player_id: PLAYER_ID,
+        game_id: state.currentGameId, is_challenge: state.isChallengeActive, time_left: state.challengeTimeLeft, score_after: state.currentScore
       })
     });
   } catch (e) { 
@@ -371,20 +362,20 @@ export async function loadPlayerStats(modeFilter) {
 
 // Score Expert
 export function maybeOfferExpertScore(getCurrentModeFn) {
-  if (!isRankedEligible) return;
-  if (hasOfferedScore) return;
+  if (!state.isRankedEligible) return;
+  if (state.hasOfferedScore) return;
   if (!onlineScoreModal) return;
-  if (currentScore <= 0) return;
+  if (state.currentScore <= 0) return;
 
-  hasOfferedScore = true;
+  state.hasOfferedScore = true;
   const mode = getCurrentModeFn();
   let label = "";
-  if (isExpertMode) label = "Mode Expert 3x3";
+  if (state.isExpertMode) label = "Mode Expert 3x3";
   else if (mode === "4x4") label = "Mode 4x4 (chrono)";
   else if (mode === "5x5") label = "Mode 5x5 (chrono)";
   else label = "Partie chrono";
 
-  modalScoreMsg.textContent = `Score : ${currentScore} pts – ${label}`;
+  modalScoreMsg.textContent = `Score : ${state.currentScore} pts – ${label}`;
   onlinePseudoInput.value = "";
   onlineScoreModal.style.display = "flex";
 }
@@ -393,7 +384,8 @@ export async function sendExpertScore(getCurrentModeFn) {
   if (!onlineScoreModal) return;
   const pseudo = onlinePseudoInput.value.trim() || "Anonyme";
   const mode = getCurrentModeFn();
-  const boardSize = gridSize;
+  const boardSize = state.gridSize;
+  const score = state.currentScore;
   const createdAt = new Date().toISOString();
 
   try {
@@ -401,15 +393,15 @@ export async function sendExpertScore(getCurrentModeFn) {
       await fetch(`${SUPABASE_URL}/rest/v1/${SCORES_CHRONO_TABLE}`, {
         method: "POST",
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: PLAYER_ID, pseudo, mode, board_size: boardSize, score: currentScore, created_at: createdAt })
+        body: JSON.stringify({ player_id: PLAYER_ID, pseudo, mode, board_size: boardSize, score: score, created_at: createdAt })
       });
     } catch (e) { console.error("Erreur enregistrement scores_chrono", e); }
 
-    if (isExpertMode) {
+    if (state.isExpertMode) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
         method: "POST",
         headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: currentScore, created_at: createdAt })
+        body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: score, created_at: createdAt })
       });
       if (!res.ok) throw new Error("Erreur envoi score leaderboard 3x3");
     }

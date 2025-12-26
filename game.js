@@ -8,14 +8,7 @@ import {
   FUN_COMBOS, 
   BODY_RANKED_RESULTS_CLASS 
 } from './config.js';
-import {
-  gridSize, gridData, cachedSolutions, foundWords, gameSolved, solutionMode,
-  isChronoGame, isRankedEligible, isExpertMode, isCustomGame, isFunMode,
-  isChallengeActive, currentGameId, challengeModeName, currentChronoMode,
-  currentFunIndex, shuffledFunCombos, isTimedModeEnabled, isEditing,
-  currentScore, selectionPath, isDragging, dictionaryLoaded, DICTIONARY, PREFIXES,
-  hasOfferedScore, challengeInterval, challengeTimeLeft
-} from './state.js';
+import { state, DICTIONARY, PREFIXES, foundWords } from './state.js';
 import {
   gridEl, wordDisplay, feedbackEl, listEl, scoreDisplayEl, scoreCompEl,
   listTitleEl, filterInput, newGridBtn, replayBtn, createGridBtn, funBtn,
@@ -34,11 +27,11 @@ import { logWordFind, maybeOfferExpertScore, sendExpertScore, loadExpertLeaderbo
 
 // Mode actuel
 export function getCurrentMode() {
-  if (isFunMode) return "fun2x2";
-  if (isExpertMode) return "expert3x3";
-  if (isCustomGame) return "custom";
-  if (gridSize === 4) return "4x4";
-  if (gridSize === 5) return "5x5";
+  if (state.isFunMode) return "fun2x2";
+  if (state.isExpertMode) return "expert3x3";
+  if (state.isCustomGame) return "custom";
+  if (state.gridSize === 4) return "4x4";
+  if (state.gridSize === 5) return "5x5";
   return "unknown";
 }
 
@@ -47,19 +40,19 @@ export function resetGameState() {
   document.body.classList.remove(BODY_RANKED_RESULTS_CLASS);
   document.body.classList.remove("ranked-active");
   document.body.classList.remove("fun-mode-active");
-  isEditing = false;
-  isCustomGame = false;
-  isFunMode = false;
-  isExpertMode = false;
+  state.isEditing = false;
+  state.isCustomGame = false;
+  state.isFunMode = false;
+  state.isExpertMode = false;
   foundWords.clear();
-  cachedSolutions = null;
-  solutionMode = false;
-  currentScore = 0;
-  selectionPath = [];
-  isChallengeActive = false;
-  isChronoGame = false;
-  isRankedEligible = false;
-  currentChronoMode = null;
+  state.cachedSolutions = null;
+  state.solutionMode = false;
+  state.currentScore = 0;
+  state.selectionPath = [];
+  state.isChallengeActive = false;
+  state.isChronoGame = false;
+  state.isRankedEligible = false;
+  state.currentChronoMode = null;
   updateRankedUI();
 
   if (wordDisplay) wordDisplay.textContent = "";
@@ -67,14 +60,14 @@ export function resetGameState() {
     feedbackEl.className = "feedback";
     feedbackEl.textContent = "";
   }
-  gameSolved = false;
+  state.gameSolved = false;
   if (filterInput) filterInput.value = "";
   if (listTitleEl) listTitleEl.textContent = "Score Actuel";
   if (scoreCompEl) scoreCompEl.textContent = "";
-  updateScoreDisplay(currentScore);
+  updateScoreDisplay(state.currentScore);
   updateWordList();
 
-  if (gridEl) gridEl.style.gridTemplateColumns = "repeat(" + gridSize + ", 1fr)";
+  if (gridEl) gridEl.style.gridTemplateColumns = "repeat(" + state.gridSize + ", 1fr)";
 
   if (solveBtn) {
     solveBtn.textContent = "Voir solutions";
@@ -100,7 +93,7 @@ export function loadDictionary() {
           }
         }
       }
-      dictionaryLoaded = true;
+      state.dictionaryLoaded = true;
       if (feedbackEl) {
         feedbackEl.textContent = "Prêt !";
         feedbackEl.className = "feedback visible valid";
@@ -110,7 +103,7 @@ export function loadDictionary() {
     })
     .catch((err) => {
       console.error("Erreur chargement dictionnaire:", err);
-      dictionaryLoaded = false;
+      state.dictionaryLoaded = false;
       if (feedbackEl) {
         feedbackEl.textContent = "Dico indisponible (mode libre)";
         feedbackEl.className = "feedback visible invalid";
@@ -125,7 +118,7 @@ export function initGame() {
   stopTimer();
   resetGameState();
 
-  currentGameId = generateNewGameId();
+  state.currentGameId = generateNewGameId();
 
   if (newGridBtn) newGridBtn.style.display = "block";
   if (replayBtn) replayBtn.style.display = "block";
@@ -142,25 +135,25 @@ export function initGame() {
     gridEl.classList.remove("expert-grid");
   }
 
-  gridData = generateGridData(gridSize);
+  state.gridData = generateGridData(state.gridSize);
 
   renderGrid();
   setTimeout(() => { resizeCanvas(); }, 100);
 
-  isChronoGame = false;
-  isRankedEligible = false;
-  currentChronoMode = null;
+  state.isChronoGame = false;
+  state.isRankedEligible = false;
+  state.currentChronoMode = null;
 
-  if (!isFunMode && !isExpertMode && !isCustomGame) {
+  if (!state.isFunMode && !state.isExpertMode && !state.isCustomGame) {
     const modeName = getCurrentMode();
-    if (isTimedModeEnabled && (gridSize === 4 || gridSize === 5)) {
+    if (state.isTimedModeEnabled && (state.gridSize === 4 || state.gridSize === 5)) {
       const duration = CHRONO_DURATIONS[modeName] || CHRONO_DURATIONS["4x4"];
       startTimer(duration);
-      isChallengeActive = true;
-      isChronoGame = true;
-      isRankedEligible = true;
-      currentChronoMode = modeName;
-      challengeModeName = "ranked-" + modeName;
+      state.isChallengeActive = true;
+      state.isChronoGame = true;
+      state.isRankedEligible = true;
+      state.currentChronoMode = modeName;
+      state.challengeModeName = "ranked-" + modeName;
       setRankedModeUI(true);
     }
   }
@@ -169,16 +162,16 @@ export function initGame() {
 
 // Rejouer
 export function replayGrid() {
-  if (isEditing) return;
+  if (state.isEditing) return;
 
   document.body.classList.remove(BODY_RANKED_RESULTS_CLASS);
-  solutionMode = false;
-  gameSolved = false;
+  state.solutionMode = false;
+  state.gameSolved = false;
 
-  isChronoGame = false;
-  isRankedEligible = false;
-  currentChronoMode = null;
-  isChallengeActive = false;
+  state.isChronoGame = false;
+  state.isRankedEligible = false;
+  state.currentChronoMode = null;
+  state.isChallengeActive = false;
   
   const mainContainer = document.querySelector(".main-container");
   const gameArea = document.querySelector(".game-area");
@@ -204,14 +197,14 @@ export function replayGrid() {
   updateRankedUI();
 
   foundWords.clear();
-  cachedSolutions = null;
-  currentScore = 0;
-  selectionPath = [];
+  state.cachedSolutions = null;
+  state.currentScore = 0;
+  state.selectionPath = [];
   if (wordDisplay) wordDisplay.textContent = "";
   if (filterInput) filterInput.value = "";
   if (listTitleEl) listTitleEl.textContent = "Score Actuel";
   if (scoreCompEl) scoreCompEl.textContent = "";
-  updateScoreDisplay(currentScore);
+  updateScoreDisplay(state.currentScore);
   updateWordList();
   renderGrid();
   setTimeout(resizeCanvas, 50);
@@ -220,7 +213,7 @@ export function replayGrid() {
 
 // Set Mode
 window.setMode = function (size) {
-  gridSize = size;
+  state.gridSize = size;
   if (size === 4) {
     if (btn4x4) btn4x4.classList.add("active");
     if (btn5x5) btn5x5.classList.remove("active");
@@ -236,14 +229,14 @@ export function startExpertMode() {
   stopTimer();
   resetGameState();
 
-  currentGameId = generateNewGameId();
+  state.currentGameId = generateNewGameId();
 
-  isExpertMode = true;
-  isFunMode = false;
-  isCustomGame = false;
+  state.isExpertMode = true;
+  state.isFunMode = false;
+  state.isCustomGame = false;
 
-  challengeModeName = "Expert 3x3";
-  gridSize = 3;
+  state.challengeModeName = "Expert 3x3";
+  state.gridSize = 3;
 
   if (newGridBtn) newGridBtn.style.display = "none";
   if (replayBtn) replayBtn.style.display = "none";
@@ -260,19 +253,19 @@ export function startExpertMode() {
     gridEl.style.gridTemplateColumns = "repeat(3, 1fr)";
   }
 
-  gridData = generateExpertGrid();
+  state.gridData = generateExpertGrid();
 
-  cachedSolutions = findAllWords();
+  state.cachedSolutions = findAllWords();
   renderGrid();
   setTimeout(resizeCanvas, 50);
 
   const duration = CHRONO_DURATIONS["expert3x3"] || 120;
   startTimer(duration);
-  isChallengeActive = true;
+  state.isChallengeActive = true;
 
-  isChronoGame = true;
-  isRankedEligible = true;
-  currentChronoMode = "expert3x3";
+  state.isChronoGame = true;
+  state.isRankedEligible = true;
+  state.currentChronoMode = "expert3x3";
   
   setRankedModeUI(true);
 
@@ -288,16 +281,16 @@ export function startFunMode() {
   stopTimer();
   resetGameState();
 
-  currentGameId = generateNewGameId();
+  state.currentGameId = generateNewGameId();
 
-  isFunMode = true;
-  isExpertMode = false;
-  isCustomGame = false;
+  state.isFunMode = true;
+  state.isExpertMode = false;
+  state.isCustomGame = false;
 
-  challengeModeName = "Fun 2x2";
-  gridSize = 2;
-  shuffledFunCombos = [...FUN_COMBOS].sort(() => 0.5 - Math.random());
-  currentFunIndex = 0;
+  state.challengeModeName = "Fun 2x2";
+  state.gridSize = 2;
+  state.shuffledFunCombos = [...FUN_COMBOS].sort(() => 0.5 - Math.random());
+  state.currentFunIndex = 0;
   
   document.body.classList.add("fun-mode-active");
 
@@ -318,27 +311,27 @@ export function startFunMode() {
     gridEl.classList.remove("expert-grid");
   }
 
-  isChronoGame = false;
-  isRankedEligible = false;
-  currentChronoMode = null;
+  state.isChronoGame = false;
+  state.isRankedEligible = false;
+  state.currentChronoMode = null;
 
   loadFunGrid();
   const duration = 180;
   startTimer(duration);
-  isChallengeActive = true;
+  state.isChallengeActive = true;
   updateRankedUI();
 }
 
 export function loadFunGrid() {
-  if (currentFunIndex >= shuffledFunCombos.length) currentFunIndex = 0;
-  const data = loadFunGridData(currentFunIndex, shuffledFunCombos);
+  if (state.currentFunIndex >= state.shuffledFunCombos.length) state.currentFunIndex = 0;
+  const data = loadFunGridData(state.currentFunIndex, state.shuffledFunCombos);
   if (gridEl) gridEl.style.gridTemplateColumns = "repeat(2, 1fr)";
-  gridData = data;
+  state.gridData = data;
   foundWords.clear();
-  gameSolved = false;
-  solutionMode = false;
+  state.gameSolved = false;
+  state.solutionMode = false;
   updateWordList();
-  cachedSolutions = findAllWords();
+  state.cachedSolutions = findAllWords();
   renderGrid();
   setTimeout(resizeCanvas, 50);
   if (feedbackEl) {
@@ -349,40 +342,40 @@ export function loadFunGrid() {
 
 // Drag & Drop
 function startDrag(e, cell) {
-  if (gameSolved || isEditing) return;
-  isDragging = true;
-  selectionPath = [{ r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) }];
+  if (state.gameSolved || state.isEditing) return;
+  state.isDragging = true;
+  state.selectionPath = [{ r: parseInt(cell.dataset.r), c: parseInt(cell.dataset.c) }];
   updateVisuals();
 }
 
 function onDragEnter(e, cell) {
-  if (!isDragging) return;
+  if (!state.isDragging) return;
   addToPath(parseInt(cell.dataset.r), parseInt(cell.dataset.c));
 }
 
 function endDrag() {
-  if (!isDragging) return;
-  isDragging = false;
+  if (!state.isDragging) return;
+  state.isDragging = false;
   validateWord();
-  selectionPath = [];
+  state.selectionPath = [];
   updateVisuals();
   clearCanvas();
 }
 
 function addToPath(r, c) {
-  if (selectionPath.length > 1) {
-    const prev = selectionPath[selectionPath.length - 2];
+  if (state.selectionPath.length > 1) {
+    const prev = state.selectionPath[state.selectionPath.length - 2];
     if (prev.r === r && prev.c === c) {
-      selectionPath.pop();
+      state.selectionPath.pop();
       updateVisuals();
       return;
     }
   }
-  const last = selectionPath[selectionPath.length - 1];
+  const last = state.selectionPath[state.selectionPath.length - 1];
   const isAdj = Math.abs(last.r - r) <= 1 && Math.abs(last.c - c) <= 1;
-  const isVisited = selectionPath.some((p) => p.r === r && p.c === c);
+  const isVisited = state.selectionPath.some((p) => p.r === r && p.c === c);
   if (isAdj && !isVisited) {
-    selectionPath.push({ r, c });
+    state.selectionPath.push({ r, c });
     updateVisuals();
   }
 }
@@ -391,12 +384,12 @@ function updateVisuals() {
   if (!gridEl) return;
   Array.from(gridEl.children).forEach((el) => el.classList.remove("selected"));
   let word = "";
-  selectionPath.forEach((pos) => {
-    const idx = pos.r * gridSize + pos.c;
+  state.selectionPath.forEach((pos) => {
+    const idx = pos.r * state.gridSize + pos.c;
     const cell = gridEl.children[idx];
     if (cell) {
       cell.classList.add("selected");
-      word += gridData[pos.r][pos.c];
+      word += state.gridData[pos.r][pos.c];
     }
   });
   if (wordDisplay) wordDisplay.textContent = word;
@@ -420,22 +413,22 @@ function validateWord() {
     return;
   }
 
-  const isValid = dictionaryLoaded ? DICTIONARY.has(word) : word.length >= 4;
+  const isValid = state.dictionaryLoaded ? DICTIONARY.has(word) : word.length >= 4;
 
   if (isValid) {
     if (!foundWords.has(word)) {
       foundWords.add(word);
       const pts = getWordPoints(word);
-      currentScore += pts;
+      state.currentScore += pts;
       showFeedback(word + " +" + pts, "valid");
       updateWordList();
-      updateScoreDisplay(currentScore);
+      updateScoreDisplay(state.currentScore);
       logWordFind(word, getCurrentMode());
 
-      if (isFunMode && cachedSolutions && foundWords.size === cachedSolutions.size) {
+      if (state.isFunMode && state.cachedSolutions && foundWords.size === state.cachedSolutions.size) {
         showFeedback("GRILLE TERMINÉE !", "valid");
         setTimeout(() => {
-          currentFunIndex++;
+          state.currentFunIndex++;
           if (passBtn) passBtn.textContent = "Voir solutions & passer";
           loadFunGrid();
         }, 800);
@@ -456,16 +449,16 @@ export function updateWordList() {
   let maxPossibleScore = 0;
   const filterText = filterInput ? filterInput.value.toUpperCase() : "";
 
-  if ((solutionMode || isExpertMode) && cachedSolutions) {
-    sourceWords = Array.from(cachedSolutions);
-    if (listTitleEl) listTitleEl.textContent = solutionMode ? "Résultats" : "Objectif";
+  if ((state.solutionMode || state.isExpertMode) && state.cachedSolutions) {
+    sourceWords = Array.from(state.cachedSolutions);
+    if (listTitleEl) listTitleEl.textContent = state.solutionMode ? "Résultats" : "Objectif";
     sourceWords.forEach((w) => (maxPossibleScore += getWordPoints(w)));
     if (scoreCompEl) {
-      scoreCompEl.textContent = "Mots : " + foundWords.size + " / " + cachedSolutions.size + "\nPoints : " + currentScore + " / " + maxPossibleScore;
+      scoreCompEl.textContent = "Mots : " + foundWords.size + " / " + state.cachedSolutions.size + "\nPoints : " + state.currentScore + " / " + maxPossibleScore;
     }
-    if (!solutionMode) sourceWords = Array.from(foundWords);
-  } else if (isFunMode && cachedSolutions) {
-    if (scoreCompEl) scoreCompEl.textContent = "Trouvés : " + foundWords.size + " / " + cachedSolutions.size;
+    if (!state.solutionMode) sourceWords = Array.from(foundWords);
+  } else if (state.isFunMode && state.cachedSolutions) {
+    if (scoreCompEl) scoreCompEl.textContent = "Trouvés : " + foundWords.size + " / " + state.cachedSolutions.size;
     sourceWords = Array.from(foundWords);
   } else {
     sourceWords = Array.from(foundWords);
@@ -474,7 +467,7 @@ export function updateWordList() {
 
   let filteredWords = sourceWords;
   if (filterText) filteredWords = sourceWords.filter((w) => w.includes(filterText));
-  if (solutionMode) filteredWords.sort((a, b) => b.length - a.length || a.localeCompare(b));
+  if (state.solutionMode) filteredWords.sort((a, b) => b.length - a.length || a.localeCompare(b));
   else filteredWords.sort((a, b) => a.localeCompare(b));
 
   filteredWords.forEach((w) => {
@@ -485,7 +478,7 @@ export function updateWordList() {
     const spanPts = document.createElement("span");
     spanPts.className = "word-points";
     spanPts.textContent = pts;
-    if (solutionMode) {
+    if (state.solutionMode) {
       if (foundWords.has(w)) {
         spanWord.style.fontWeight = "bold";
         spanWord.style.color = "#4cd137";
@@ -505,7 +498,7 @@ if (filterInput) {
 
 // Solutions
 export function finishAndShowSolutions() {
-  if (isChallengeActive) {
+  if (state.isChallengeActive) {
     stopTimer();
     if (feedbackEl) {
       feedbackEl.textContent = "Partie terminée";
@@ -513,14 +506,14 @@ export function finishAndShowSolutions() {
     }
   }
 
-  if (!cachedSolutions || !cachedSolutions.size) {
-    cachedSolutions = findAllWords();
+  if (!state.cachedSolutions || !state.cachedSolutions.size) {
+    state.cachedSolutions = findAllWords();
   }
   
-  console.log("Solutions calculées:", cachedSolutions ? cachedSolutions.size : 0, "mots");
+  console.log("Solutions calculées:", state.cachedSolutions ? state.cachedSolutions.size : 0, "mots");
 
-  solutionMode = true;
-  gameSolved = true;
+  state.solutionMode = true;
+  state.gameSolved = true;
 
   setRankedResultsMode();
   
@@ -557,15 +550,15 @@ export function startManualCreation() {
   if (globalStatsBtn) globalStatsBtn.style.display = "none";
   if (solveBtn) solveBtn.style.display = "none";
   if (validateCustomBtn) validateCustomBtn.style.display = "block";
-  isEditing = true;
+  state.isEditing = true;
   if (feedbackEl) {
     feedbackEl.textContent = "Remplissez les cases";
     feedbackEl.className = "feedback visible";
   }
   if (!gridEl) return;
   gridEl.innerHTML = "";
-  for (let r = 0; r < gridSize; r++)
-    for (let c = 0; c < gridSize; c++) {
+  for (let r = 0; r < state.gridSize; r++)
+    for (let c = 0; c < state.gridSize; c++) {
       const cell = document.createElement("div");
       cell.className = "cell";
       const input = document.createElement("input");
@@ -573,7 +566,7 @@ export function startManualCreation() {
       input.maxLength = 2;
       input.dataset.r = r;
       input.dataset.c = c;
-      input.dataset.index = r * gridSize + c;
+      input.dataset.index = r * state.gridSize + c;
       input.addEventListener("input", (e) => { e.target.value = e.target.value.toUpperCase(); });
       cell.appendChild(input);
       gridEl.appendChild(cell);
@@ -582,15 +575,15 @@ export function startManualCreation() {
 
 export function validateGrid() {
   const inputs = document.querySelectorAll(".cell-input");
-  gridData = Array.from({ length: gridSize }, () => Array(gridSize).fill(""));
+  state.gridData = Array.from({ length: state.gridSize }, () => Array(state.gridSize).fill(""));
   for (let i = 0; i < inputs.length; i++) {
     let val = inputs[i].value.trim().toUpperCase();
     if (!val) { alert("Remplissez tout !"); return; }
-    gridData[parseInt(inputs[i].dataset.r)][parseInt(inputs[i].dataset.c)] = val;
+    state.gridData[parseInt(inputs[i].dataset.r)][parseInt(inputs[i].dataset.c)] = val;
   }
-  currentGameId = generateNewGameId();
-  isEditing = false;
-  isCustomGame = true;
+  state.currentGameId = generateNewGameId();
+  state.isEditing = false;
+  state.isCustomGame = true;
   if (newGridBtn) newGridBtn.style.display = "block";
   if (replayBtn) replayBtn.style.display = "block";
   if (createGridBtn) createGridBtn.style.display = "block";
@@ -606,7 +599,7 @@ export function validateGrid() {
 
 // Aide 2x2
 function generateHelpContent() {
-  if (!dictionaryLoaded) return;
+  if (!state.dictionaryLoaded) return;
   if (!helpGridList) return;
   if (helpGridList.children.length > 1) return;
   helpGridList.innerHTML = "";
@@ -653,7 +646,7 @@ setDragHandlers({
   onDragEnter,
   endDrag,
   addToPath,
-  isDragging: () => isDragging
+  isDragging: () => state.isDragging
 });
 setupDragListeners();
 
@@ -671,13 +664,13 @@ if (validateCustomBtn) validateCustomBtn.addEventListener("click", validateGrid)
 if (passBtn) {
   passBtn.addEventListener("click", () => {
     if (passBtn.textContent.includes("Voir")) {
-      if (!cachedSolutions) cachedSolutions = findAllWords();
-      solutionMode = true;
-      gameSolved = true;
+      if (!state.cachedSolutions) state.cachedSolutions = findAllWords();
+      state.solutionMode = true;
+      state.gameSolved = true;
       updateWordList();
       passBtn.textContent = "Grille suivante ⏭️";
     } else {
-      currentFunIndex++;
+      state.currentFunIndex++;
       passBtn.textContent = "Voir solutions & passer";
       loadFunGrid();
     }
@@ -686,14 +679,14 @@ if (passBtn) {
 
 if (solveBtn) {
   solveBtn.addEventListener("click", () => {
-    if (solutionMode) return;
+    if (state.solutionMode) return;
 
-    if (!dictionaryLoaded) {
+    if (!state.dictionaryLoaded) {
       showFeedback("Dico pas encore chargé", "invalid");
       return;
     }
 
-    if (isCustomGame && !gameSolved) {
+    if (state.isCustomGame && !state.gameSolved) {
       if (solveBtn.disabled) return;
       let countdown = 10;
       solveBtn.disabled = true;
@@ -748,9 +741,9 @@ if (statsModeFilters) {
 
 if (rankedToggleBtn) {
   rankedToggleBtn.addEventListener("click", () => {
-    isTimedModeEnabled = !isTimedModeEnabled;
+    state.isTimedModeEnabled = !state.isTimedModeEnabled;
     updateRankedUI();
-    if (gridSize === 4 || gridSize === 5) initGame();
+    if (state.gridSize === 4 || state.gridSize === 5) initGame();
   });
 }
 
@@ -791,15 +784,15 @@ if (gridGapRange) {
 // Retour à l'accueil
 if (backToHomeBtn) {
   backToHomeBtn.addEventListener("click", () => {
-    if (isChallengeActive) {
+    if (state.isChallengeActive) {
       stopTimer();
     }
     
-    isChronoGame = false;
-    isRankedEligible = false;
-    currentChronoMode = null;
-    isChallengeActive = false;
-    isTimedModeEnabled = false;
+    state.isChronoGame = false;
+    state.isRankedEligible = false;
+    state.currentChronoMode = null;
+    state.isChallengeActive = false;
+    state.isTimedModeEnabled = false;
     
     const mainContainer = document.querySelector(".main-container");
     const gameArea = document.querySelector(".game-area");

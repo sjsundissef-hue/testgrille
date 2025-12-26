@@ -15,12 +15,7 @@ import {
   rankedToggleBtn,
   rankedModeBadge
 } from './dom.js';
-import { 
-  isTimedModeEnabled, 
-  isChronoGame, 
-  gridSize, 
-  isExpertMode
-} from './state.js';
+import { state } from './state.js';
 
 // Feedback
 export function showFeedback(text, type) {
@@ -40,12 +35,16 @@ export function updateScoreDisplay(currentScore) {
 
 // UI Ranked
 export function updateRankedUI() {
+  const isTimedEnabled = state.isTimedModeEnabled;
   if (rankedToggleBtn) {
-    rankedToggleBtn.classList.toggle("ranked-active", isTimedModeEnabled);
-    rankedToggleBtn.textContent = isTimedModeEnabled ? "Mode ranked : ON" : "Mode ranked : OFF";
+    rankedToggleBtn.classList.toggle("ranked-active", isTimedEnabled);
+    rankedToggleBtn.textContent = isTimedEnabled ? "Mode ranked : ON" : "Mode ranked : OFF";
   }
   if (rankedModeBadge) {
-    const shouldShow = isChronoGame && (isExpertMode || (!isExpertMode && (gridSize === 4 || gridSize === 5)));
+    const isChrono = state.isChronoGame;
+    const isExpert = state.isExpertMode;
+    const size = state.gridSize;
+    const shouldShow = isChrono && (isExpert || (!isExpert && (size === 4 || size === 5)));
     rankedModeBadge.style.display = shouldShow ? "inline-block" : "none";
     if (shouldShow) rankedModeBadge.textContent = "Partie ranked";
   }

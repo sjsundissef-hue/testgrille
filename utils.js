@@ -3,8 +3,7 @@
 // ==========================================
 
 import { VOWELS, CONSONANTS, FREQUENCIES, cumulativeWeights, totalWeight } from './config.js';
-import { DICTIONARY, PREFIXES, dictionaryLoaded } from './state.js';
-import { gridSize, gridData } from './state.js';
+import { state, DICTIONARY, PREFIXES } from './state.js';
 
 // Génération de lettres
 export function getLetterByType(type) {
@@ -41,28 +40,28 @@ export function getWordPoints(word) {
 
 // Algorithme de recherche de tous les mots
 export function findAllWords() {
-  if (!dictionaryLoaded) return new Set();
+  if (!state.dictionaryLoaded) return new Set();
   const results = new Set();
-  const visited = Array.from({ length: gridSize }, () => Array(gridSize).fill(false));
+  const visited = Array.from({ length: state.gridSize }, () => Array(state.gridSize).fill(false));
   const dirs = [[-1, -1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
   
   function dfs(r, c, currentStr) {
-    currentStr += gridData[r][c];
+    currentStr += state.gridData[r][c];
     if (!PREFIXES.has(currentStr)) return;
     if (currentStr.length >= 4 && DICTIONARY.has(currentStr)) results.add(currentStr);
     if (currentStr.length > 10) return;
     visited[r][c] = true;
     for (const [dr, dc] of dirs) {
       const nr = r + dr, nc = c + dc;
-      if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize && !visited[nr][nc]) {
+      if (nr >= 0 && nr < state.gridSize && nc >= 0 && nc < state.gridSize && !visited[nr][nc]) {
         dfs(nr, nc, currentStr);
       }
     }
     visited[r][c] = false;
   }
   
-  for (let r = 0; r < gridSize; r++) {
-    for (let c = 0; c < gridSize; c++) {
+  for (let r = 0; r < state.gridSize; r++) {
+    for (let c = 0; c < state.gridSize; c++) {
       dfs(r, c, "");
     }
   }
