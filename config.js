@@ -11,7 +11,7 @@ export const CHRONO_DURATIONS = {
   "4x4": 90,
   "5x5": 90,
   "expert3x3": 120,
-  "fun2x2": 180
+  "fun2x2": 120
 };
 
 // Configuration Supabase
