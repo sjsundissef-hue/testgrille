@@ -3,7 +3,6 @@
 // ==========================================
 
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
-import { state } from './state.js';
 
 // Table Supabase
 const PLAYERS_TABLE = "players";
@@ -13,39 +12,50 @@ let currentPlayer = null; // { id, player_id, pseudo, pin_code }
 
 // Initialisation au chargement
 export async function initPlayer() {
-  const storedPlayerId = localStorage.getItem("wb_player_id");
-  
-  if (storedPlayerId) {
-    // Chercher le joueur dans Supabase
-    try {
-      const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/${PLAYERS_TABLE}?player_id=eq.${storedPlayerId}&limit=1`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.length > 0) {
-          // Joueur trouvé → connecté
-          currentPlayer = data[0];
-          updatePlayerUI();
-          return true;
-        } else {
-          // player_id existe en localStorage mais pas dans Supabase → recréer
-          console.log("Joueur non trouvé dans Supabase, recréation...");
-          await createPlayerFromStoredId(storedPlayerId);
-          return true;
+  try {
+    const storedPlayerId = localStorage.getItem("wb_player_id");
+    
+    if (storedPlayerId) {
+      // Chercher le joueur dans Supabase
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/${PLAYERS_TABLE}?player_id=eq.${storedPlayerId}&limit=1`,
+          { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.length > 0) {
+            // Joueur trouvé → connecté
+            currentPlayer = data[0];
+            // Mettre à jour l'UI (la fonction gère elle-même l'attente du DOM)
+            updatePlayerUI();
+            return true;
+          } else {
+            // player_id existe en localStorage mais pas dans Supabase → recréer
+            console.log("Joueur non trouvé dans Supabase, recréation...");
+            const recreated = await createPlayerFromStoredId(storedPlayerId);
+            if (recreated) {
+              updatePlayerUI();
+            }
+            return recreated;
+          }
         }
+      } catch (e) {
+        console.error("Erreur vérification joueur", e);
       }
-    } catch (e) {
-      console.error("Erreur vérification joueur", e);
     }
+    
+    // Pas de joueur connecté
+    currentPlayer = null;
+    // Mettre à jour l'UI (la fonction gère elle-même l'attente du DOM)
+    updatePlayerUI();
+    return false;
+  } catch (e) {
+    console.error("Erreur initPlayer", e);
+    currentPlayer = null;
+    return false;
   }
-  
-  // Pas de joueur connecté
-  currentPlayer = null;
-  updatePlayerUI();
-  return false;
 }
 
 // Créer un profil joueur
@@ -92,6 +102,7 @@ export async function createPlayer(pseudo) {
     // Stocker et connecter
     localStorage.setItem("wb_player_id", newPlayer.player_id);
     currentPlayer = newPlayer;
+    // Mettre à jour l'UI (la fonction gère elle-même l'attente du DOM)
     updatePlayerUI();
     
     return {
@@ -205,11 +216,21 @@ export function getPlayerId() {
 
 // Mettre à jour l'interface joueur
 function updatePlayerUI() {
+  // Vérifier que le DOM est prêt
+  if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", updatePlayerUI);
+    return;
+  }
+  
   const playerStatusEl = document.getElementById("playerStatus");
   const playerInfoEl = document.getElementById("playerInfo");
   const playerActionsEl = document.getElementById("playerActions");
   
-  if (!playerStatusEl || !playerInfoEl || !playerActionsEl) return;
+  if (!playerStatusEl || !playerInfoEl || !playerActionsEl) {
+    // Retry après un court délai si les éléments ne sont pas encore disponibles
+    setTimeout(updatePlayerUI, 100);
+    return;
+  }
   
   if (currentPlayer) {
     // Joueur connecté
@@ -292,7 +313,7 @@ function closeConnectProfileModal() {
 }
 
 // Event listeners pour les modals
-document.addEventListener("DOMContentLoaded", () => {
+function setupPlayerEventListeners() {
   const createModal = document.getElementById("createProfileModal");
   const connectModal = document.getElementById("connectProfileModal");
   
@@ -387,7 +408,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
-});
+}
+
+// Initialiser les event listeners quand le DOM est prêt
+if (document.readyState === 'loading') {
+  document.addEventListener("DOMContentLoaded", setupPlayerEventListeners);
+} else {
+  // DOM déjà chargé
+  setupPlayerEventListeners();
+}
 
 // Exporter les fonctions de modals pour utilisation externe
 export { openCreateProfileModal, openConnectProfileModal };

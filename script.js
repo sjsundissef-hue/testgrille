@@ -15,9 +15,13 @@ import './player.js';
 import './leaderboard.js';
 import './game.js';
 
-// Initialiser le joueur au chargement
+// Initialiser le joueur au chargement (ne bloque pas le reste)
 import { initPlayer } from './player.js';
 
-window.addEventListener("load", async () => {
-  await initPlayer();
+// Initialiser le joueur de manière non-bloquante
+window.addEventListener("load", () => {
+  // Ne pas bloquer l'initialisation du jeu
+  initPlayer().catch(e => {
+    console.error("Erreur initialisation joueur", e);
+  });
 });

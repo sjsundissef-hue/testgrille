@@ -23,7 +23,7 @@ import { generateGridData, generateExpertGrid, loadFunGrid as loadFunGridData, r
 import { stopTimer, startTimer, setEndChallengeCallback } from './chrono.js';
 import { showFeedback, updateScoreDisplay, updateRankedUI, setHomeMode, setRankedModeUI, setRankedResultsMode } from './ui.js';
 import { getWordPoints, findAllWords, generateNewGameId } from './utils.js';
-import { logWordFind, maybeOfferExpertScore, sendExpertScore, loadExpertLeaderboard, loadGlobalRanking, setStatsTab, loadGlobalStats, loadPlayerStats, PLAYER_ID } from './leaderboard.js';
+import { logWordFind, maybeOfferExpertScore, sendExpertScore, loadExpertLeaderboard, loadGlobalRanking, setStatsTab, loadGlobalStats, loadPlayerStats, getPLAYER_ID } from './leaderboard.js';
 
 // Mode actuel
 export function getCurrentMode() {
@@ -840,9 +840,9 @@ if (closeHelpBtn) {
 }
 
 // Initialisation
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
   setHomeMode();
-  loadDictionary();
+  loadDictionary(); // initGame() est appelé dans loadDictionary()
   loadExpertLeaderboard();
   loadGlobalRanking();
   updateRankedUI();
