@@ -91,8 +91,24 @@ function loadLeaderboardIntoModal() {
       }
       data.forEach((row, index) => {
         const li = document.createElement("li");
+        let itemClass = "";
+        let rankIcon = "";
+        
+        // Top 3 styling
+        if (index === 0) {
+          itemClass = "leaderboard-top-1";
+          rankIcon = "🥇 ";
+        } else if (index === 1) {
+          itemClass = "leaderboard-top-2";
+          rankIcon = "🥈 ";
+        } else if (index === 2) {
+          itemClass = "leaderboard-top-3";
+          rankIcon = "🥉 ";
+        }
+        
+        li.className = itemClass;
         li.innerHTML = `
-          <span class="lb-rank">#${index + 1}</span>
+          <span class="lb-rank">${rankIcon}#${index + 1}</span>
           <span class="lb-name">${row.pseudo || "Anonyme"}</span>
           <span class="lb-score">${row.score} pts</span>
         `;
@@ -120,11 +136,27 @@ function loadLeaderboardIntoModal() {
       }
       data.forEach((row, index) => {
         const li = document.createElement("li");
+        let itemClass = "";
+        let rankIcon = "";
+        
+        // Top 3 styling
+        if (index === 0) {
+          itemClass = "leaderboard-top-1";
+          rankIcon = "🥇 ";
+        } else if (index === 1) {
+          itemClass = "leaderboard-top-2";
+          rankIcon = "🥈 ";
+        } else if (index === 2) {
+          itemClass = "leaderboard-top-3";
+          rankIcon = "🥉 ";
+        }
+        
         const best3 = row.best_3x3 ?? 0;
         const best4 = row.best_4x4 ?? 0;
         const best5 = row.best_5x5 ?? 0;
+        li.className = itemClass;
         li.innerHTML = `
-          <span class="lb-rank">#${index + 1}</span>
+          <span class="lb-rank">${rankIcon}#${index + 1}</span>
           <span class="lb-name">${row.pseudo || "Anonyme"}</span>
           <span class="lb-score">${row.total_score} pts</span>
           <span style="margin-left:auto; font-size:0.85rem; color:#95a5a6;">${best3}/${best4}/${best5}</span>
@@ -392,11 +424,15 @@ export async function loadGlobalStats() {
     }
     
     // Compter le total (uniquement 4x4 et 5x5)
-    totalWordsVal.textContent = filteredData.length;
+    if (totalWordsVal) {
+      totalWordsVal.textContent = filteredData.length.toString();
+    }
     
     // Compter les mots uniques (uniquement 4x4 et 5x5)
     const uniqueWords = new Set(filteredData.map(item => item.word));
-    uniqueWordsVal.textContent = uniqueWords.size;
+    if (uniqueWordsVal) {
+      uniqueWordsVal.textContent = uniqueWords.size.toString();
+    }
   } catch (e) {
     console.error(e);
     statsWordList.innerHTML = '<li style="text-align:center; color:#e74c3c;">Erreur chargement stats.</li>';
