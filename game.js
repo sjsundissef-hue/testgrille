@@ -174,7 +174,7 @@ export function replayGrid() {
   state.isRankedEligible = false;
   state.currentChronoMode = null;
   state.isChallengeActive = false;
-  state.hasOfferedScore = false; = false;
+  state.hasOfferedScore = false;
 
   
   const mainContainer = document.querySelector(".main-container");
@@ -320,7 +320,7 @@ export function startFunMode() {
   state.currentChronoMode = null;
 
   loadFunGrid();
-  const duration = 120;
+  const duration = CHRONO_DURATIONS["fun2x2"] || 120;
   startTimer(duration);
   state.isChallengeActive = true;
   updateRankedUI();
