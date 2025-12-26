@@ -17,7 +17,10 @@
  <div class="controls">
     <button class="mode-btn active" id="btn4x4" onclick="setMode(4)">Mode 4x4</button>
     <button class="mode-btn" id="btn5x5" onclick="setMode(5)">Mode 5x5</button>
-    <button class="mode-btn" id="rankedToggleBtn">🏆 Mode ranked : OFF</button>
+    <div class="top-ranked-section">
+      <button class="mode-btn ranked-btn" id="rankedToggleBtn">🏆 Mode ranked : OFF</button>
+      <button class="mode-btn leaderboard-top-btn" id="leaderboardToggleBtn">📊 Voir le classement</button>
+    </div>
 </div>
 <div class="settings-panel">
   <div class="setting-item">
@@ -83,8 +86,6 @@
         </div>
         
         <button id="globalStatsBtn" class="stats-btn" style="background:#34495e; box-shadow:0 5px 0 #2c3e50;">📊 Stats Globales</button>
-        
-        <button id="leaderboardToggleBtn" class="stats-btn">📊 Voir le classement</button>
 
         <button id="solveBtn" class="secondary">Solutions</button>
         
@@ -134,6 +135,15 @@
           </div>
           
           <div class="leaderboard-modal-body">
+            <div class="leaderboard-explanation">
+              <h4>📖 Comment ça marche ?</h4>
+              <p>Il y a <strong>2 classements</strong> distincts :</p>
+              <ul>
+                <li><strong>🌍 Classement 3x3 Expert</strong> : Basé uniquement sur les scores du mode Expert 3x3. Chaque partie compte pour améliorer votre position.</li>
+                <li><strong>🏆 Classement Global (3 modes)</strong> : Combine vos meilleurs scores des modes 4x4, 5x5 et Expert 3x3. Seuls vos meilleurs scores de chaque mode sont pris en compte pour calculer votre classement global.</li>
+              </ul>
+            </div>
+            
             <div class="leaderboard-tab-section">
               <div class="leaderboard-tab-header">
                 <h3>🌍 Classement 3x3 Expert</h3>
@@ -181,8 +191,17 @@
           <button id="closeHelpBtn" class="close-btn">×</button>
       </div>
       <div class="help-content">
-          <p class="help-intro">Grilles possibles et mots à connaître :</p>
-          <div id="helpGridList" class="help-grid-list"></div>
+          <div class="help-sprint-intro">
+            <h4>⚡ Sprint 2x2 - Mode Rapide</h4>
+            <p><strong>Objectif :</strong> Trouver le maximum de mots dans une succession de grilles 2x2.</p>
+            <p><strong>Durée :</strong> 2 minutes chrono (120 secondes)</p>
+            <p><strong>Fonctionnement :</strong> Une fois que vous avez trouvé tous les mots d'une grille 2x2, une nouvelle grille apparaît automatiquement. Continuez jusqu'à la fin du temps imparti !</p>
+            <p><strong>Score :</strong> Votre score total est la somme de tous les points obtenus sur toutes les grilles complétées pendant les 2 minutes.</p>
+          </div>
+          <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 20px;">
+            <p class="help-intro">Grilles possibles et mots à connaître :</p>
+            <div id="helpGridList" class="help-grid-list"></div>
+          </div>
       </div>
     </div>
   </div>

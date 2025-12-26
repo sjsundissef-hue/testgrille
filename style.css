@@ -41,8 +41,13 @@ body.ranked-active .controls #btn5x5 {
   display: none;
 }
 
-body.ranked-active .controls #rankedToggleBtn {
+body.ranked-active .controls #rankedToggleBtn,
+body.ranked-active .controls #leaderboardToggleBtn {
   display: inline-block !important;
+}
+
+body.ranked-active .controls .top-ranked-section {
+  display: flex !important;
 }
 
 body.ranked-active .settings-panel,
@@ -60,8 +65,13 @@ body.ranked-results .controls #btn5x5 {
   display: none;
 }
 
-body.ranked-results .controls #rankedToggleBtn {
+body.ranked-results .controls #rankedToggleBtn,
+body.ranked-results .controls #leaderboardToggleBtn {
   display: inline-block !important;
+}
+
+body.ranked-results .controls .top-ranked-section {
+  display: flex !important;
 }
 
 body.ranked-results .settings-panel,
@@ -295,6 +305,40 @@ body.ranked-results .word-display-area {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Explication du classement */
+.leaderboard-explanation {
+  background: #f0f4f8;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border-left: 4px solid #4a90e2;
+}
+
+.leaderboard-explanation h4 {
+  margin: 0 0 10px 0;
+  color: #4a90e2;
+  font-size: 1.1rem;
+}
+
+.leaderboard-explanation p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.leaderboard-explanation ul {
+  margin: 10px 0 0 20px;
+  padding: 0;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.leaderboard-explanation li {
+  margin: 8px 0;
+}
+
 .leaderboard-tab-section {
   margin-bottom: 30px;
 }
@@ -431,6 +475,7 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
   margin-bottom: 15px; 
   flex-wrap: wrap; /* Permet le retour à la ligne sur mobile */
   justify-content: center; /* Centre les boutons */
+  align-items: center;
 }
 .mode-btn { 
   padding: 10px 20px; 
@@ -445,6 +490,34 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
   min-width: fit-content; /* Garde la taille minimale du contenu */
 }
 .mode-btn.active { background-color: #4a90e2; color: white; box-shadow: 0 3px 0 #357abd; }
+
+/* Conteneur pour les boutons Ranked et Classement en haut */
+.top-ranked-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 0 1 auto;
+}
+
+/* Bouton Ranked - un peu plus petit qu'avant */
+.mode-btn.ranked-btn {
+  padding: 8px 16px;
+  font-size: 0.95rem;
+}
+
+/* Bouton Classement - légèrement plus petit que Ranked */
+.mode-btn.leaderboard-top-btn {
+  padding: 7px 14px;
+  font-size: 0.9rem;
+  background-color: #34495e;
+  color: white;
+  box-shadow: 0 3px 0 #2c3e50;
+}
+
+.mode-btn.leaderboard-top-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #2c3e50;
+}
 
 .main-container { display: flex; gap: 50px; align-items: flex-start; flex-wrap: wrap; justify-content: center; width: 100%; padding-bottom: 50px; }
 .game-area { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 600px; }
@@ -581,6 +654,30 @@ body.fun-mode-active #help2x2Btn {
   display: inline-block !important;
 }
 
+/* Score visible en mode Sprint 2x2 - le rendre plus visible en haut */
+body.fun-mode-active .score-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 100;
+  padding: 10px;
+  margin: -10px -10px 10px -10px;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+body.fun-mode-active .score-total {
+  font-size: 2.2rem;
+  color: #e67e22;
+  font-weight: 900;
+}
+
+body.fun-mode-active .score-title {
+  font-size: 1.3rem;
+  color: #e67e22;
+  font-weight: 800;
+}
+
 .score-panel { background: white; padding: 25px; border-radius: 25px; width: 340px; height: 750px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
 .score-header { margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
 .score-title { font-weight: bold; font-size: 1.2rem; color: #333; }
@@ -627,7 +724,7 @@ body.fun-mode-active #help2x2Btn {
 /* MODALS */
 .modal-overlay { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(2px); }
 .modal-content { background-color: #fff; padding: 30px; border-radius: 25px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.4); animation: popIn 0.3s ease-out; }
-.modal-large { max-width: 500px; height: 80vh; display: flex; flex-direction: column; padding: 20px; text-align: left; }
+.modal-large { max-width: 500px; height: 80vh; display: flex; flex-direction: column; padding: 20px; text-align: left; overflow: hidden; }
 @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .modal-content h3 { color: #4a90e2; margin-top: 0; font-size: 1.6rem; margin-bottom: 10px; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
@@ -635,6 +732,24 @@ body.fun-mode-active #help2x2Btn {
 
 /* HELP & STATS */
 .help-content { overflow-y: auto; flex: 1; }
+.help-sprint-intro {
+  background: #f0f4f8;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border-left: 4px solid #e67e22;
+}
+.help-sprint-intro h4 {
+  margin: 0 0 12px 0;
+  color: #e67e22;
+  font-size: 1.2rem;
+}
+.help-sprint-intro p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
 .help-grid-list { display: flex; flex-direction: column; gap: 20px; }
 .help-item { background: #f9f9f9; padding: 10px; border-radius: 15px; border: 1px solid #eee; }
 .help-item-header { display: flex; gap: 15px; align-items: center; margin-bottom: 5px; }
@@ -652,8 +767,27 @@ body.fun-mode-active #help2x2Btn {
 .stats-tab { flex: 1; text-align: center; padding: 10px; border-radius: 10px; font-weight: bold; color: #64748b; background: transparent; border:none; cursor: pointer; }
 .stats-tab-active { background: white; color: #4a90e2; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-.stats-filter-group { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
-.mode-filter { background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: 600; }
+.stats-filter-group { 
+  display: flex; 
+  justify-content: center; 
+  gap: 5px; 
+  margin-bottom: 10px; 
+  flex-wrap: wrap; /* Permet le retour à la ligne sur mobile */
+  padding: 0 5px; /* Padding pour éviter que les boutons touchent les bords */
+}
+.mode-filter { 
+  background: transparent; 
+  border: 1px solid #cbd5e1; 
+  color: #64748b; 
+  padding: 5px 12px; 
+  border-radius: 20px; 
+  font-size: 0.8rem; 
+  cursor: pointer; 
+  font-weight: 600; 
+  flex: 0 1 auto; /* Permet de se rétrécir */
+  min-width: 0; /* Permet de se rétrécir en dessous de la taille du contenu */
+  white-space: nowrap; /* Évite que le texte se coupe */
+}
 .mode-filter.active { background: #4a90e2; color: white; border-color: #4a90e2; }
 .stats-my-summary { text-align: center; font-size: 0.9rem; color: #7f8c8d; margin-bottom: 15px; }
 
@@ -697,11 +831,24 @@ body.fun-mode-active #help2x2Btn {
     min-width: 0; /* Permet de se rétrécir en dessous de la taille du contenu si nécessaire */
   }
   
-  /* Si le bouton ranked est seul sur une ligne, le centrer */
-  .controls #rankedToggleBtn {
-    width: 100%; /* Prend toute la largeur si seul sur une ligne */
-    max-width: 300px; /* Mais pas plus que 300px */
-    margin: 0 auto; /* Centre le bouton */
+  /* Ajuster le conteneur top-ranked-section sur mobile */
+  .top-ranked-section {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .top-ranked-section .mode-btn {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  
+  /* Si les boutons ranked/classement sont seuls sur une ligne, les centrer */
+  .controls .top-ranked-section {
+    width: 100%;
+    max-width: 100%;
   }
 
   .game-area {
@@ -733,7 +880,7 @@ body.fun-mode-active #help2x2Btn {
     display: flex; 
     justify-content: center; 
     align-items: center;
-    margin: 0 auto;
+    margin: 0 auto; 
     overflow: hidden;
   }
   
@@ -888,5 +1035,40 @@ body.fun-mode-active #help2x2Btn {
   .special-modes-row button {
     flex: 1;
     min-width: 0;
+  }
+  
+  /* Modal stats sur mobile - corriger le scroll */
+  .modal-large {
+    height: 90vh;
+    max-height: 90vh;
+    padding: 15px;
+  }
+  
+  .stats-my-controls {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .stats-filter-group {
+    min-width: max-content; /* Force la largeur minimale pour le scroll horizontal */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 5px;
+  }
+  
+  .stats-filter-group::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .stats-filter-group::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+  
+  .help-content {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
