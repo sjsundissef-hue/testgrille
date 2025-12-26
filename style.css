@@ -860,10 +860,13 @@ body.fun-mode-active .score-title {
   }
   
   .top-ranked-section .mode-btn.leaderboard-top-btn {
-    flex: 0 1 30%;
+    flex: 0 1 35%;
     min-width: 0;
     font-size: 0.75rem;
-    padding: 7px 8px;
+    padding: 7px 10px;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .game-area {

@@ -450,7 +450,8 @@ export async function maybeOfferExpertScore(getCurrentModeFn) {
   // 3. Dès qu'un record est battu, il est TOUJOURS enregistré (avec ou sans pseudo)
   
   if (savedPseudo) {
-    // On a déjà un pseudo : enregistrer automatiquement TOUS les scores
+    // On a déjà un pseudo : enregistrer automatiquement
+    // Pour le leaderboard 3x3, on enregistre SEULEMENT si c'est un meilleur score
     const success = await sendExpertScoreAutomatically(getCurrentModeFn, savedPseudo);
     if (success) {
       // Mettre à jour le meilleur score si c'est un record
@@ -458,9 +459,9 @@ export async function maybeOfferExpertScore(getCurrentModeFn) {
         saveBestScore(mode, boardSize, currentScore);
         showFeedback(`🎉 Nouveau record ! ${currentScore} pts enregistrés automatiquement`, "valid");
       } else {
-        // Enregistrer silencieusement même si ce n'est pas un record
+        // Enregistrer silencieusement même si ce n'est pas un record (dans scores_chrono)
         saveBestScore(mode, boardSize, Math.max(bestScore, currentScore)); // Garder le meilleur
-        console.log(`Score ${currentScore} pts enregistré automatiquement`);
+        console.log(`Score ${currentScore} pts enregistré automatiquement (historique)`);
       }
     }
     return;
@@ -514,17 +515,24 @@ async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
     // LOGIQUE : On ne garde que le MEILLEUR score (record) pour chaque joueur
     if (state.isExpertMode) {
       // 1. Vérifier si le joueur a déjà un score enregistré
-      const existingRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?select=score&player_id=eq.${PLAYER_ID}&limit=1`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
-      );
-      
-      if (existingRes.ok) {
-        const existingData = await existingRes.json();
-        const existingScore = existingData.length > 0 ? existingData[0].score : 0;
+      let existingScore = 0;
+      try {
+        const existingRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?select=score&player_id=eq.${PLAYER_ID}&limit=1`,
+          { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
+        );
         
-        // 2. Si le nouveau score est meilleur, on remplace l'ancien
-        if (score > existingScore) {
+        if (existingRes.ok) {
+          const existingData = await existingRes.json();
+          existingScore = existingData.length > 0 ? (existingData[0].score || 0) : 0;
+        }
+      } catch (e) {
+        console.error("Erreur vérification score existant", e);
+      }
+      
+      // 2. Si le nouveau score est meilleur OU si aucun score n'existe, on enregistre
+      if (score > existingScore || existingScore === 0) {
+        if (existingScore > 0) {
           // Mettre à jour le score existant avec PATCH
           const updateRes = await fetch(
             `${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}?player_id=eq.${PLAYER_ID}`,
@@ -543,18 +551,27 @@ async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
               })
             }
           );
-          if (!updateRes.ok) throw new Error("Erreur mise à jour score leaderboard 3x3");
+          if (!updateRes.ok) {
+            console.error("Erreur PATCH, tentative POST", updateRes);
+            // Si PATCH échoue, essayer POST (création)
+            const createRes = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
+              method: "POST",
+              headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+              body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: score, created_at: createdAt })
+            });
+            if (!createRes.ok) throw new Error("Erreur création score leaderboard 3x3");
+          }
+        } else {
+          // 3. Si aucun score n'existe, on crée le premier
+          const createRes = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
+            method: "POST",
+            headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+            body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: score, created_at: createdAt })
+          });
+          if (!createRes.ok) throw new Error("Erreur création score leaderboard 3x3");
         }
-        // Si le score n'est pas meilleur, on ne fait rien (on garde l'ancien)
-      } else {
-        // 3. Si aucun score n'existe, on crée le premier
-        const createRes = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
-          method: "POST",
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-          body: JSON.stringify({ player_id: PLAYER_ID, pseudo, score: score, created_at: createdAt })
-        });
-        if (!createRes.ok) throw new Error("Erreur création score leaderboard 3x3");
       }
+      // Si le score n'est pas meilleur, on ne fait rien (on garde l'ancien)
     }
     
     // Sauvegarder le pseudo pour la prochaine fois
