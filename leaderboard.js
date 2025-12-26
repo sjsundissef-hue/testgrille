@@ -38,6 +38,29 @@ if (!PLAYER_ID) {
   localStorage.setItem("wb_player_id", PLAYER_ID);
 }
 
+// Pseudo sauvegardé
+export function getSavedPseudo() {
+  return localStorage.getItem("wb_pseudo") || null;
+}
+
+export function savePseudo(pseudo) {
+  if (pseudo && pseudo.trim()) {
+    localStorage.setItem("wb_pseudo", pseudo.trim());
+  }
+}
+
+// Meilleur score sauvegardé par mode
+export function getBestScore(mode, boardSize) {
+  const key = `wb_best_${mode}_${boardSize || ''}`;
+  const saved = localStorage.getItem(key);
+  return saved ? parseInt(saved, 10) : 0;
+}
+
+export function saveBestScore(mode, boardSize, score) {
+  const key = `wb_best_${mode}_${boardSize || ''}`;
+  localStorage.setItem(key, score.toString());
+}
+
 // Modal leaderboard
 export function openLeaderboardModal() {
   const modal = document.getElementById("leaderboardModal");
@@ -224,10 +247,28 @@ export async function loadGlobalRanking() {
   }
 }
 
-// Log des mots trouvés (getCurrentMode sera passé en paramètre ou importé)
+// Log des mots trouvés
+// IMPORTANT: Les mots 3x3 sont enregistrés UNIQUEMENT pour "Mes Stats 3x3", jamais dans la Collection Globale
 export async function logWordFind(word, mode) {
   try {
-    fetch(`${SUPABASE_URL}/rest/v1/word_finds`, {
+    // Déterminer si c'est du 3x3 (expert3x3 ou mode 3x3)
+    const is3x3 = mode === "expert3x3" || mode === "3x3" || (state.isExpertMode && state.gridSize === 3);
+    
+    // Toujours enregistrer dans word_finds pour les stats joueur (y compris 3x3)
+    // Le mode est enregistré tel quel, et la collection globale filtre côté client
+    const wordData = {
+      word: word, 
+      length: word.length, 
+      board_size: state.gridSize, 
+      mode: mode, // Le mode est enregistré (expert3x3, 4x4, 5x5, etc.)
+      player_id: PLAYER_ID,
+      game_id: state.currentGameId, 
+      is_challenge: state.isChallengeActive, 
+      time_left: state.challengeTimeLeft, 
+      score_after: state.currentScore
+    };
+    
+    await fetch(`${SUPABASE_URL}/rest/v1/word_finds`, {
       method: "POST",
       headers: {
         apikey: SUPABASE_KEY,
@@ -235,11 +276,11 @@ export async function logWordFind(word, mode) {
         "Content-Type": "application/json",
         Prefer: "return=minimal"
       },
-      body: JSON.stringify({
-        word: word, length: word.length, board_size: state.gridSize, mode: mode, player_id: PLAYER_ID,
-        game_id: state.currentGameId, is_challenge: state.isChallengeActive, time_left: state.challengeTimeLeft, score_after: state.currentScore
-      })
+      body: JSON.stringify(wordData)
     });
+    
+    // Note: La collection globale est filtrée côté client dans loadGlobalStats
+    // pour exclure tous les mots avec mode="expert3x3" ou mode="3x3"
   } catch (e) { 
     console.error("Log error", e); 
   }
@@ -272,39 +313,62 @@ export async function loadGlobalStats() {
   statsWordList.innerHTML = '<li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>';
 
   try {
+    // Récupérer TOUS les mots trouvés
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/word_stats_global?select=word,total_finds&order=total_finds.desc&limit=20`,
+      `${SUPABASE_URL}/rest/v1/word_finds?select=word,mode,board_size&order=word.asc`,
       { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
     );
     if (!response.ok) throw new Error("Erreur stats global");
-    const data = await response.json();
+    const allData = await response.json();
+    
+    // Filtrer pour exclure TOUS les modes 3x3 (expert3x3, 3x3, et board_size=3 avec mode expert)
+    // La Collection Globale ne contient QUE les modes 4x4 et 5x5
+    const filteredData = allData.filter(item => {
+      // Exclure explicitement :
+      // - mode === "expert3x3"
+      // - mode === "3x3"
+      // - board_size === 3 (tous les 3x3, peu importe le mode)
+      return item.mode !== "expert3x3" && 
+             item.mode !== "3x3" && 
+             item.board_size !== 3;
+    });
+    
+    // Agrégation côté client (uniquement 4x4 et 5x5)
+    const wordCounts = {};
+    filteredData.forEach(item => {
+      if (!wordCounts[item.word]) {
+        wordCounts[item.word] = 0;
+      }
+      wordCounts[item.word]++;
+    });
+    
+    // Convertir en tableau et trier
+    const sortedWords = Object.entries(wordCounts)
+      .map(([word, count]) => ({ word, total_finds: count }))
+      .sort((a, b) => b.total_finds - a.total_finds)
+      .slice(0, 20);
+    
     statsWordList.innerHTML = "";
-    if (data.length === 0) {
-      statsWordList.innerHTML = '<li style="text-align:center; padding:10px;">Aucune donnée.</li>';
+    if (sortedWords.length === 0) {
+      statsWordList.innerHTML = '<li style="text-align:center; padding:10px;">Aucune donnée (Collection Globale = 4x4 + 5x5 uniquement).</li>';
     } else {
-      data.forEach((item, index) => {
+      sortedWords.forEach((item, index) => {
         const li = document.createElement("li");
         li.className = "leaderboard-item";
         li.innerHTML = `<span class="lb-rank">#${index + 1}</span><span class="lb-name">${item.word}</span><span class="lb-score" style="color:#2c3e50;">${item.total_finds} fois</span>`;
         statsWordList.appendChild(li);
       });
     }
-    const countRes = await fetch(`${SUPABASE_URL}/rest/v1/word_finds?select=id`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Range: "0-0", Prefer: "count=exact" }
-    });
-    const range = countRes.headers.get("Content-Range");
-    if (range) totalWordsVal.textContent = range.split("/")[1];
-    else totalWordsVal.textContent = "-";
-
-    const uniqueRes = await fetch(`${SUPABASE_URL}/rest/v1/word_stats_global?select=word`, {
-      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, Range: "0-0", Prefer: "count=exact" }
-    });
-    const rangeUnique = uniqueRes.headers.get("Content-Range");
-    if (rangeUnique) uniqueWordsVal.textContent = rangeUnique.split("/")[1];
-    else uniqueWordsVal.textContent = "-";
+    
+    // Compter le total (uniquement 4x4 et 5x5)
+    totalWordsVal.textContent = filteredData.length;
+    
+    // Compter les mots uniques (uniquement 4x4 et 5x5)
+    const uniqueWords = new Set(filteredData.map(item => item.word));
+    uniqueWordsVal.textContent = uniqueWords.size;
   } catch (e) {
     console.error(e);
-    statsWordList.innerHTML = '<li style="text-align:center; color:#e74c3c;">Erreur chargement stats (Vue SQL manquante ?).</li>';
+    statsWordList.innerHTML = '<li style="text-align:center; color:#e74c3c;">Erreur chargement stats.</li>';
   }
 }
 
@@ -360,43 +424,93 @@ export async function loadPlayerStats(modeFilter) {
   }
 }
 
-// Score Expert
-export function maybeOfferExpertScore(getCurrentModeFn) {
+// Score Expert - Enregistrement automatique amélioré
+// NOUVELLE LOGIQUE : Enregistre automatiquement dès qu'un record est battu
+// Le pseudo n'est demandé qu'une seule fois, puis tous les scores sont enregistrés automatiquement
+export async function maybeOfferExpertScore(getCurrentModeFn) {
   if (!state.isRankedEligible) return;
   if (state.hasOfferedScore) return;
-  if (!onlineScoreModal) return;
   if (state.currentScore <= 0) return;
 
   state.hasOfferedScore = true;
   const mode = getCurrentModeFn();
+  const boardSize = state.gridSize;
+  const currentScore = state.currentScore;
+  
+  // Vérifier si c'est un meilleur score
+  const bestScore = getBestScore(mode, boardSize);
+  const isNewRecord = currentScore > bestScore;
+  
+  // Récupérer le pseudo sauvegardé
+  const savedPseudo = getSavedPseudo();
+  
+  // NOUVELLE STRATÉGIE AUTOMATIQUE :
+  // 1. Si on a un pseudo : enregistrer AUTOMATIQUEMENT tous les scores (record ou pas)
+  // 2. Si pas de pseudo : demander le pseudo UNE SEULE FOIS, puis enregistrer automatiquement
+  // 3. Dès qu'un record est battu, il est TOUJOURS enregistré (avec ou sans pseudo)
+  
+  if (savedPseudo) {
+    // On a déjà un pseudo : enregistrer automatiquement TOUS les scores
+    const success = await sendExpertScoreAutomatically(getCurrentModeFn, savedPseudo);
+    if (success) {
+      // Mettre à jour le meilleur score si c'est un record
+      if (isNewRecord) {
+        saveBestScore(mode, boardSize, currentScore);
+        showFeedback(`🎉 Nouveau record ! ${currentScore} pts enregistrés automatiquement`, "valid");
+      } else {
+        // Enregistrer silencieusement même si ce n'est pas un record
+        saveBestScore(mode, boardSize, Math.max(bestScore, currentScore)); // Garder le meilleur
+        console.log(`Score ${currentScore} pts enregistré automatiquement`);
+      }
+    }
+    return;
+  }
+  
+  // Pas de pseudo sauvegardé : demander UNE SEULE FOIS
+  // Mais on enregistre quand même si c'est un record (avec pseudo "Anonyme" temporairement)
+  if (isNewRecord) {
+    // Si c'est un record, on enregistre immédiatement avec "Anonyme"
+    // puis on demandera le pseudo pour les prochaines fois
+    const tempSuccess = await sendExpertScoreAutomatically(getCurrentModeFn, "Anonyme");
+    if (tempSuccess) {
+      saveBestScore(mode, boardSize, currentScore);
+      showFeedback(`🎉 Nouveau record ! ${currentScore} pts enregistrés`, "valid");
+    }
+  }
+  
+  // Afficher la modal pour demander le pseudo (une seule fois)
+  if (!onlineScoreModal) return;
+  
   let label = "";
   if (state.isExpertMode) label = "Mode Expert 3x3";
   else if (mode === "4x4") label = "Mode 4x4 (chrono)";
   else if (mode === "5x5") label = "Mode 5x5 (chrono)";
   else label = "Partie chrono";
 
-  modalScoreMsg.textContent = `Score : ${state.currentScore} pts – ${label}`;
+  modalScoreMsg.textContent = `Score : ${currentScore} pts – ${label}${isNewRecord ? ' 🎉 Nouveau record !' : ''}\n\nEntrez votre pseudo (sera sauvegardé pour les prochaines fois) :`;
+  
+  // Pré-remplir avec un pseudo par défaut si disponible
   onlinePseudoInput.value = "";
+  onlinePseudoInput.placeholder = "Votre pseudo (sera sauvegardé)";
   onlineScoreModal.style.display = "flex";
 }
 
-export async function sendExpertScore(getCurrentModeFn) {
-  if (!onlineScoreModal) return;
-  const pseudo = onlinePseudoInput.value.trim() || "Anonyme";
+// Fonction pour enregistrer automatiquement (sans modal)
+async function sendExpertScoreAutomatically(getCurrentModeFn, pseudo) {
   const mode = getCurrentModeFn();
   const boardSize = state.gridSize;
   const score = state.currentScore;
   const createdAt = new Date().toISOString();
 
   try {
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/${SCORES_CHRONO_TABLE}`, {
-        method: "POST",
-        headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
-        body: JSON.stringify({ player_id: PLAYER_ID, pseudo, mode, board_size: boardSize, score: score, created_at: createdAt })
-      });
-    } catch (e) { console.error("Erreur enregistrement scores_chrono", e); }
+    // Toujours enregistrer dans scores_chrono
+    await fetch(`${SUPABASE_URL}/rest/v1/${SCORES_CHRONO_TABLE}`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ player_id: PLAYER_ID, pseudo, mode, board_size: boardSize, score: score, created_at: createdAt })
+    });
 
+    // Si mode Expert, enregistrer aussi dans le leaderboard 3x3
     if (state.isExpertMode) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${LEADERBOARD_TABLE}`, {
         method: "POST",
@@ -405,11 +519,47 @@ export async function sendExpertScore(getCurrentModeFn) {
       });
       if (!res.ok) throw new Error("Erreur envoi score leaderboard 3x3");
     }
-    onlineScoreModal.style.display = "none";
-    showFeedback("Score envoyé au classement !", "valid");
-    if (isExpertMode) loadExpertLeaderboard();
+    
+    // Sauvegarder le pseudo pour la prochaine fois
+    savePseudo(pseudo);
+    
+    // Mettre à jour le meilleur score
+    saveBestScore(mode, boardSize, score);
+    
+    return true;
   } catch (e) {
-    console.error(e);
+    console.error("Erreur enregistrement automatique", e);
+    return false;
+  }
+}
+
+export async function sendExpertScore(getCurrentModeFn) {
+  if (!onlineScoreModal) return;
+  const pseudo = onlinePseudoInput.value.trim() || "Anonyme";
+  
+  // Sauvegarder le pseudo IMMÉDIATEMENT pour les prochaines fois
+  if (pseudo && pseudo !== "Anonyme") {
+    savePseudo(pseudo);
+  }
+  
+  // Enregistrer le score avec le nouveau pseudo
+  const success = await sendExpertScoreAutomatically(getCurrentModeFn, pseudo);
+  
+  if (success) {
+    const mode = getCurrentModeFn();
+    const boardSize = state.gridSize;
+    const score = state.currentScore;
+    
+    // Mettre à jour le meilleur score
+    const bestScore = getBestScore(mode, boardSize);
+    if (score > bestScore) {
+      saveBestScore(mode, boardSize, score);
+    }
+    
+    onlineScoreModal.style.display = "none";
+    showFeedback("Pseudo sauvegardé ! Les prochains scores seront enregistrés automatiquement.", "valid");
+    if (state.isExpertMode) loadExpertLeaderboard();
+  } else {
     showFeedback("Erreur lors de l'envoi du score", "invalid");
   }
 }

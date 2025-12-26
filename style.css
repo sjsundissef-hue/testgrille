@@ -494,24 +494,33 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 /* Conteneur pour les boutons Ranked et Classement en haut */
 .top-ranked-section {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   flex: 0 1 auto;
+  width: 100%;
+  max-width: 100%;
 }
 
-/* Bouton Ranked - un peu plus petit qu'avant */
+/* Bouton Ranked - prend 70% de l'espace */
 .mode-btn.ranked-btn {
   padding: 8px 16px;
   font-size: 0.95rem;
+  flex: 0 1 70%;
+  min-width: 0;
 }
 
-/* Bouton Classement - légèrement plus petit que Ranked */
+/* Bouton Classement - prend 30% de l'espace */
 .mode-btn.leaderboard-top-btn {
-  padding: 7px 14px;
-  font-size: 0.9rem;
+  padding: 7px 12px;
+  font-size: 0.85rem;
   background-color: #34495e;
   color: white;
   box-shadow: 0 3px 0 #2c3e50;
+  flex: 0 1 30%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mode-btn.leaderboard-top-btn:active {
@@ -770,23 +779,26 @@ body.fun-mode-active .score-title {
 .stats-filter-group { 
   display: flex; 
   justify-content: center; 
-  gap: 5px; 
+  gap: 4px; 
   margin-bottom: 10px; 
   flex-wrap: wrap; /* Permet le retour à la ligne sur mobile */
   padding: 0 5px; /* Padding pour éviter que les boutons touchent les bords */
+  width: 100%;
+  box-sizing: border-box;
 }
 .mode-filter { 
   background: transparent; 
   border: 1px solid #cbd5e1; 
   color: #64748b; 
-  padding: 5px 12px; 
+  padding: 5px 10px; 
   border-radius: 20px; 
-  font-size: 0.8rem; 
+  font-size: 0.75rem; 
   cursor: pointer; 
   font-weight: 600; 
   flex: 0 1 auto; /* Permet de se rétrécir */
-  min-width: 0; /* Permet de se rétrécir en dessous de la taille du contenu */
+  min-width: fit-content; /* Garde la taille minimale du contenu */
   white-space: nowrap; /* Évite que le texte se coupe */
+  box-sizing: border-box;
 }
 .mode-filter.active { background: #4a90e2; color: white; border-color: #4a90e2; }
 .stats-my-summary { text-align: center; font-size: 0.9rem; color: #7f8c8d; margin-bottom: 15px; }
@@ -835,20 +847,23 @@ body.fun-mode-active .score-title {
   .top-ranked-section {
     width: 100%;
     display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: stretch;
+    flex-wrap: nowrap; /* Toujours sur la même ligne */
   }
   
-  .top-ranked-section .mode-btn {
-    flex: 0 1 auto;
+  .top-ranked-section .mode-btn.ranked-btn {
+    flex: 0 1 70%;
     min-width: 0;
+    font-size: 0.85rem;
+    padding: 7px 12px;
   }
   
-  /* Si les boutons ranked/classement sont seuls sur une ligne, les centrer */
-  .controls .top-ranked-section {
-    width: 100%;
-    max-width: 100%;
+  .top-ranked-section .mode-btn.leaderboard-top-btn {
+    flex: 0 1 30%;
+    min-width: 0;
+    font-size: 0.75rem;
+    padding: 7px 8px;
   }
 
   .game-area {
@@ -1052,19 +1067,30 @@ body.fun-mode-active .score-title {
   }
   
   .stats-filter-group {
-    min-width: max-content; /* Force la largeur minimale pour le scroll horizontal */
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 5px;
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-bottom: 10px;
+    flex-wrap: wrap; /* Permet le retour à la ligne si nécessaire */
+    padding: 0 2px;
+    overflow-x: visible; /* Pas de scroll horizontal, on wrap */
+    width: 100%;
+    box-sizing: border-box;
   }
   
-  .stats-filter-group::-webkit-scrollbar {
-    height: 4px;
+  .mode-filter {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    flex: 0 1 auto;
+    min-width: fit-content;
   }
   
-  .stats-filter-group::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 2px;
+  .mode-filter {
+    padding: 5px 10px;
+    font-size: 0.75rem; /* Plus petit sur mobile */
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
   }
   
   .help-content {
