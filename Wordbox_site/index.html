@@ -17,7 +17,7 @@
  <div class="controls">
     <button class="mode-btn active" id="btn4x4" onclick="setMode(4)">Mode 4x4</button>
     <button class="mode-btn" id="btn5x5" onclick="setMode(5)">Mode 5x5</button>
-    <button class="mode-btn" id="chronoToggleBtn">⏱ Mode chrono : OFF</button>
+    <button class="mode-btn" id="rankedToggleBtn">🏆 Mode ranked : OFF</button>
 </div>
 <div class="settings-panel">
   <div class="setting-item">
@@ -30,38 +30,61 @@
       value="100"
     />
   </div>
+
+  <div class="setting-item">
+    <label for="gridGapRange">Espace entre les cases</label>
+    <input
+      type="range"
+      id="gridGapRange"
+      min="10"
+      max="40"
+      value="20"
+    />
+  </div>
 </div>
+
 
 
 
   <div class="main-container">
     <div class="game-area">
   <div id="timerDisplay" class="timer-display">02:00</div>
-  <div id="chronoModeBadge" class="chrono-badge" style="display:none;">Partie chrono</div>
+  <div id="rankedModeBadge" class="ranked-badge" style="display:none;">Partie ranked</div>
 
   <div class="word-display-area">
     <div class="current-word" id="currentWord"></div>
     <div class="feedback" id="feedbackMsg"></div>
   </div>
 
-
+      <!-- Grille normale (toujours visible) -->
       <div class="grid-wrapper">
         <canvas id="bgCanvas"></canvas>
         <canvas id="lineCanvas"></canvas>
         <div class="grid" id="grid"></div>
       </div>
 
+      <!-- Conteneur pour mode ranked-results (caché par défaut) -->
+      <div class="ranked-stack">
+        <div class="ranked-actions">
+          <button id="replayBtn" class="secondary">Rejouer</button>
+          <button id="backToHomeBtn" class="secondary" style="display:none;">🏠 Retour à l'accueil</button>
+        </div>
+      </div>
+
       <div class="action-buttons">
         <button id="newGridBtn">Nouvelle Grille</button>
-        <button id="replayBtn" class="secondary">Rejouer</button>
-        <button id="createGridBtn" class="secondary">Créer</button>
+        <div class="special-modes-row">
+            <button id="createGridBtn" class="secondary">👉 Créer ma grille</button>
+            <button id="funBtn" class="fun">👉 Sprint 2x2</button>
+        </div>
         
         <div style="display:flex; gap:10px; width:100%; justify-content:center;">
-            <button id="funBtn" class="fun" style="flex:2;">Fun 2x2</button>
             <button id="help2x2Btn" class="help-btn" style="flex:1;">❓ Aide</button>
         </div>
         
         <button id="globalStatsBtn" class="stats-btn" style="background:#34495e; box-shadow:0 5px 0 #2c3e50;">📊 Stats Globales</button>
+        
+        <button id="leaderboardToggleBtn" class="stats-btn">📊 Voir le classement</button>
 
         <button id="solveBtn" class="secondary">Solutions</button>
         
@@ -100,6 +123,38 @@
           <ul class="leaderboard-list" id="globalRankingList">
               <li style="text-align:center; padding:10px; color:#aaa;">Chargement...</li>
           </ul>
+      </div>
+      
+      <!-- Modal Classement Plein Écran -->
+      <div id="leaderboardModal" class="leaderboard-modal-overlay">
+        <div class="leaderboard-modal-content">
+          <div class="leaderboard-modal-header">
+            <h2>🏆 Classements</h2>
+            <button id="closeLeaderboardModal" class="leaderboard-close-btn">×</button>
+          </div>
+          
+          <div class="leaderboard-modal-body">
+            <div class="leaderboard-tab-section">
+              <div class="leaderboard-tab-header">
+                <h3>🌍 Classement 3x3 Expert</h3>
+              </div>
+              <ul class="leaderboard-modal-list" id="leaderboardModalList">
+                <li style="text-align:center; padding:20px; color:#aaa;">Chargement...</li>
+              </ul>
+            </div>
+            
+            <div class="leaderboard-divider"></div>
+            
+            <div class="leaderboard-tab-section">
+              <div class="leaderboard-tab-header">
+                <h3>🏆 Classement Global (3 modes)</h3>
+              </div>
+              <ul class="leaderboard-modal-list" id="globalRankingModalList">
+                <li style="text-align:center; padding:20px; color:#aaa;">Chargement...</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
 
@@ -176,6 +231,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
