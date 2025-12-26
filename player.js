@@ -32,13 +32,12 @@ export async function initPlayer() {
             updatePlayerUI();
             return true;
           } else {
-            // player_id existe en localStorage mais pas dans Supabase → recréer
-            console.log("Joueur non trouvé dans Supabase, recréation...");
-            const recreated = await createPlayerFromStoredId(storedPlayerId);
-            if (recreated) {
-              updatePlayerUI();
-            }
-            return recreated;
+            // player_id existe en localStorage mais pas dans Supabase → compte invalide, déconnecter
+            console.log("Joueur non trouvé dans Supabase, déconnexion...");
+            localStorage.removeItem("wb_player_id");
+            currentPlayer = null;
+            updatePlayerUI();
+            return false;
           }
         }
       } catch (e) {
@@ -262,19 +261,17 @@ function updatePlayerUI() {
     `;
     playerInfoEl.style.display = "block";
     playerActionsEl.innerHTML = `
-      <button id="createProfileBtn" class="btn-create">Créer un profil</button>
-      <button id="connectProfileBtn" class="btn-connect">Se connecter à un profil existant</button>
+      <button id="createOrConnectBtn" class="btn-create-connect">Créer un compte / Se connecter</button>
     `;
     
-    // Event listeners
-    const createBtn = document.getElementById("createProfileBtn");
-    const connectBtn = document.getElementById("connectProfileBtn");
-    
-    if (createBtn) {
-      createBtn.addEventListener("click", () => openCreateProfileModal());
-    }
-    if (connectBtn) {
-      connectBtn.addEventListener("click", () => openConnectProfileModal());
+    // Event listener pour le bouton unique
+    const createOrConnectBtn = document.getElementById("createOrConnectBtn");
+    if (createOrConnectBtn) {
+      createOrConnectBtn.addEventListener("click", () => {
+        // Ouvrir le modal de création par défaut
+        // L'utilisateur pourra basculer vers la connexion depuis le modal
+        openCreateProfileModal();
+      });
     }
   }
 }

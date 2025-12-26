@@ -723,7 +723,7 @@ if (globalStatsBtn) {
   globalStatsBtn.addEventListener("click", () => {
     if (statsModal) {
       statsModal.style.display = "flex";
-      setStatsTab("global");
+      setStatsTab("player"); // Toujours afficher "Mes stats" par défaut
     }
   });
 }

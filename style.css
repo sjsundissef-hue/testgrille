@@ -389,6 +389,49 @@ body.ranked-results .word-display-area {
   background: #f0f0f0;
 }
 
+/* Top 3 styling dans le modal */
+.leaderboard-modal-list li.leaderboard-top-1 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 6px 0;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  border-bottom: none;
+}
+
+.leaderboard-modal-list li.leaderboard-top-1:hover {
+  background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+}
+
+.leaderboard-modal-list li.leaderboard-top-2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 6px 0;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
+  border-bottom: none;
+}
+
+.leaderboard-modal-list li.leaderboard-top-2:hover {
+  background: linear-gradient(135deg, #e8e8e8 0%, #c0c0c0 100%);
+}
+
+.leaderboard-modal-list li.leaderboard-top-3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #e6a85c 100%);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 6px 0;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
+  border-bottom: none;
+}
+
+.leaderboard-modal-list li.leaderboard-top-3:hover {
+  background: linear-gradient(135deg, #e6a85c 0%, #cd7f32 100%);
+}
+
 .leaderboard-modal-list .lb-rank {
   font-weight: 900;
   color: #667eea;
@@ -556,14 +599,24 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
 }
 
 .btn-disconnect {
-  background: #95a5a6;
+  background-color: #e74c3c;
   color: white;
-  box-shadow: 0 3px 0 #7f8c8d;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  min-width: auto;
+  width: auto;
+  flex: 0 0 auto;
+  box-shadow: 0 2px 0 #c0392b;
+}
+
+.btn-disconnect:hover {
+  background-color: #c0392b;
 }
 
 .btn-disconnect:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #7f8c8d;
+  box-shadow: 0 1px 0 #c0392b;
+  background-color: #a93226;
 }
 
 .modal-message {
@@ -845,6 +898,34 @@ body.fun-mode-active .score-title {
 .leaderboard-title { font-size: 0.95rem; font-weight: 800; color: #4a90e2; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 .leaderboard-list { list-style: none; padding: 0; margin: 0; }
 .leaderboard-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9rem; }
+
+/* Top 3 styling */
+.leaderboard-item.leaderboard-top-1 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 4px 0;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.leaderboard-item.leaderboard-top-2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 4px 0;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(192, 192, 192, 0.3);
+}
+
+.leaderboard-item.leaderboard-top-3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #e6a85c 100%);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 4px 0;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
+}
 .lb-rank { font-weight: bold; color: #888; width: 25px; }
 .lb-name { font-weight: bold; color: #333; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb-score { font-weight: 900; color: #e67e22; margin-left: 10px; }

@@ -24,7 +24,7 @@ export function showFeedback(text, type) {
   feedbackEl.className = "feedback visible " + type;
   setTimeout(() => {
     if (feedbackEl.textContent === text) feedbackEl.className = "feedback";
-  }, 1200);
+  }, 3000);
 }
 
 // Score (currentScore passé en paramètre)

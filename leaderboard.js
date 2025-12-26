@@ -178,9 +178,24 @@ export async function loadExpertLeaderboard() {
 
     data.forEach((row, index) => {
       const li = document.createElement("li");
-      li.className = "leaderboard-item";
+      let itemClass = "leaderboard-item";
+      let rankIcon = "";
+      
+      // Top 3 styling
+      if (index === 0) {
+        itemClass += " leaderboard-top-1";
+        rankIcon = "🥇 ";
+      } else if (index === 1) {
+        itemClass += " leaderboard-top-2";
+        rankIcon = "🥈 ";
+      } else if (index === 2) {
+        itemClass += " leaderboard-top-3";
+        rankIcon = "🥉 ";
+      }
+      
+      li.className = itemClass;
       li.innerHTML = `
-        <span class="lb-rank">#${index + 1}</span>
+        <span class="lb-rank">${rankIcon}#${index + 1}</span>
         <span class="lb-name">${row.pseudo || "Anonyme"}</span>
         <span class="lb-score">${row.score} pts</span>
       `;
@@ -221,14 +236,28 @@ export async function loadGlobalRanking() {
 
     data.forEach((row, index) => {
       const li = document.createElement("li");
-      li.className = "leaderboard-item";
+      let itemClass = "leaderboard-item";
+      let rankIcon = "";
+      
+      // Top 3 styling
+      if (index === 0) {
+        itemClass += " leaderboard-top-1";
+        rankIcon = "🥇 ";
+      } else if (index === 1) {
+        itemClass += " leaderboard-top-2";
+        rankIcon = "🥈 ";
+      } else if (index === 2) {
+        itemClass += " leaderboard-top-3";
+        rankIcon = "🥉 ";
+      }
 
       const best3 = row.best_3x3 ?? 0;
       const best4 = row.best_4x4 ?? 0;
       const best5 = row.best_5x5 ?? 0;
 
+      li.className = itemClass;
       li.innerHTML = `
-        <span class="lb-rank">#${index + 1}</span>
+        <span class="lb-rank">${rankIcon}#${index + 1}</span>
         <span class="lb-name">${row.pseudo || "Anonyme"}</span>
         <span class="lb-score" style="color:#27ae60;">${row.total_score} pts</span>
         <span style="margin-left:auto; font-size:0.75rem; color:#95a5a6;">
