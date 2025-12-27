@@ -655,12 +655,84 @@ setDragHandlers({
 setupDragListeners();
 
 // Configuration chrono callback
-setEndChallengeCallback(() => maybeOfferExpertScore(getCurrentMode));
+setEndChallengeCallback(() => {
+  // Si c'est le mode Fun 2x2, afficher la pop-up de fin
+  if (state.isFunMode) {
+    showFunModeEndModal();
+  } else {
+    maybeOfferExpertScore(getCurrentMode);
+  }
+});
+
+// Fonction pour afficher la pop-up de fin du mode Sprint 2x2
+function showFunModeEndModal() {
+  const score = state.currentScore;
+  const modal = document.getElementById("onlineScoreModal");
+  const msgEl = document.getElementById("modalScoreMsg");
+  
+  if (!modal || !msgEl) return;
+  
+  // Bloquer l'écran - empêcher toute interaction
+  document.body.style.overflow = "hidden";
+  
+  // Afficher le message avec le score
+  msgEl.textContent = `Bravo ! Vous avez obtenu ${score} points.`;
+  modal.style.display = "flex";
+  
+  // Cacher tous les boutons sauf Rejouer et Retour à l'accueil
+  if (newGridBtn) newGridBtn.style.display = "none";
+  if (createGridBtn) createGridBtn.style.display = "none";
+  if (funBtn) funBtn.style.display = "none";
+  if (globalStatsBtn) globalStatsBtn.style.display = "none";
+  if (solveBtn) solveBtn.style.display = "none";
+  if (passBtn) passBtn.style.display = "none";
+  
+  // Afficher seulement Rejouer et Retour à l'accueil
+  if (replayBtn) {
+    replayBtn.style.display = "inline-block";
+    replayBtn.textContent = "Rejouer";
+  }
+  if (backToHomeBtn) {
+    backToHomeBtn.style.display = "inline-block";
+    backToHomeBtn.textContent = "Retour à l'accueil";
+  }
+  
+  // Garder le bouton Aide visible
+  if (help2x2Btn) help2x2Btn.style.display = "block";
+  
+  // Désactiver l'interaction avec la grille
+  if (gridEl) {
+    gridEl.style.pointerEvents = "none";
+    gridEl.style.opacity = "0.6";
+  }
+  
+  // Cacher les boutons du modal (on utilise Rejouer et Retour à l'accueil à la place)
+  if (btnIgnoreScore) btnIgnoreScore.style.display = "none";
+  if (btnSendScore) btnSendScore.style.display = "none";
+}
 
 // Listeners
 if (topExpertBtn) topExpertBtn.addEventListener("click", startExpertMode);
 if (newGridBtn) newGridBtn.addEventListener("click", () => { initGame(); });
-if (replayBtn) replayBtn.addEventListener("click", replayGrid);
+if (replayBtn) {
+  replayBtn.addEventListener("click", () => {
+    // Si on était en mode Fun, réinitialiser complètement
+    if (state.isFunMode) {
+      const modal = document.getElementById("onlineScoreModal");
+      if (modal) modal.style.display = "none";
+      if (gridEl) {
+        gridEl.style.pointerEvents = "auto";
+        gridEl.style.opacity = "1";
+      }
+      document.body.style.overflow = "auto";
+      state.isFunMode = false;
+      setHomeMode();
+      initGame();
+      return;
+    }
+    replayGrid();
+  });
+}
 if (createGridBtn) createGridBtn.addEventListener("click", startManualCreation);
 if (funBtn) funBtn.addEventListener("click", startFunMode);
 if (validateCustomBtn) validateCustomBtn.addEventListener("click", validateGrid);

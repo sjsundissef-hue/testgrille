@@ -38,6 +38,7 @@ export function updateRankedUI() {
   const isTimedEnabled = state.isTimedModeEnabled;
   if (rankedToggleBtn) {
     rankedToggleBtn.classList.toggle("ranked-active", isTimedEnabled);
+    rankedToggleBtn.classList.toggle("ranked-off", !isTimedEnabled);
     rankedToggleBtn.textContent = isTimedEnabled ? "Mode ranked : ON" : "Mode ranked : OFF";
   }
   if (rankedModeBadge) {

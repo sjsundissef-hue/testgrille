@@ -352,10 +352,27 @@ export async function logWordFind(word, mode) {
 // Stats
 export function setStatsTab(tab) {
   if (!statsTabGlobal || !statsTabPlayer || !statsMyControls) {
+    // Vérifier si le joueur est connecté avant de charger
+    if (!isPlayerConnected()) {
+      if (statsWordList) {
+        statsWordList.innerHTML = '<li style="text-align:center; padding:20px; color:#e74c3c; font-weight:600;">Créez un compte ou connectez-vous pour accéder à vos statistiques.</li>';
+      }
+      if (totalWordsVal) totalWordsVal.textContent = "-";
+      if (uniqueWordsVal) uniqueWordsVal.textContent = "-";
+      return;
+    }
     loadGlobalStats();
     return;
   }
   if (tab === "player") {
+    // Vérifier si le joueur est connecté avant de charger
+    if (!isPlayerConnected()) {
+      if (statsMySummary) {
+        statsMySummary.innerHTML = '<div style="text-align:center; padding:20px; color:#e74c3c; font-weight:600;">Créez un compte ou connectez-vous pour accéder à vos statistiques.</div>';
+      }
+      if (statsWordList) statsWordList.innerHTML = "";
+      return;
+    }
     statsTabGlobal.classList.remove("stats-tab-active");
     statsTabPlayer.classList.add("stats-tab-active");
     statsMyControls.style.display = "block";

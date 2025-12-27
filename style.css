@@ -747,6 +747,37 @@ h1 { margin: 5px 0 10px 0; color: #444; text-transform: uppercase; letter-spacin
   min-width: 0;
 }
 
+/* Badge Ranked - Rouge quand OFF, Vert quand ON */
+.mode-btn.ranked-btn.ranked-off {
+  background-color: #e74c3c;
+  color: white;
+  box-shadow: 0 3px 0 #c0392b;
+}
+
+.mode-btn.ranked-btn.ranked-off:hover {
+  background-color: #c0392b;
+}
+
+.mode-btn.ranked-btn.ranked-off:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #c0392b;
+}
+
+.mode-btn.ranked-btn.ranked-active {
+  background-color: #27ae60;
+  color: white;
+  box-shadow: 0 3px 0 #229954;
+}
+
+.mode-btn.ranked-btn.ranked-active:hover {
+  background-color: #229954;
+}
+
+.mode-btn.ranked-btn.ranked-active:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #229954;
+}
+
 /* Bouton Classement - prend 30% de l'espace */
 .mode-btn.leaderboard-top-btn {
   padding: 7px 12px;

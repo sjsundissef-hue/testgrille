@@ -261,17 +261,21 @@ function updatePlayerUI() {
     `;
     playerInfoEl.style.display = "block";
     playerActionsEl.innerHTML = `
-      <button id="createOrConnectBtn" class="btn-create-connect">Créer un compte / Se connecter</button>
+      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button id="createProfileBtn" class="btn-create">Créer un compte</button>
+        <button id="connectProfileBtn" class="btn-connect">Se connecter</button>
+      </div>
     `;
     
-    // Event listener pour le bouton unique
-    const createOrConnectBtn = document.getElementById("createOrConnectBtn");
-    if (createOrConnectBtn) {
-      createOrConnectBtn.addEventListener("click", () => {
-        // Ouvrir le modal de création par défaut
-        // L'utilisateur pourra basculer vers la connexion depuis le modal
-        openCreateProfileModal();
-      });
+    // Event listeners pour les deux boutons
+    const createBtn = document.getElementById("createProfileBtn");
+    const connectBtn = document.getElementById("connectProfileBtn");
+    
+    if (createBtn) {
+      createBtn.addEventListener("click", () => openCreateProfileModal());
+    }
+    if (connectBtn) {
+      connectBtn.addEventListener("click", () => openConnectProfileModal());
     }
   }
 }

@@ -50,7 +50,14 @@ function endChallenge() {
   stopTimer();
   state.gameSolved = true;
   if (solveBtn) solveBtn.disabled = false;
-  showFeedback("Temps écoulé", "invalid");
-  if (_maybeOfferExpertScore) _maybeOfferExpertScore();
+  
+  // Si c'est le mode Fun 2x2, afficher la pop-up de fin
+  if (state.isFunMode) {
+    // La pop-up sera gérée par game.js via le callback
+    if (_maybeOfferExpertScore) _maybeOfferExpertScore();
+  } else {
+    showFeedback("Temps écoulé", "invalid");
+    if (_maybeOfferExpertScore) _maybeOfferExpertScore();
+  }
 }
 
