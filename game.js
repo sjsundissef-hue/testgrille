@@ -672,36 +672,57 @@ function showFunModeEndModal() {
 
   if (!modal || !msgEl) return;
 
-  // Bloquer l'écran - empêcher toute interaction
+  // Bloquer le scroll en arrière-plan
   document.body.style.overflow = "hidden";
 
-  // Afficher juste le score
+  // Message principal : juste le score
   msgEl.textContent = `Bravo ! Vous avez obtenu ${score} points.`;
 
-  // 🔴 Enlever le texte "Envoyer au classement mondial ?"
+  // Texte en dessous du score (plus de "Envoyer au classement mondial ?")
   const subEl = modal.querySelector(".modal-sub");
   if (subEl) {
-    subEl.textContent = "";             // ou par ex. "Sprint 2x2 terminé !"
-    // subEl.style.display = "none";    // si tu préfères le cacher complètement
+    subEl.textContent = ""; // ou par ex. "Mode 2x2 terminé !"
   }
 
-  // 🔴 Cacher le champ "Ton Pseudo"
+  // Cacher le champ "Ton Pseudo"
   if (onlinePseudoInput) {
     onlinePseudoInput.style.display = "none";
   }
 
-  // 🔴 Cacher les boutons Envoyer / Ignorer du modal
+  // Afficher la zone des boutons du modal
   const actionsEl = modal.querySelector(".modal-actions");
   if (actionsEl) {
-    actionsEl.style.display = "none";
+    actionsEl.style.display = "flex"; // ou "" si tu préfères laisser le CSS décider
   }
-  if (btnIgnoreScore) btnIgnoreScore.style.display = "none";
-  if (btnSendScore) btnSendScore.style.display = "none";
+
+  // Utiliser le bouton "Ignorer" comme bouton "Fermer"
+  if (btnIgnoreScore) {
+    btnIgnoreScore.style.display = "inline-block";
+    btnIgnoreScore.textContent = "Fermer";
+
+    btnIgnoreScore.onclick = () => {
+      // Fermer le popup
+      modal.style.display = "none";
+      // Rétablir le scroll
+      document.body.style.overflow = "auto";
+      // Réactiver la grille
+      if (gridEl) {
+        gridEl.style.pointerEvents = "auto";
+        gridEl.style.opacity = "1";
+      }
+    };
+  }
+
+  // Cacher complètement le bouton "Envoyer"
+  if (btnSendScore) {
+    btnSendScore.style.display = "none";
+    btnSendScore.onclick = null;
+  }
 
   // Afficher le modal
   modal.style.display = "flex";
 
-  // Cacher les autres boutons de l'écran de jeu
+  // (optionnel) tu peux garder ce bloc si tu veux désactiver les gros boutons derrière
   if (newGridBtn) newGridBtn.style.display = "none";
   if (createGridBtn) createGridBtn.style.display = "none";
   if (funBtn) funBtn.style.display = "none";
@@ -718,6 +739,7 @@ function showFunModeEndModal() {
     gridEl.style.opacity = "0.6";
   }
 }
+
 
 
 // Listeners
