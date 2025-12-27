@@ -669,47 +669,56 @@ function showFunModeEndModal() {
   const score = state.currentScore;
   const modal = document.getElementById("onlineScoreModal");
   const msgEl = document.getElementById("modalScoreMsg");
-  
+
   if (!modal || !msgEl) return;
-  
+
   // Bloquer l'écran - empêcher toute interaction
   document.body.style.overflow = "hidden";
-  
-  // Afficher le message avec le score
+
+  // Afficher juste le score
   msgEl.textContent = `Bravo ! Vous avez obtenu ${score} points.`;
+
+  // 🔴 Enlever le texte "Envoyer au classement mondial ?"
+  const subEl = modal.querySelector(".modal-sub");
+  if (subEl) {
+    subEl.textContent = "";             // ou par ex. "Sprint 2x2 terminé !"
+    // subEl.style.display = "none";    // si tu préfères le cacher complètement
+  }
+
+  // 🔴 Cacher le champ "Ton Pseudo"
+  if (onlinePseudoInput) {
+    onlinePseudoInput.style.display = "none";
+  }
+
+  // 🔴 Cacher les boutons Envoyer / Ignorer du modal
+  const actionsEl = modal.querySelector(".modal-actions");
+  if (actionsEl) {
+    actionsEl.style.display = "none";
+  }
+  if (btnIgnoreScore) btnIgnoreScore.style.display = "none";
+  if (btnSendScore) btnSendScore.style.display = "none";
+
+  // Afficher le modal
   modal.style.display = "flex";
-  
-  // Cacher tous les boutons sauf Rejouer et Retour à l'accueil
+
+  // Cacher les autres boutons de l'écran de jeu
   if (newGridBtn) newGridBtn.style.display = "none";
   if (createGridBtn) createGridBtn.style.display = "none";
   if (funBtn) funBtn.style.display = "none";
   if (globalStatsBtn) globalStatsBtn.style.display = "none";
   if (solveBtn) solveBtn.style.display = "none";
   if (passBtn) passBtn.style.display = "none";
-  
-  // Afficher seulement Rejouer et Retour à l'accueil
-  if (replayBtn) {
-    replayBtn.style.display = "inline-block";
-    replayBtn.textContent = "Rejouer";
-  }
-  if (backToHomeBtn) {
-    backToHomeBtn.style.display = "inline-block";
-    backToHomeBtn.textContent = "Retour à l'accueil";
-  }
-  
+
   // Garder le bouton Aide visible
   if (help2x2Btn) help2x2Btn.style.display = "block";
-  
+
   // Désactiver l'interaction avec la grille
   if (gridEl) {
     gridEl.style.pointerEvents = "none";
     gridEl.style.opacity = "0.6";
   }
-  
-  // Cacher les boutons du modal (on utilise Rejouer et Retour à l'accueil à la place)
-  if (btnIgnoreScore) btnIgnoreScore.style.display = "none";
-  if (btnSendScore) btnSendScore.style.display = "none";
 }
+
 
 // Listeners
 if (topExpertBtn) topExpertBtn.addEventListener("click", startExpertMode);
