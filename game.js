@@ -19,7 +19,7 @@ import {
   statsMySummary, statsWordList, totalWordsVal, uniqueWordsVal, onlineScoreModal,
   modalScoreMsg, onlinePseudoInput, btnIgnoreScore, btnSendScore
 } from './dom.js';
-import { generateGridData, generateExpertGrid, loadFunGrid as loadFunGridData, renderGrid, resizeCanvas, setDragHandlers, setupDragListeners } from './grid.js';
+import { generateGridData, generateExpertGrid, loadFunGrid as loadFunGridData, renderGrid, resizeCanvas, setDragHandlers, setupDragListeners, clearCanvas, drawPath } from './grid.js';
 import { stopTimer, startTimer, setEndChallengeCallback } from './chrono.js';
 import { showFeedback, updateScoreDisplay, updateRankedUI, setHomeMode, setRankedModeUI, setRankedResultsMode } from './ui.js';
 import { getWordPoints, findAllWords, generateNewGameId } from './utils.js';
@@ -398,15 +398,6 @@ function updateVisuals() {
   });
   if (wordDisplay) wordDisplay.textContent = word;
   drawPath();
-}
-
-function clearCanvas() {
-  // Importé depuis grid.js mais utilisé ici aussi
-  if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function drawPath() {
-  clearCanvas();
 }
 
 // Validation

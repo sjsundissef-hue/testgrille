@@ -24,7 +24,12 @@ import { initPlayer } from './player.js';
 // Initialiser le joueur de manière non-bloquante
 window.addEventListener("load", () => {
   // Initialiser les paramètres en premier (pour charger le thème)
-  initSettings();
+  // Attendre que le DOM soit prêt
+  if (document.readyState === 'loading') {
+    document.addEventListener("DOMContentLoaded", initSettings);
+  } else {
+    initSettings();
+  }
   
   // Ne pas bloquer l'initialisation du jeu
   initPlayer().catch(e => {
