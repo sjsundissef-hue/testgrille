@@ -172,6 +172,10 @@ export function initGame() {
       state.currentChronoMode = modeName;
       state.challengeModeName = "ranked-" + modeName;
       setRankedModeUI(true);
+      
+      // Initialiser le tracking pour l'analyse 4x4/5x5 ranked
+      gameStartTime = performance.now();
+      wordEvents = [];
     }
   }
   updateRankedUI();
@@ -435,8 +439,10 @@ function validateWord() {
       const pts = getWordPoints(word);
       state.currentScore += pts;
       
-      // Tracking pour analyse 3x3
-      if (state.isExpertMode && state.gridSize === 3 && gameStartTime !== null) {
+      // Tracking pour analyse ranked (3x3, 4x4, 5x5)
+      if (gameStartTime !== null && 
+          ((state.isExpertMode && state.gridSize === 3) || 
+           (state.isRankedEligible && (state.gridSize === 4 || state.gridSize === 5)))) {
         const elapsedSec = (performance.now() - gameStartTime) / 1000;
         wordEvents.push({ t: elapsedSec, points: pts });
       }
@@ -556,19 +562,25 @@ export function finishAndShowSolutions() {
 
   if (listTitleEl) listTitleEl.textContent = "Résultats";
 
-  // Calculer l'analyse 3x3 si c'est une partie 3x3
-  if (state.isExpertMode && state.gridSize === 3 && gameStartTime !== null && wordEvents.length > 0) {
-    calculate3x3Analysis();
+  // Calculer l'analyse ranked si c'est une partie ranked avec tracking
+  if (gameStartTime !== null && wordEvents.length > 0) {
+    if (state.isExpertMode && state.gridSize === 3) {
+      // Mode 3x3 : 120 secondes
+      calculateRankedAnalysis(120, "3x3");
+    } else if (state.isRankedEligible && (state.gridSize === 4 || state.gridSize === 5)) {
+      // Mode 4x4 ou 5x5 ranked : 90 secondes
+      const modeName = state.gridSize === 4 ? "4x4" : "5x5";
+      calculateRankedAnalysis(90, modeName);
+    }
   }
 
   maybeOfferExpertScore(getCurrentMode);
 }
 
-// Calculer l'analyse de la partie 3x3
-function calculate3x3Analysis() {
-  const GAME_DURATION = 120;
+// Calculer l'analyse de la partie ranked (3x3, 4x4, 5x5)
+function calculateRankedAnalysis(gameDuration, modeName) {
   const SLICE = 3;
-  const nbSlices = Math.ceil(GAME_DURATION / SLICE);
+  const nbSlices = Math.ceil(gameDuration / SLICE);
   
   const pointsBySlice = new Array(nbSlices).fill(0);
   const wordsBySlice = new Array(nbSlices).fill(0);
@@ -585,8 +597,8 @@ function calculate3x3Analysis() {
   // Calculer les statistiques
   const totalWords = wordsBySlice.reduce((sum, val) => sum + val, 0);
   const totalPoints = pointsBySlice.reduce((sum, val) => sum + val, 0);
-  const avgWordsPerMin = (totalWords / GAME_DURATION) * 60;
-  const avgPointsPerMin = (totalPoints / GAME_DURATION) * 60;
+  const avgWordsPerMin = (totalWords / gameDuration) * 60;
+  const avgPointsPerMin = (totalPoints / gameDuration) * 60;
   
   // Afficher le bouton "Voir le graphique" et stocker les données
   // Le bouton doit toujours apparaître, même si non connecté
@@ -599,7 +611,9 @@ function calculate3x3Analysis() {
       totalWords,
       totalPoints,
       avgWordsPerMin,
-      avgPointsPerMin
+      avgPointsPerMin,
+      gameDuration,
+      modeName
     });
   }
 }

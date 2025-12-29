@@ -42,7 +42,8 @@ import {
   analysisAvgSpeed,
   analysisNoAccount,
   analysisChartContainer,
-  closeNoAccountBtn
+  closeNoAccountBtn,
+  analysisModalTitle
 } from './dom.js';
 import { state } from './state.js';
 
@@ -512,11 +513,19 @@ export function show3x3Analysis(data) {
       analysisAvgSpeed.textContent = `${speed} mots/min`;
     }
     
-    // Construire les labels pour les tranches
+    // Mettre à jour le titre selon le mode
+    const modeName = data.modeName || "3x3";
+    if (analysisModalTitle) {
+      analysisModalTitle.textContent = `📊 Analyse de ta partie ${modeName}`;
+    }
+    
+    // Construire les labels pour les tranches selon la durée
+    const gameDuration = data.gameDuration || 120;
+    const nbSlices = Math.ceil(gameDuration / 3);
     const labels = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < nbSlices; i++) {
       const start = i * 3;
-      const end = Math.min(start + 3, 120);
+      const end = Math.min(start + 3, gameDuration);
       labels.push(`${start}-${end}s`);
     }
     
@@ -554,8 +563,9 @@ export function show3x3Analysis(data) {
                   const points = data.pointsBySlice[index] || 0;
                   const words = data.wordsBySlice[index] || 0;
                   const localSpeed = words > 0 ? (words / 3 * 60).toFixed(1) : 0;
+                  const label = labels[index] || `${index * 3}-${(index + 1) * 3}s`;
                   return [
-                    `Tranche: ${labels[index]}`,
+                    `Tranche: ${label}`,
                     `Points: ${points}`,
                     `Mots: ${words}`,
                     `Vitesse locale: ${localSpeed} mots/min`
