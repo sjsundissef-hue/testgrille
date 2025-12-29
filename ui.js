@@ -13,7 +13,26 @@ import {
   feedbackEl, 
   scoreDisplayEl,
   rankedToggleBtn,
-  rankedModeBadge
+  rankedModeBadge,
+  settingsBtn,
+  settingsPanel,
+  closeSettingsBtn,
+  colorBg,
+  colorCaseBg,
+  colorCaseShadow,
+  colorCaseSelected,
+  colorCaseBorderSelected,
+  colorText,
+  colorAccent,
+  useGradient,
+  gradientControls,
+  gradientColor1,
+  gradientColor2,
+  gradientAngle,
+  resetSettingsBtn,
+  exportThemeBtn,
+  exportThemeArea,
+  exportThemeTextarea
 } from './dom.js';
 import { state } from './state.js';
 
@@ -113,6 +132,266 @@ export function setRankedResultsMode() {
     if (scorePanel && !rankedStack.contains(scorePanel)) {
       rankedStack.appendChild(scorePanel);
     }
+  }
+}
+
+// ==========================================
+// === GESTION DES PARAMÈTRES DE THÈME ===
+// ==========================================
+
+// Valeurs par défaut
+const DEFAULT_THEME = {
+  bgColor: "#f4f4eb",
+  caseBg: "#ffffff",
+  caseShadow: "#c8c8be",
+  caseSelected: "#d4f1f4",
+  caseBorderSelected: "#4a90e2",
+  textColor: "#333333",
+  accentColor: "#4a90e2",
+  useGradient: false,
+  gradientColor1: "#f4f4eb",
+  gradientColor2: "#e8e8d8",
+  gradientAngle: "45deg"
+};
+
+// Appliquer une couleur CSS
+function applyCSSVariable(varName, value) {
+  document.documentElement.style.setProperty(varName, value);
+}
+
+// Appliquer le fond (uni ou dégradé)
+function applyBackground() {
+  const useGrad = useGradient && useGradient.checked;
+  
+  if (useGrad) {
+    const color1 = gradientColor1 ? gradientColor1.value : DEFAULT_THEME.gradientColor1;
+    const color2 = gradientColor2 ? gradientColor2.value : DEFAULT_THEME.gradientColor2;
+    const angle = gradientAngle ? gradientAngle.value : DEFAULT_THEME.gradientAngle;
+    document.body.style.backgroundImage = `linear-gradient(${angle}, ${color1}, ${color2})`;
+    document.body.style.backgroundColor = "";
+  } else {
+    const bgColor = colorBg ? colorBg.value : DEFAULT_THEME.bgColor;
+    document.body.style.backgroundColor = bgColor;
+    document.body.style.backgroundImage = "none";
+  }
+}
+
+// Mettre à jour toutes les couleurs
+function updateAllColors() {
+  if (colorBg) applyCSSVariable("--bg-color", colorBg.value);
+  if (colorCaseBg) applyCSSVariable("--case-bg", colorCaseBg.value);
+  if (colorCaseShadow) applyCSSVariable("--case-shadow", colorCaseShadow.value);
+  if (colorCaseSelected) applyCSSVariable("--case-selected", colorCaseSelected.value);
+  if (colorCaseBorderSelected) applyCSSVariable("--case-border-selected", colorCaseBorderSelected.value);
+  if (colorText) applyCSSVariable("--text-color", colorText.value);
+  if (colorAccent) applyCSSVariable("--accent-color", colorAccent.value);
+  
+  applyBackground();
+  
+  // Sauvegarder dans localStorage
+  saveTheme();
+}
+
+// Sauvegarder le thème
+function saveTheme() {
+  const theme = {
+    bgColor: colorBg ? colorBg.value : DEFAULT_THEME.bgColor,
+    caseBg: colorCaseBg ? colorCaseBg.value : DEFAULT_THEME.caseBg,
+    caseShadow: colorCaseShadow ? colorCaseShadow.value : DEFAULT_THEME.caseShadow,
+    caseSelected: colorCaseSelected ? colorCaseSelected.value : DEFAULT_THEME.caseSelected,
+    caseBorderSelected: colorCaseBorderSelected ? colorCaseBorderSelected.value : DEFAULT_THEME.caseBorderSelected,
+    textColor: colorText ? colorText.value : DEFAULT_THEME.textColor,
+    accentColor: colorAccent ? colorAccent.value : DEFAULT_THEME.accentColor,
+    useGradient: useGradient ? useGradient.checked : false,
+    gradientColor1: gradientColor1 ? gradientColor1.value : DEFAULT_THEME.gradientColor1,
+    gradientColor2: gradientColor2 ? gradientColor2.value : DEFAULT_THEME.gradientColor2,
+    gradientAngle: gradientAngle ? gradientAngle.value : DEFAULT_THEME.gradientAngle
+  };
+  
+  localStorage.setItem("wb_theme", JSON.stringify(theme));
+}
+
+// Charger le thème sauvegardé
+function loadTheme() {
+  const saved = localStorage.getItem("wb_theme");
+  if (!saved) {
+    applyDefaultTheme();
+    return;
+  }
+  
+  try {
+    const theme = JSON.parse(saved);
+    
+    // Appliquer les valeurs
+    if (colorBg) colorBg.value = theme.bgColor || DEFAULT_THEME.bgColor;
+    if (colorCaseBg) colorCaseBg.value = theme.caseBg || DEFAULT_THEME.caseBg;
+    if (colorCaseShadow) colorCaseShadow.value = theme.caseShadow || DEFAULT_THEME.caseShadow;
+    if (colorCaseSelected) colorCaseSelected.value = theme.caseSelected || DEFAULT_THEME.caseSelected;
+    if (colorCaseBorderSelected) colorCaseBorderSelected.value = theme.caseBorderSelected || DEFAULT_THEME.caseBorderSelected;
+    if (colorText) colorText.value = theme.textColor || DEFAULT_THEME.textColor;
+    if (colorAccent) colorAccent.value = theme.accentColor || DEFAULT_THEME.accentColor;
+    
+    if (useGradient) {
+      useGradient.checked = theme.useGradient || false;
+      if (gradientControls) {
+        gradientControls.style.display = useGradient.checked ? "block" : "none";
+      }
+    }
+    
+    if (gradientColor1) gradientColor1.value = theme.gradientColor1 || DEFAULT_THEME.gradientColor1;
+    if (gradientColor2) gradientColor2.value = theme.gradientColor2 || DEFAULT_THEME.gradientColor2;
+    if (gradientAngle) gradientAngle.value = theme.gradientAngle || DEFAULT_THEME.gradientAngle;
+    
+    // Appliquer les couleurs
+    updateAllColors();
+  } catch (e) {
+    console.error("Erreur chargement thème", e);
+    applyDefaultTheme();
+  }
+}
+
+// Appliquer le thème par défaut
+function applyDefaultTheme() {
+  if (colorBg) colorBg.value = DEFAULT_THEME.bgColor;
+  if (colorCaseBg) colorCaseBg.value = DEFAULT_THEME.caseBg;
+  if (colorCaseShadow) colorCaseShadow.value = DEFAULT_THEME.caseShadow;
+  if (colorCaseSelected) colorCaseSelected.value = DEFAULT_THEME.caseSelected;
+  if (colorCaseBorderSelected) colorCaseBorderSelected.value = DEFAULT_THEME.caseBorderSelected;
+  if (colorText) colorText.value = DEFAULT_THEME.textColor;
+  if (colorAccent) colorAccent.value = DEFAULT_THEME.accentColor;
+  
+  if (useGradient) {
+    useGradient.checked = false;
+    if (gradientControls) gradientControls.style.display = "none";
+  }
+  
+  if (gradientColor1) gradientColor1.value = DEFAULT_THEME.gradientColor1;
+  if (gradientColor2) gradientColor2.value = DEFAULT_THEME.gradientColor2;
+  if (gradientAngle) gradientAngle.value = DEFAULT_THEME.gradientAngle;
+  
+  updateAllColors();
+}
+
+// Exporter le thème
+function exportTheme() {
+  const theme = {
+    bgColor: colorBg ? colorBg.value : DEFAULT_THEME.bgColor,
+    caseBg: colorCaseBg ? colorCaseBg.value : DEFAULT_THEME.caseBg,
+    caseShadow: colorCaseShadow ? colorCaseShadow.value : DEFAULT_THEME.caseShadow,
+    caseSelected: colorCaseSelected ? colorCaseSelected.value : DEFAULT_THEME.caseSelected,
+    caseBorderSelected: colorCaseBorderSelected ? colorCaseBorderSelected.value : DEFAULT_THEME.caseBorderSelected,
+    textColor: colorText ? colorText.value : DEFAULT_THEME.textColor,
+    accentColor: colorAccent ? colorAccent.value : DEFAULT_THEME.accentColor,
+    useGradient: useGradient ? useGradient.checked : false,
+    gradientColor1: gradientColor1 ? gradientColor1.value : DEFAULT_THEME.gradientColor1,
+    gradientColor2: gradientColor2 ? gradientColor2.value : DEFAULT_THEME.gradientColor2,
+    gradientAngle: gradientAngle ? gradientAngle.value : DEFAULT_THEME.gradientAngle
+  };
+  
+  const json = JSON.stringify(theme, null, 2);
+  if (exportThemeTextarea) {
+    exportThemeTextarea.value = json;
+  }
+  if (exportThemeArea) {
+    exportThemeArea.style.display = "block";
+    exportThemeTextarea.select();
+  }
+}
+
+// Ouvrir/Fermer le panneau
+export function openSettingsPanel() {
+  if (settingsPanel) {
+    settingsPanel.classList.add("active");
+  }
+}
+
+export function closeSettingsPanel() {
+  if (settingsPanel) {
+    settingsPanel.classList.remove("active");
+  }
+  if (exportThemeArea) {
+    exportThemeArea.style.display = "none";
+  }
+}
+
+// Initialiser les paramètres
+export function initSettings() {
+  // Charger le thème sauvegardé au démarrage
+  loadTheme();
+  
+  // Event listeners
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", openSettingsPanel);
+  }
+  
+  if (closeSettingsBtn) {
+    closeSettingsBtn.addEventListener("click", closeSettingsPanel);
+  }
+  
+  // Fermer en cliquant en dehors
+  if (settingsPanel) {
+    settingsPanel.addEventListener("click", (e) => {
+      if (e.target === settingsPanel) {
+        closeSettingsPanel();
+      }
+    });
+  }
+  
+  // Listeners pour les color pickers
+  const colorInputs = [colorBg, colorCaseBg, colorCaseShadow, colorCaseSelected, 
+                       colorCaseBorderSelected, colorText, colorAccent];
+  colorInputs.forEach(input => {
+    if (input) {
+      input.addEventListener("input", updateAllColors);
+    }
+  });
+  
+  // Listener pour le dégradé
+  if (useGradient) {
+    useGradient.addEventListener("change", () => {
+      if (gradientControls) {
+        gradientControls.style.display = useGradient.checked ? "block" : "none";
+      }
+      applyBackground();
+      saveTheme();
+    });
+  }
+  
+  // Listeners pour les contrôles du dégradé
+  if (gradientColor1) {
+    gradientColor1.addEventListener("input", () => {
+      applyBackground();
+      saveTheme();
+    });
+  }
+  
+  if (gradientColor2) {
+    gradientColor2.addEventListener("input", () => {
+      applyBackground();
+      saveTheme();
+    });
+  }
+  
+  if (gradientAngle) {
+    gradientAngle.addEventListener("change", () => {
+      applyBackground();
+      saveTheme();
+    });
+  }
+  
+  // Bouton Réinitialiser
+  if (resetSettingsBtn) {
+    resetSettingsBtn.addEventListener("click", () => {
+      applyDefaultTheme();
+      if (exportThemeArea) {
+        exportThemeArea.style.display = "none";
+      }
+    });
+  }
+  
+  // Bouton Exporter
+  if (exportThemeBtn) {
+    exportThemeBtn.addEventListener("click", exportTheme);
   }
 }
 

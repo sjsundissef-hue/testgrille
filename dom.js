@@ -65,3 +65,24 @@ export const statsMyControls = document.getElementById("statsMyControls");
 export const statsModeFilters = document.getElementById("statsModeFilters");
 export const statsMySummary = document.getElementById("statsMySummary");
 
+// Paramètres
+export const settingsBtn = document.getElementById("settingsBtn");
+export const settingsPanel = document.getElementById("settingsPanel");
+export const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+export const colorBg = document.getElementById("colorBg");
+export const colorCaseBg = document.getElementById("colorCaseBg");
+export const colorCaseShadow = document.getElementById("colorCaseShadow");
+export const colorCaseSelected = document.getElementById("colorCaseSelected");
+export const colorCaseBorderSelected = document.getElementById("colorCaseBorderSelected");
+export const colorText = document.getElementById("colorText");
+export const colorAccent = document.getElementById("colorAccent");
+export const useGradient = document.getElementById("useGradient");
+export const gradientControls = document.getElementById("gradientControls");
+export const gradientColor1 = document.getElementById("gradientColor1");
+export const gradientColor2 = document.getElementById("gradientColor2");
+export const gradientAngle = document.getElementById("gradientAngle");
+export const resetSettingsBtn = document.getElementById("resetSettingsBtn");
+export const exportThemeBtn = document.getElementById("exportThemeBtn");
+export const exportThemeArea = document.getElementById("exportThemeArea");
+export const exportThemeTextarea = document.getElementById("exportThemeTextarea");
+

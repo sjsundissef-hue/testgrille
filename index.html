@@ -30,8 +30,9 @@
 </head>
 <body>
   <h1>Wordbox</h1>
- 
-
+  
+  <!-- Bouton Paramètres -->
+  <button id="settingsBtn" class="settings-btn" title="Paramètres">⚙️</button>
 
   <!-- Section Profil Joueur -->
   <div class="player-section">
@@ -317,6 +318,105 @@
           <button type="button" class="btn-cancel" onclick="document.getElementById('connectProfileModal').style.display='none'">Annuler</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Panneau Paramètres -->
+  <div id="settingsPanel" class="settings-panel-overlay">
+    <div class="settings-panel-content">
+      <div class="settings-header">
+        <h2>⚙️ Paramètres</h2>
+        <button id="closeSettingsBtn" class="close-settings-btn">×</button>
+      </div>
+      
+      <div class="settings-body">
+        <div class="settings-section">
+          <h3>Couleurs principales</h3>
+          
+          <div class="color-input-group">
+            <label for="colorBg">Fond du jeu</label>
+            <input type="color" id="colorBg" value="#f4f4eb">
+          </div>
+          
+          <div class="color-input-group">
+            <label for="colorCaseBg">Couleur des cases</label>
+            <input type="color" id="colorCaseBg" value="#ffffff">
+          </div>
+          
+          <div class="color-input-group">
+            <label for="colorCaseShadow">Ombre des cases</label>
+            <input type="color" id="colorCaseShadow" value="#c8c8be">
+          </div>
+          
+          <div class="color-input-group">
+            <label for="colorCaseSelected">Case sélectionnée</label>
+            <input type="color" id="colorCaseSelected" value="#d4f1f4">
+          </div>
+          
+          <div class="color-input-group">
+            <label for="colorCaseBorderSelected">Bordure sélectionnée</label>
+            <input type="color" id="colorCaseBorderSelected" value="#4a90e2">
+          </div>
+          
+          <div class="color-input-group">
+            <label for="colorText">Couleur du texte</label>
+            <input type="color" id="colorText" value="#333333">
+          </div>
+          
+          <div class="color-input-group">
+            <label for="colorAccent">Couleur d'accent (boutons)</label>
+            <input type="color" id="colorAccent" value="#4a90e2">
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Dégradé pour le fond</h3>
+          
+          <div class="checkbox-group">
+            <label>
+              <input type="checkbox" id="useGradient">
+              <span>Activer le dégradé pour le fond</span>
+            </label>
+          </div>
+          
+          <div id="gradientControls" class="gradient-controls" style="display: none;">
+            <div class="color-input-group">
+              <label for="gradientColor1">Couleur 1 du dégradé</label>
+              <input type="color" id="gradientColor1" value="#f4f4eb">
+            </div>
+            
+            <div class="color-input-group">
+              <label for="gradientColor2">Couleur 2 du dégradé</label>
+              <input type="color" id="gradientColor2" value="#e8e8d8">
+            </div>
+            
+            <div class="color-input-group">
+              <label for="gradientAngle">Orientation du dégradé</label>
+              <select id="gradientAngle">
+                <option value="0deg">Horizontal (→)</option>
+                <option value="45deg" selected>Diagonal (↗)</option>
+                <option value="90deg">Vertical (↓)</option>
+                <option value="135deg">Diagonal (↘)</option>
+                <option value="180deg">Horizontal (←)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Actions</h3>
+          
+          <div class="settings-actions">
+            <button id="resetSettingsBtn" class="btn-reset">Réinitialiser</button>
+            <button id="exportThemeBtn" class="btn-export">Exporter mon thème</button>
+          </div>
+          
+          <div id="exportThemeArea" class="export-theme-area" style="display: none;">
+            <label for="exportThemeTextarea">Thème exporté (copiez-collez pour partager) :</label>
+            <textarea id="exportThemeTextarea" readonly></textarea>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
