@@ -86,3 +86,14 @@ export const exportThemeBtn = document.getElementById("exportThemeBtn");
 export const exportThemeArea = document.getElementById("exportThemeArea");
 export const exportThemeTextarea = document.getElementById("exportThemeTextarea");
 
+// Analyse 3x3
+export const graph3x3Btn = document.getElementById("graph3x3Btn");
+export const analysisModal = document.getElementById("analysisModal");
+export const closeAnalysisBtn = document.getElementById("closeAnalysisBtn");
+export const analysisChart = document.getElementById("analysisChart");
+export const analysisTotalWords = document.getElementById("analysisTotalWords");
+export const analysisTotalPoints = document.getElementById("analysisTotalPoints");
+export const analysisAvgSpeed = document.getElementById("analysisAvgSpeed");
+export const analysisNoAccount = document.getElementById("analysisNoAccount");
+export const analysisChartContainer = document.getElementById("analysisChartContainer");
+

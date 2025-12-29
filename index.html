@@ -101,6 +101,7 @@
         <div class="ranked-actions">
           <button id="replayBtn" class="secondary">Rejouer</button>
           <button id="backToHomeBtn" class="secondary" style="display:none;">🏠 Retour à l'accueil</button>
+          <button id="graph3x3Btn" class="secondary" style="display:none;">📊 Voir le graphique</button>
         </div>
       </div>
 
@@ -418,6 +419,41 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal Analyse 3x3 -->
+  <div id="analysisModal" class="analysis-modal-overlay">
+    <div class="analysis-modal-content">
+      <div class="analysis-modal-header">
+        <h2>📊 Analyse de ta partie 3x3</h2>
+        <button id="closeAnalysisBtn" class="close-analysis-btn">×</button>
+      </div>
+      <div class="analysis-modal-body">
+        <div id="analysisSummary" class="analysis-summary">
+          <div class="stat-item">
+            <span class="stat-label">Total mots</span>
+            <span id="analysisTotalWords" class="stat-value">-</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Total points</span>
+            <span id="analysisTotalPoints" class="stat-value">-</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Vitesse moyenne</span>
+            <span id="analysisAvgSpeed" class="stat-value">-</span>
+          </div>
+        </div>
+        <div id="analysisChartContainer" class="analysis-chart-container">
+          <canvas id="analysisChart"></canvas>
+        </div>
+        <div id="analysisNoAccount" class="analysis-no-account" style="display: none;">
+          <p>❗ Créez un compte pour avoir accès au graphique d'analyse de vos parties 3x3.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <script type="module" src="script.js"></script>
 </body>

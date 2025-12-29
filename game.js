@@ -24,6 +24,11 @@ import { stopTimer, startTimer, setEndChallengeCallback } from './chrono.js';
 import { showFeedback, updateScoreDisplay, updateRankedUI, setHomeMode, setRankedModeUI, setRankedResultsMode } from './ui.js';
 import { getWordPoints, findAllWords, generateNewGameId } from './utils.js';
 import { logWordFind, maybeOfferExpertScore, sendExpertScore, loadExpertLeaderboard, loadGlobalRanking, setStatsTab, loadGlobalStats, loadPlayerStats, getPLAYER_ID } from './leaderboard.js';
+import { show3x3Analysis } from './ui.js';
+
+// Tracking pour analyse 3x3
+let gameStartTime = null;
+let wordEvents = [];
 
 // Mode actuel
 export function getCurrentMode() {
@@ -55,6 +60,11 @@ export function resetGameState() {
   state.hasOfferedScore = false;
 
   state.currentChronoMode = null;
+  
+  // Réinitialiser le tracking 3x3
+  gameStartTime = null;
+  wordEvents = [];
+  
   updateRankedUI();
 
   if (wordDisplay) wordDisplay.textContent = "";
@@ -119,6 +129,11 @@ export function loadDictionary() {
 export function initGame() {
   stopTimer();
   resetGameState();
+  
+  // Cacher le bouton graphique si visible
+  if (graph3x3Btn) {
+    graph3x3Btn.style.display = "none";
+  }
 
   state.currentGameId = generateNewGameId();
 
@@ -241,6 +256,10 @@ export function startExpertMode() {
 
   state.challengeModeName = "Expert 3x3";
   state.gridSize = 3;
+  
+  // Initialiser le tracking pour l'analyse 3x3
+  gameStartTime = performance.now();
+  wordEvents = [];
 
   if (newGridBtn) newGridBtn.style.display = "none";
   if (replayBtn) replayBtn.style.display = "none";
@@ -415,6 +434,13 @@ function validateWord() {
       foundWords.add(word);
       const pts = getWordPoints(word);
       state.currentScore += pts;
+      
+      // Tracking pour analyse 3x3
+      if (state.isExpertMode && state.gridSize === 3 && gameStartTime !== null) {
+        const elapsedSec = (performance.now() - gameStartTime) / 1000;
+        wordEvents.push({ t: elapsedSec, points: pts });
+      }
+      
       showFeedback(word + " +" + pts, "valid");
       updateWordList();
       updateScoreDisplay(state.currentScore);
@@ -530,7 +556,51 @@ export function finishAndShowSolutions() {
 
   if (listTitleEl) listTitleEl.textContent = "Résultats";
 
+  // Calculer l'analyse 3x3 si c'est une partie 3x3
+  if (state.isExpertMode && state.gridSize === 3 && gameStartTime !== null && wordEvents.length > 0) {
+    calculate3x3Analysis();
+  }
+
   maybeOfferExpertScore(getCurrentMode);
+}
+
+// Calculer l'analyse de la partie 3x3
+function calculate3x3Analysis() {
+  const GAME_DURATION = 120;
+  const SLICE = 3;
+  const nbSlices = Math.ceil(GAME_DURATION / SLICE);
+  
+  const pointsBySlice = new Array(nbSlices).fill(0);
+  const wordsBySlice = new Array(nbSlices).fill(0);
+  
+  // Répartir les événements dans les tranches
+  wordEvents.forEach(event => {
+    const index = Math.floor(event.t / SLICE);
+    if (index < nbSlices) {
+      pointsBySlice[index] += event.points;
+      wordsBySlice[index] += 1;
+    }
+  });
+  
+  // Calculer les statistiques
+  const totalWords = wordsBySlice.reduce((sum, val) => sum + val, 0);
+  const totalPoints = pointsBySlice.reduce((sum, val) => sum + val, 0);
+  const avgWordsPerMin = (totalWords / GAME_DURATION) * 60;
+  const avgPointsPerMin = (totalPoints / GAME_DURATION) * 60;
+  
+  // Afficher le bouton "Voir le graphique" et stocker les données
+  if (graph3x3Btn) {
+    graph3x3Btn.style.display = "inline-block";
+    // Stocker les données dans un attribut data pour y accéder plus tard
+    graph3x3Btn.dataset.analysisData = JSON.stringify({
+      pointsBySlice,
+      wordsBySlice,
+      totalWords,
+      totalPoints,
+      avgWordsPerMin,
+      avgPointsPerMin
+    });
+  }
 }
 
 // Création manuelle

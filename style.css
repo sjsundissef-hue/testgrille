@@ -1417,3 +1417,153 @@ body.fun-mode-active .score-title {
     max-width: 300px;
   }
 }
+
+/* ==========================================
+   MODAL ANALYSE 3X3
+   ========================================== */
+
+.analysis-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.analysis-modal-overlay.active {
+  display: flex;
+}
+
+.analysis-modal-content {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.analysis-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #eee;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px 20px 0 0;
+}
+
+.analysis-modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-analysis-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.close-analysis-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.analysis-modal-body {
+  padding: 20px;
+}
+
+.analysis-summary {
+  display: flex;
+  justify-content: space-around;
+  gap: 15px;
+  margin-bottom: 25px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #4a90e2;
+}
+
+.analysis-chart-container {
+  position: relative;
+  height: 400px;
+  margin-bottom: 15px;
+}
+
+.analysis-no-account {
+  text-align: center;
+  padding: 30px;
+  background: #fff3cd;
+  border-radius: 10px;
+  border-left: 4px solid #ffc107;
+}
+
+.analysis-no-account p {
+  margin: 0;
+  font-size: 1rem;
+  color: #856404;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .analysis-modal-content {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .analysis-summary {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .analysis-chart-container {
+    height: 300px;
+  }
+  
+  .analysis-modal-header h2 {
+    font-size: 1.2rem;
+  }
+}
