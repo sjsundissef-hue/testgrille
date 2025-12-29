@@ -27,10 +27,11 @@ export const MIN_WORD_LENGTH = 4;
 export const DICT_URL = "dictionnaire.json";
 
 // Grilles Fun 2x2
-export const FUN_COMBOS = [
-  "ERSU","ACER","AILS","AIRS","AIST","EORS","AIRV","AEIM",
+export const FUN_COMBOS = ["ERSU","ACER","AILS","AIRS","AIST","EORS","AIRV","AEIM",
   "AELP","AEMR","AIMS","AINS","AEPR","AEPT","AERS","ARST",
-  "AERT","ABET","CERU","DERU"
+  "AERT","ABET","CERU","DERU",
+  "EILS","EMSU","EMTU","AEGR","EIRS","EISV","AIMR",
+  "AINT","AIPR","EIPR","EPRU","OPST","ASTU"
 ];
 
 // Grilles Expert 3x3
@@ -96,4 +97,5 @@ export const BODY_HOME_CLASS = "home";
 export const BODY_RANKED_CLASS = "ranked-active";
 export const BODY_RANKED_RESULTS_CLASS = "ranked-results";
 export const BODY_LEADERBOARD_CLASS = "leaderboard-open";
+
 
