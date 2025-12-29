@@ -142,13 +142,16 @@ body.ranked-results .ranked-actions {
   margin: 0 !important;
   margin-top: 0 !important;
   margin-bottom: 0 !important;
+  flex-wrap: wrap;
 }
 
 body.ranked-results .ranked-actions #replayBtn,
-body.ranked-results .ranked-actions #backToHomeBtn {
+body.ranked-results .ranked-actions #backToHomeBtn,
+body.ranked-results .ranked-actions #graph3x3Btn {
   display: inline-block !important;
   flex: 1;
   max-width: 200px;
+  min-width: 120px;
   width: auto;
   margin: 0;
 }
@@ -1532,6 +1535,7 @@ body.fun-mode-active .score-title {
   background: #fff3cd;
   border-radius: 10px;
   border-left: 4px solid #ffc107;
+  position: relative;
 }
 
 .analysis-no-account p {
@@ -1539,6 +1543,33 @@ body.fun-mode-active .score-title {
   font-size: 1rem;
   color: #856404;
   font-weight: 500;
+}
+
+.close-no-account-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #856404;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.close-no-account-btn:hover {
+  background-color: rgba(133, 100, 4, 0.1);
+}
+
+/* Bloquer le scroll du body quand le modal est ouvert */
+body.modal-open {
+  overflow: hidden;
 }
 
 /* Responsive */
@@ -1565,5 +1596,18 @@ body.fun-mode-active .score-title {
   
   .analysis-modal-header h2 {
     font-size: 1.2rem;
+  }
+  
+  /* Boutons du panneau Paramètres sur mobile */
+  .settings-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .settings-actions button {
+    width: 100%;
+    max-width: 100%;
   }
 }

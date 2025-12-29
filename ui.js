@@ -41,7 +41,8 @@ import {
   analysisTotalPoints,
   analysisAvgSpeed,
   analysisNoAccount,
-  analysisChartContainer
+  analysisChartContainer,
+  closeNoAccountBtn
 } from './dom.js';
 import { state } from './state.js';
 
@@ -310,12 +311,14 @@ function exportTheme() {
 // Ouvrir/Fermer le panneau
 export function openSettingsPanel() {
   if (settingsPanel) {
+    settingsPanel.style.display = "block";
     settingsPanel.classList.add("active");
   }
 }
 
 export function closeSettingsPanel() {
   if (settingsPanel) {
+    settingsPanel.style.display = "none";
     settingsPanel.classList.remove("active");
   }
   if (exportThemeArea) {
@@ -414,6 +417,9 @@ export function initSettings() {
         } catch (e) {
           console.error("Erreur parsing données analyse", e);
         }
+      } else {
+        // Pas de données, vérifier si connecté
+        show3x3AnalysisNoData();
       }
     });
   }
@@ -431,6 +437,16 @@ export function initSettings() {
       }
     });
   }
+  
+  // Fermer le message "non connecté"
+  if (closeNoAccountBtn) {
+    closeNoAccountBtn.addEventListener("click", () => {
+      if (analysisNoAccount) {
+        analysisNoAccount.style.display = "none";
+      }
+      closeAnalysisModal();
+    });
+  }
 }
 
 // ==========================================
@@ -439,13 +455,30 @@ export function initSettings() {
 
 let analysisChartInstance = null;
 
+// Fonction pour afficher le message si pas de données ou non connecté
+function show3x3AnalysisNoData() {
+  import('./player.js').then(module => {
+    const isConnected = module.isPlayerConnected ? module.isPlayerConnected() : false;
+    
+    if (!isConnected) {
+      // Afficher un toast/popup avec message
+      showFeedback("❗ Créez-vous un compte pour voir les graphiques de vos parties.", "invalid");
+    } else {
+      showFeedback("Aucune donnée d'analyse disponible pour cette partie.", "info");
+    }
+  }).catch(e => {
+    console.error("Erreur import player.js", e);
+    showFeedback("❗ Créez-vous un compte pour voir les graphiques de vos parties.", "invalid");
+  });
+}
+
 export function show3x3Analysis(data) {
   // Vérifier si le joueur est connecté
   import('./player.js').then(module => {
     const isConnected = module.isPlayerConnected ? module.isPlayerConnected() : false;
     
     if (!isConnected) {
-      // Afficher le message pour créer un compte
+      // Afficher le message pour créer un compte dans le modal
       if (analysisNoAccount) {
         analysisNoAccount.style.display = "block";
       }
@@ -454,6 +487,7 @@ export function show3x3Analysis(data) {
       }
       if (analysisModal) {
         analysisModal.classList.add("active");
+        document.body.classList.add("modal-open");
       }
       return;
     }
@@ -557,6 +591,7 @@ export function show3x3Analysis(data) {
     // Afficher le modal
     if (analysisModal) {
       analysisModal.classList.add("active");
+      document.body.classList.add("modal-open");
     }
   }).catch(e => {
     console.error("Erreur import player.js", e);
@@ -566,6 +601,7 @@ export function show3x3Analysis(data) {
 function closeAnalysisModal() {
   if (analysisModal) {
     analysisModal.classList.remove("active");
+    document.body.classList.remove("modal-open");
   }
 }
 

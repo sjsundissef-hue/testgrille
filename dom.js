@@ -96,4 +96,5 @@ export const analysisTotalPoints = document.getElementById("analysisTotalPoints"
 export const analysisAvgSpeed = document.getElementById("analysisAvgSpeed");
 export const analysisNoAccount = document.getElementById("analysisNoAccount");
 export const analysisChartContainer = document.getElementById("analysisChartContainer");
+export const closeNoAccountBtn = document.getElementById("closeNoAccountBtn");
 

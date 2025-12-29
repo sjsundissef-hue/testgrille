@@ -589,6 +589,7 @@ function calculate3x3Analysis() {
   const avgPointsPerMin = (totalPoints / GAME_DURATION) * 60;
   
   // Afficher le bouton "Voir le graphique" et stocker les données
+  // Le bouton doit toujours apparaître, même si non connecté
   if (graph3x3Btn) {
     graph3x3Btn.style.display = "inline-block";
     // Stocker les données dans un attribut data pour y accéder plus tard

@@ -322,7 +322,7 @@
   </div>
 
   <!-- Panneau Paramètres -->
-  <div id="settingsPanel" class="settings-panel-overlay">
+  <div id="settingsPanel" class="settings-panel-overlay" style="display: none;">
     <div class="settings-panel-content">
       <div class="settings-header">
         <h2>⚙️ Paramètres</h2>
@@ -446,7 +446,8 @@
           <canvas id="analysisChart"></canvas>
         </div>
         <div id="analysisNoAccount" class="analysis-no-account" style="display: none;">
-          <p>❗ Créez un compte pour avoir accès au graphique d'analyse de vos parties 3x3.</p>
+          <p>❗ Créez-vous un compte pour voir les graphiques de vos parties.</p>
+          <button id="closeNoAccountBtn" class="close-no-account-btn">×</button>
         </div>
       </div>
     </div>
